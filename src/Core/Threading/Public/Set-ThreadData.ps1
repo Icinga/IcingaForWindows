@@ -1,0 +1,94 @@
+<#
+.SYNOPSIS
+Initialize thread-local runtime state inside a new runspace.
+
+.DESCRIPTION
+`Set-ThreadData` is invoked inside threads created by `New-Thread`. It sets up
+the base environment, configures the public and protected runtime containers,
+registers the thread id, validates the requested command and finally invokes it
+with the supplied parameters.
+
+.PARAMETER PublicSpace
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| PublicSpace | System.Object | Shared public runtime object to attach to the thread | $null |
+
+.PARAMETER AccessControl
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| AccessControl | System.Object | Access control descriptor to attach to protected runtime area | $null |
+
+.PARAMETER ThreadId
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| ThreadId | System.String | The thread id assigned by the creator | $null |
+
+.PARAMETER Command
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| Command | System.String | The command/function name to execute in the thread | $null |
+
+.PARAMETER Parameters
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| Parameters | System.Hashtable | Named parameters to pass to `Command` | @{} |
+
+.OUTPUTS
+System.Object — The return value of the invoked Command; error conditions return structured objects via Write-FunctionReturnValue.
+
+.EXAMPLE
+PS> Set-ThreadData -PublicSpace $GlobalPublic -AccessControl $ac -ThreadId $tid -Command 'RunWorker' -Parameters @{ 'Queue' = $q }
+
+.NOTES
+This function calls `New-BaseEnvironment` and sets `(Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemon` to `$true`.
+#>
+function Set-ThreadData()
+{
+    param (
+        $PublicSpace           = $null,
+        $AccessControl         = $null,
+        [string]$ThreadId      = $null,
+        [string]$Command       = $null,
+        [hashtable]$Parameters = @{ }
+    );
+
+    # Always ensure no progress is shown in sessions
+    $ProgressPreference = 'SilentlyContinue';
+
+    # As this is a new thread instance, we will run this function to load our base environment
+    New-ModuleBaseEnvironment;
+
+    $GlobalVariable = Get-GlobalRuntimeVariable;
+
+    # Update the logging ID for this thread to ensure logs are properly tagged an traceable
+    # Set it to the provided ThreadId to ensure we can track all logs from the start of the thread
+    Update-LoggingThreadLoggingId -ThreadId $ThreadId;
+    # Mark this as a background daemon, because we might fetch certain
+    # information what should be handled as objects
+    # Example: Write-LoggingEntry will return the LogMessage object if the type is 'Object'
+    $GlobalVariable.Protected.IsBackgroundDaemon = $true;
+
+    # Now after our base environment is ready, we can check if we have both parameters
+    if ($null -eq $PublicSpace -or [string]::IsNullOrEmpty($ThreadId)) {
+        return (Write-FunctionReturnValue -ReturnValue 'ThreadDataMissing' -Data @{ 'PublicSpace' = $PublicSpace; 'ThreadId' = $ThreadId } -OverrideReturn $null);
+    }
+
+    # Set the current thread ID for this thread
+    $GlobalVariable.Private.Threading.ThreadId = $ThreadId;
+
+    # Update the public space if provided to share data between threads
+    $GlobalVariable.Public                     = $PublicSpace;
+
+    # Mark the environment as initialized, because we skipped the proper entry point and are sharing the public space
+    $GlobalVariable.Protected.Initialized      = $true;
+    $GlobalVariable.Protected.AccessControl    = $AccessControl;
+
+    # Validate if our provided command exist and stop this thread if it doesn't
+    if ($null -eq (Get-Command -Name $Command -ErrorAction SilentlyContinue)) {
+        Stop-Thread -ThreadId $ThreadId;
+        return (Write-FunctionReturnValue -ReturnValue 'ThreadCommandNotFound' -Data @{ 'Command' = $Command } -OverrideReturn $null);
+    }
+
+    # Once everything is initialized, call the command with the arguments
+    & $Command @Parameters;
+}

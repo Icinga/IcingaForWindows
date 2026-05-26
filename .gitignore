@@ -1,1 +1,3 @@
 /lib/*.psm1
+*.log
+.DS_Store
