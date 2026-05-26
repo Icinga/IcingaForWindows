@@ -1,3 +1,4 @@
 /lib/*.psm1
+/lib/*.ps1
 *.log
 .DS_Store

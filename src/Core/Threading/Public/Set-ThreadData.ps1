@@ -34,7 +34,7 @@ with the supplied parameters.
 | Parameters | System.Hashtable | Named parameters to pass to `Command` | @{} |
 
 .OUTPUTS
-System.Object — The return value of the invoked Command; error conditions return structured objects via Write-FunctionReturnValue.
+Varies. The invoked `Command` determines output; error conditions return structured cmdlet returns.
 
 .EXAMPLE
 PS> Set-ThreadData -PublicSpace $GlobalPublic -AccessControl $ac -ThreadId $tid -Command 'RunWorker' -Parameters @{ 'Queue' = $q }

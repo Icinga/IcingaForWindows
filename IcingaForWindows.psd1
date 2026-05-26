@@ -1,5 +1,4 @@
-﻿@{
-    RootModule        = 'IcingaForWindows.psm1'
+@{
     ModuleVersion     = '27.0.0'
     GUID              = '7e6278de-6948-4180-b1fe-731648db1289'
     Author            = 'Lord Hepipud'
@@ -7,34 +6,13 @@
     Copyright         = '(c) 2026 Icinga GmbH | MIT'
     Description       = 'Icinga for Windows monitoring solution.'
     PowerShellVersion = '5.1'
-    NestedModules = @(
-
+    NestedModules     = @(
+        'IcingaForWindows.psm1'
     )
-    FunctionsToExport = @(
-        'Add-IcingaWebSocketConfig',
-        'Exit-Icinga',
-        'Get-IcingaUnixTime',
-        'Join-WebPath',
-        'New-IcingaAccessRole',
-        'New-IcingaRestApiAccessControlObject',
-        'New-IcingaTlsCertConfig',
-        'Remove-IcingaAccessRole',
-        'Remove-IcingaWebSocketConfig',
-        'Resolve-IcingaIPAddress',
-        'Send-IcingaRestApiRequest',
-        'Set-IcingaLogLevel',
-        'Set-IcingaRestApiConfig',
-        'Set-ThreadData',
-        'Show-IcingaAccessRoles',
-        'Show-IcingaThreads',
-        'Show-IcingaWebSockets',
-        'Start-IcingaAgent',
-        'Start-IcingaApi',
-        'Use-IcingaForWindows'
-    )
-    CmdletsToExport   = @( '*' )
-    VariablesToExport = @( '*' )
-    AliasesToExport   = @( '*' )
+    FunctionsToExport = '*'
+    CmdletsToExport   = @()
+    VariablesToExport = '*'
+    AliasesToExport   = '*'
     PrivateData       = @{
         PSData   = @{
             Tags         = @( 'icinga', 'icinga2', 'windows', 'monitoring', 'opensource', 'Icinga for Windows' );
