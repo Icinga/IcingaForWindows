@@ -37,7 +37,7 @@ Use-IcingaForWindows -LogLevel 'Info';   # alias: ifw
 Documentation
 -------------
 
-The auto-generated API reference and the hand-written guides live under `docs/`. Start here:
+The API reference and guides live under `docs/`. Start here:
 
 * [API Reference Index](docs/index.md) — one page per component, lists every public and private function with synopsis, parameters, examples and a source link.
 * [Icinga REST API](docs/Icinga.Core.RestApi.md) · [Icinga API endpoint](docs/Icinga.Api.md)
