@@ -40,7 +40,10 @@ Varies. The invoked `Command` determines output; error conditions return structu
 PS> Set-ThreadData -PublicSpace $GlobalPublic -AccessControl $ac -ThreadId $tid -Command 'RunWorker' -Parameters @{ 'Queue' = $q }
 
 .NOTES
-This function calls `New-BaseEnvironment` and sets `(Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemon` to `$true`.
+Called exclusively by New-Thread; do not invoke directly. Calls New-ModuleBaseEnvironment to set
+up the runspace and sets (Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemon to $true so
+that downstream functions know they are executing in a background context. Thread identity is
+tracked via Update-LoggingThreadLoggingId for log correlation.
 #>
 function Set-ThreadData()
 {
@@ -82,6 +85,7 @@ function Set-ThreadData()
     # Mark the environment as initialized, because we skipped the proper entry point and are sharing the public space
     $GlobalVariable.Protected.Initialized      = $true;
     $GlobalVariable.Protected.AccessControl    = $AccessControl;
+    # TODO: We need to properly set colorized output setting here
 
     # Validate if our provided command exist and stop this thread if it doesn't
     if ($null -eq (Get-Command -Name $Command -ErrorAction SilentlyContinue)) {

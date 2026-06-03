@@ -21,24 +21,34 @@ Supports returning an override value instead of the mapped code.
 .PARAMETER OverrideReturn
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| OverrideReturn | System.Object | If provided (not 'Core::IgnoreOverride'), this value is returned instead of the mapped numeric code. Can be a boolean or numeric value. | Core::IgnoreOverride |
+| OverrideReturn | System.Object | If provided (not 'Core::IgnoreOverride'), this value is returned instead of the mapped numeric code. Booleans are returned via explicit cast to preserve type. | Core::IgnoreOverride |
+
+.PARAMETER AutomationRun
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| AutomationRun | System.Management.Automation.SwitchParameter | When set, returns @{ ExitCode; Output } instead of the numeric code. ExitCode is 0 for Info/Audit/Debug severities, 2 for all others. | $false |
 
 .OUTPUTS
-System.Int32
-Numeric return code mapped from the semantic `ReturnValue`, or the provided `OverrideReturn`.
+System.Int32 — Numeric code from the return-code table when neither -OverrideReturn nor -AutomationRun is active.
+System.Collections.Hashtable — @{ ExitCode = System.Int32; Output = System.String } when -AutomationRun is set.
+System.Object — The -OverrideReturn value as-is when provided, taking precedence over both the numeric code and -AutomationRun.
 
 .EXAMPLE
 PS> Write-FunctionReturnValue -ReturnValue 'TlsHandshakeSuccessful'
 
 .NOTES
-This helper depends on `Set-InternalExitCodes` and `Write-LoggingEntry`.
+Calls Set-InternalExitCodes to ensure the return-code table is populated before the first lookup.
+Enqueues a log entry via Write-LoggingEntry only when the entry's severity is enabled in the
+current logging configuration and is not 'Audit'. Must be called from the main thread or via
+Get-GlobalRuntimeVariable in daemon context.
 #>
 function Write-FunctionReturnValue()
 {
     param (
-        [string]$ReturnValue = $null,
-        [hashtable]$Data     = @{ },
-        $OverrideReturn      = 'Core::IgnoreOverride'
+        [string]$ReturnValue   = $null,
+        [hashtable]$Data       = @{ },
+        $OverrideReturn        = 'Core::IgnoreOverride',
+        [switch]$AutomationRun = $false
     );
 
     # Ensure return codes are loaded once
@@ -80,6 +90,36 @@ function Write-FunctionReturnValue()
             return ,$OverrideReturn;
         }
     
+        # If we use automation like Ansible, we need to report properly mapped exit status
+        # codes for success and failure
+        if ($AutomationRun) {
+            [int]$AutomationExitCode = 0;
+            switch ($codeEntry.Severity) {
+                'Info' {
+                    # Return success on info
+                    break;
+                };
+                'Audit' {
+                    # Return success on audit
+                    break;
+                };
+                'Debug' {
+                    # Return success on debug
+                    break;
+                };
+                # TODO: Should Warning be Ok or Failure?
+                default {
+                    # Return failure on anything else
+                    $AutomationExitCode = 2;
+                };
+            }
+
+            return @{
+                'ExitCode' = $AutomationExitCode;
+                'Output'   = $codeEntry.Message;
+            };
+        }
+
         # Return mapped code
         return $codeEntry.Code;
     }

@@ -17,7 +17,7 @@ return objects as the underlying private implementation.
 .PARAMETER ListenPort
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 10000 |
+| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 5668 |
 
 .PARAMETER TlsCertConfig
 | Name | Type | Description | Default |
@@ -28,6 +28,11 @@ return objects as the underlying private implementation.
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
 | WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5 |
+
+.PARAMETER DryRun
+| Name   | Type                                         | Description                                                                                       | Default |
+|--------|----------------------------------------------|---------------------------------------------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false |
 
 .OUTPUTS
 PSCustomObject — Function return value forwarded from `Set-RestApiConfig`.
@@ -44,9 +49,10 @@ function Set-IcingaRestApiConfig()
 {
     param (
         [string]$ListenAddress         = '0.0.0.0',
-        [int]$ListenPort               = 10000,
+        [int]$ListenPort               = 5668,
         [PSCustomObject]$TlsCertConfig = $null, # Tls cert config object created via New-IcingaTlsCertConfig
-        [int]$WorkerCount              = 5
+        [int]$WorkerCount              = 5,
+        [switch]$DryRun                = $false
     );
 
     return (
@@ -54,6 +60,7 @@ function Set-IcingaRestApiConfig()
             -ListenAddress $ListenAddress `
             -ListenPort $ListenPort `
             -TlsCertConfig $TlsCertConfig `
-            -WorkerCount $WorkerCount
+            -WorkerCount $WorkerCount `
+            -DryRun:$DryRun
     );
 }
