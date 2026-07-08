@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Emit a standardized numeric return value and optional log entry
+Emit a standardized numeric return value and optional log entry.
 
 .DESCRIPTION
 Looks up the semantic return identifier in the internal return-code table
@@ -75,9 +75,9 @@ function Write-FunctionReturnValue()
             return [bool]$OverrideReturn;
         }
 
-        # If we used an override, return that
-        if ($OverrideReturn -ne 'Core::IgnoreOverride') {
-            return $OverrideReturn;
+        # If we used an override, return that safely using comma operator to prevent unrolling
+        if (-not ($OverrideReturn -is [string] -and $OverrideReturn -eq 'Core::IgnoreOverride')) {
+            return ,$OverrideReturn;
         }
     
         # Return mapped code
@@ -89,9 +89,9 @@ function Write-FunctionReturnValue()
         'ReturnValue' = $ReturnValue;
     };
 
-    # If we used an override, return that
-    if ($OverrideReturn -ne 'Core::IgnoreOverride') {
-        return $OverrideReturn;
+    # If we used an override, return that safely using comma operator to prevent unrolling
+    if (-not ($OverrideReturn -is [string] -and $OverrideReturn -eq 'Core::IgnoreOverride')) {
+        return ,$OverrideReturn;
     }
 
     # Fallback return code for undefined return values

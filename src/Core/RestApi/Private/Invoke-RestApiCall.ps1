@@ -1,28 +1,33 @@
 <#
 .SYNOPSIS
-Route an incoming HTTP request to the matching RestApi space handler
+Resolve the REST API path to a configured handler and execute it.
 
 .DESCRIPTION
-Reads the parsed web path and space configuration from the global RestApi
-private context and dispatches the request to the configured handler via
-`Invoke-RestApiCommandExecutionField`. When no matching space or action is
-found the function sends the appropriate HTTP error or HTML listing response
-directly over the TCP connection and returns a structured return value. All
-context (web path, header, body) must be populated in
-`(Get-GlobalRuntimeVariable).Private.RestApi` before calling this function.
+Core dispatcher of the Icinga for Windows REST API. Reads the parsed web-path
+and headers from `$Global.Private.RestApi.*`, walks the configured
+spaces hashtable (Space → Action → Resource) to locate an
+`ApiCommandExecution` field and invokes the bound PowerShell function
+via `Invoke-RestApiCommandExecutionField`. Emits the appropriate JSON
+response on success and well-formed error responses on failure
+(missing space → 404, invalid path depth → 400, command error → 500,
+no spaces configured → 500, no command at all → HTML endpoint listing
+or 200 / 404 for JSON callers).
 
 .OUTPUTS
-None — sends responses via `Send-TCPMessage` and returns structured return
-codes through `Write-FunctionReturnValue`.
+System.Int32 — A semantic return code resolved through
+`Write-FunctionReturnValue` for downstream diagnostics. The HTTP
+response is sent directly over the worker's TCP stream.
 
 .EXAMPLE
 PS> Invoke-RestApiCall
 
+Called by `Start-RestApiWorker` after the request line and body have
+been parsed; arguments are taken from worker-private state.
+
 .NOTES
-Must only be called from within a RestApi worker thread after the request
-headers and body have been fully parsed. Relies on the global runtime
-variables `Private.RestApi.Spaces`, `Private.RestApi.WebPath` and
-`Private.RestApi.Header`.
+Path schema is `/v1/<Space>/<Action>/<Resource>`. The actual
+`ApiCommandExecution` lookup supports 2, 3 or 4 segments (segment
+count is checked before the handler runs).
 #>
 function Invoke-RestApiCall()
 {
@@ -184,7 +189,16 @@ function Invoke-RestApiCall()
 
     # Test for "error" in ReturnValue and check if an error message is present
     # ReturnValue could be anything from hashtable to PSCustomObject to string, etc.
-    if ($null -ne $ReturnValue -and $null -ne $ReturnValue.error -and -not ([string]::IsNullOrEmpty($ReturnValue.error))) {
+    [string]$ErrorMsg = $null;
+    if ($null -ne $ReturnValue) {
+        if ($ReturnValue -is [System.Collections.IDictionary] -and $ReturnValue.ContainsKey('error')) {
+            $ErrorMsg = [string]$ReturnValue['error'];
+        } elseif ($ReturnValue -isnot [System.Collections.ICollection] -and $null -ne $ReturnValue.error) {
+            $ErrorMsg = [string]$ReturnValue.error;
+        }
+    }
+
+    if (-not [string]::IsNullOrEmpty($ErrorMsg)) {
         # An error occurred during command execution
         Send-TCPMessage `
             -MsgObj (
@@ -198,7 +212,7 @@ function Invoke-RestApiCall()
             Write-FunctionReturnValue `
                 -ReturnValue 'RestApiCommandExecutionError' `
                 -Data @{
-                    'Error'    = $ReturnValue.error;
+                    'Error'    = $ErrorMsg;
                     'WebPath'  = $WebPath;
                     'Space'    = $Spaces;
                     'SpaceObj' = $SpaceObj;

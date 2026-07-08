@@ -28,7 +28,7 @@ into a single byte array suitable for sending over a TCP socket. When the
 | ResponseBody | Object | Body payload; may be byte[], string or object (serialized to JSON). | |
 
 .OUTPUTS
-System.Collections.Hashtable — response object with `Message` (byte[]) and `Length` (int) keys.
+Hashtable with `Message` (byte[]) and `Length` (int) keys.
 
 .EXAMPLE
 PS> New-RestApiResponse -StatusCode 200 -ResponseBody @{ success = $true }
@@ -52,17 +52,25 @@ function New-RestApiResponse()
     [int]$ContentLength             = 0;
     [string]$CurrentDateTime        = (Get-Date).ToUniversalTime().ToString('ddd, dd MMM yyyy HH:mm:ss GMT');
     [System.Text.Encoding]$Encoding = [System.Text.Encoding]::UTF8;
-
     try {
         if ($null -eq $ResponseBody) {
             $BodyBytes = @();
-        } elseif ($ResponseBody -is [byte[]]) {
-            $BodyBytes = $ResponseBody;
         } elseif ($ContentType -like 'application/json*') {
-            $json = $ResponseBody | ConvertTo-Json -Depth 10 -Compress;
+            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
             $BodyBytes = $Encoding.GetBytes($json);
         } elseif ($ResponseBody -is [string]) {
             $BodyBytes = $Encoding.GetBytes($ResponseBody);
+        } elseif ($ResponseBody -is [System.Array]) {
+            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
+            $BodyBytes = $Encoding.GetBytes($json);
+        } elseif ($ResponseBody -is [System.Collections.ArrayList]) {
+            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
+            $BodyBytes = $Encoding.GetBytes($json);
+        } elseif ($ResponseBody -is [System.Object[]] -or $ResponseBody -is [System.Collections.IDictionary]) {
+            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
+            $BodyBytes = $Encoding.GetBytes($json);
+        } elseif ($ResponseBody -is [byte[]]) {
+            $BodyBytes = $ResponseBody;
         } else {
             $BodyBytes = $Encoding.GetBytes(([string]$ResponseBody));
         }
@@ -91,7 +99,7 @@ function New-RestApiResponse()
         $MessageObject['Message'] = $FullResponse;
         $MessageObject['Length']  = $FullResponse.Length;
 
-        return (Write-FunctionReturnValue -ReturnValue 'RestApiResponseBuildSuccess' -Data @{ 'HeaderString' = $HeaderString } -OverrideReturn $MessageObject);
+        return (Write-FunctionReturnValue -ReturnValue 'RestApiResponseBuildSuccess' -Data @{ 'HeaderString' = $HeaderString; } -OverrideReturn $MessageObject);
     } catch {
         return (Write-FunctionReturnValue -ReturnValue 'RestApiResponseBuildError' -Data @{ 'Exception' = $_.Exception } -OverrideReturn $null);
     };
