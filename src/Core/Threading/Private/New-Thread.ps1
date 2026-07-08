@@ -43,7 +43,7 @@ The function supports keep-alive semantics and parent/child relationships.
 | WaitForJobs | System.SwitchParameter | When set the thread is expected to wait for queued jobs | $false |
 
 .OUTPUTS
-System.String — The newly created thread id.
+System.String. The newly created thread id.
 
 .EXAMPLE
 PS> New-Thread -Command 'Start-Worker' -Parameters @{ 'Queue' = $q } -Start

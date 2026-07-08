@@ -1,12 +1,14 @@
 ﻿[CmdletBinding()]
 param (
-    [string]$BuildModule = 'core',
-    [switch]$SkipTests   = $false
+    [string]$BuildModule  = 'core',
+    [switch]$SkipTests    = $false,
+    [switch]$GenerateDocs = $false
 );
 
 $ErrorActionPreference  =  'Stop';
 $ProgressPreference     = 'SilentlyContinue';
 [string]$ModuleBasePath = '';
+$NewLine                = [Environment]::NewLine;
 
 if ($BuildModule -eq 'core') {
     [array]$InstalledModules     = Get-Module -ListAvailable -Name 'IcingaForWindows';
@@ -20,7 +22,7 @@ if ($BuildModule -eq 'core') {
     }
 
     if ([string]::IsNullOrEmpty($ModuleBasePath)) {
-        throw 'Could not determine module base path for Icinga for Windows module.';
+        throw 'Could not determine module base path for Icinga for Icinga for Windows module.';
     }
 } else {
     # TODO: Implement non-core module builds
@@ -74,7 +76,7 @@ function Write-IcingaSourceFile()
     $FileStream.Dispose();
 }
 
-function Get-IcingaForWindowsModuleStructure()
+function Get-IcingaModuleStructure()
 {
     [CmdletBinding()]
     param (
@@ -96,10 +98,12 @@ function Get-IcingaForWindowsModuleStructure()
 
     foreach ($sourceFile in $SourceFiles) {
         $FileCount                                  += 1;
-        $relativePath                                = $sourceFile.FullName.Substring($PowerShellSourcePath.Length).TrimStart('\');
+        # Make sure to convert to a universal path format, allowing both Unix and Windows style paths in the source files
+        [string]$UniversalPath                       = $sourceFile.FullName.Replace('/', '\');
+        $relativePath                                = $UniversalPath.Substring($PowerShellSourcePath.Length).TrimStart('\');
         [System.Collections.ArrayList]$CodeStructure = $relativePath.Split('\');
 
-        [string]$LibName = [string]::Format('IcingaForWindows.{0}.psm1', $relativePath.Replace($sourceFile.Name, '').Replace('Public', '').Replace('Private', '').Replace('\', '.').Replace('-', '').Replace(' ', '').TrimEnd('.'));
+        [string]$LibName = [string]::Format('IcingaForWindows.{0}.ps1', $relativePath.Replace($sourceFile.Name, '').Replace('Public', '').Replace('Private', '').Replace('\', '.').Replace('-', '').Replace(' ', '').TrimEnd('.'));
 
         if (-not $ModuleStructure['Public'].ContainsKey($LibName)) {
             $ModuleStructure['Public'][$LibName] = @();
@@ -115,71 +119,11 @@ function Get-IcingaForWindowsModuleStructure()
     return $ModuleStructure;
 }
 
-function Update-ModuleManifest {
-    <#
-    .SYNOPSIS
-        Updates the module manifest with discovered components and functions
-    #>
-    [CmdletBinding()]
-    param (
-        [string]$ManifestPath,
-        [array]$NestedModules,
-        [array]$ExportedFunctions
-    );
-    
-    Write-Host "  🔄 Updating module manifest at $ManifestPath..." -ForegroundColor White;
-    
-    if (-not (Test-Path $ManifestPath)) {
-        Write-Warning "Manifest not found: $ManifestPath";
-        return;
-    }
-    
-    # Lese aktuelles Manifest
-    $ManifestContent = Read-IcingaSourceFile -Path $ManifestPath;
-    
-    # Update NestedModules
-    Write-Host "  Updating NestedModules ($($NestedModules.Count) modules)" -ForegroundColor White;
-    
-    $NestedModulesString = "@(`r`n"
-    $NestedModules | Sort-Object | ForEach-Object {
-        $NestedModulesString += "        '.\lib\$_',`r`n";
-    }
-    $NestedModulesString = $NestedModulesString.TrimEnd(",`r`n") + "`r`n    )";
-    
-    # Replace the entire content of the nexted modules array
-    if ($ManifestContent -match 'NestedModules\s*=\s*@\(') {
-        $ManifestContent = $ManifestContent -replace 'NestedModules\s*=\s*@\([^)]*\)', "NestedModules = $NestedModulesString";
-    } else {
-        Write-Warning '  Could not find NestedModules in manifest';
-    }
-    
-    # Update FunctionsToExport
-    Write-Host "  Updating FunctionsToExport ($($ExportedFunctions.Count) functions)" -ForegroundColor White;
-    
-    $FunctionsExportString = "@(`r`n";
-    $ExportedFunctions | Sort-Object | ForEach-Object {
-        $FunctionsExportString += "        '$_',`r`n";
-    }
-    $FunctionsExportString = $FunctionsExportString.TrimEnd(",`r`n") + "`r`n    )";
-    
-    # Replace the entire content of the FunctionsToExport array
-    if ($ManifestContent -match 'FunctionsToExport\s*=\s*@\(') {
-        $ManifestContent = $ManifestContent -replace "FunctionsToExport\s*=\s*@\([^)]*\)", "FunctionsToExport = $FunctionsExportString";
-    } else {
-        Write-Warning '  Could not find FunctionsToExport in manifest';
-    }
-       
-    # Write updated manifest back to file
-    Write-IcingaSourceFile -Path $ManifestPath -Value $ManifestContent.Trim();
-    
-    Write-Host '  ✓ Manifest updated' -ForegroundColor Green;
-}
-
 Write-Host @"
 
 ╔═════════════════════════════════════════════════════════════════════╗
 ║                                                                     ║
-║                 Icinga for Windows - Module Builder                 ║
+║                Icinga for Windows - Module Compiler                 ║
 ║                                                                     ║
 ╚═════════════════════════════════════════════════════════════════════╝
 
@@ -188,9 +132,9 @@ Write-Host @"
 $BuildStartTime = Get-Date
 
 # First we need to analyze the module structure and gather all components
-Write-Host "[1/5] Analyzing module structure..." -ForegroundColor Yellow;
+Write-Host "[1/4] Analyzing module structure..." -ForegroundColor Yellow;
 
-[hashtable]$Components = Get-IcingaForWindowsModuleStructure -ModuleBasePath $ModuleBasePath;
+[hashtable]$Components = Get-IcingaModuleStructure -ModuleBasePath $ModuleBasePath;
 
 if ($Components.Public.Count -eq 0) {
     throw "No components found in $SourcePath"
@@ -199,7 +143,7 @@ if ($Components.Public.Count -eq 0) {
 Write-Host "  ✓ Found $($Components.Public.Count) component(s)" -ForegroundColor Green;
 
 foreach ($component in ($Components.Public.Keys | Sort-Object)) {
-    $ComponentName        = $component.Replace('IcingaForWindows.', '').Replace('.psm1', '');
+    $ComponentName        = $component.Replace('IcingaForWindows.', '').Replace('.ps1', '');
     [array]$SubComponents = $ComponentName.Split('.');
 
     if ($SubComponents.Count -eq 1) {
@@ -210,12 +154,13 @@ foreach ($component in ($Components.Public.Keys | Sort-Object)) {
 }
 
 # Make sure we always start with a clean output directory
-Write-Host "`n[2/5] Preparing output directory..." -ForegroundColor Yellow;
+Write-Host "`n[2/4] Preparing output directory..." -ForegroundColor Yellow;
 
 [string]$OutputPath = Join-Path -Path $ModuleBasePath -ChildPath 'lib';
 
 if (Test-Path $OutputPath) {
     Write-Host "  Cleaning existing output directory" -ForegroundColor Yellow
+    Remove-Item -Path (Join-Path -Path $OutputPath -ChildPath '*.ps1') -Force -ErrorAction SilentlyContinue;
     Remove-Item -Path (Join-Path -Path $OutputPath -ChildPath '*.psm1') -Force -ErrorAction SilentlyContinue;
 } else {
     New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null;
@@ -224,12 +169,12 @@ if (Test-Path $OutputPath) {
 Write-Host "  ✓ Output directory ready: $OutputPath" -ForegroundColor Green;
 
 # Now lets read all our files for each component and build the module files
-Write-Host "`n[3/5] Building components..." -ForegroundColor Yellow;
+Write-Host "`n[3/4] Building components..." -ForegroundColor Yellow;
 
 [array]$PublicFunctionList = @();
 
 foreach ($component in ($Components.Public.Keys | Sort-Object)) {
-    $ComponentName        = $component.Replace('IcingaForWindows.', '').Replace('.psm1', '');
+    $ComponentName        = $component.Replace('IcingaForWindows.', '').Replace('.ps1', '');
     [array]$PublicFiles   = $Components['Public'][$component];
     [array]$PrivateFiles  = $Components['Private'];
     [string]$ModuleOutput = Join-Path -Path $OutputPath -ChildPath $component;
@@ -294,7 +239,12 @@ foreach ($component in ($Components.Public.Keys | Sort-Object)) {
         foreach ($fnc in ($FncCache.Keys | Sort-Object)) {
             $ExportFunctions.AppendLine("    '$fnc',") | Out-Null;
         }
-        $ExportFunctions.Remove($ExportFunctions.Length - 3, 3) | Out-Null; # Remove last comma
+
+        # Remove the last comma from the final function and close the array and statement
+        if ($FncCache.Keys.Count -gt 0) {
+            $ExportFunctions = $ExportFunctions.ToString().TrimEnd(",$NewLine");
+        }
+
         $ExportFunctions.AppendLine() | Out-Null;
         $ExportFunctions.AppendLine(');') | Out-Null;
 
@@ -309,20 +259,12 @@ foreach ($component in ($Components.Public.Keys | Sort-Object)) {
 
 Write-Host "  ✓ All components built successfully." -ForegroundColor Green;
 
-# Finally we need to update the module manifest with our new components and functions
-Write-Host "`n[4/5] Updating module manifest..." -ForegroundColor Yellow;
-
-Update-ModuleManifest `
-    -ManifestPath (Join-Path -Path $ModuleBasePath -ChildPath 'IcingaForWindows.psd1') `
-    -NestedModules ($Components.Public.Keys) `
-    -ExportedFunctions @($PublicFunctionList);
-
 # Final step: Run tests unless skipped
 if (-not $SkipTests) {
-    Write-Host "`n[5/5] Running tests..." -ForegroundColor Yellow;
+    Write-Host "`n[4/4] Running tests..." -ForegroundColor Yellow;
     
-    $TestPath = Join-Path -Path $ModuleBasePath -ChildPath 'tests';
-    
+    $TestPath = Join-Path -Path $ModuleBasePath -ChildPath 'Tests';
+
     if (Test-Path $TestPath) {
         # Prüfe ob Pester installiert ist
         if (-not (Get-Module -ListAvailable -Name Pester)) {
@@ -347,7 +289,13 @@ if (-not $SkipTests) {
         Write-Warning "  Test directory not found: $TestPath";
     }
 } else {
-    Write-Host "`n[5/5] Tests skipped" -ForegroundColor Gray;
+    Write-Host "`n[4/4] Tests skipped" -ForegroundColor Gray;
+}
+
+# Optional: generate API documentation from comment-based help blocks
+if ($GenerateDocs) {
+    Write-Host "`n[+] Generating API documentation..." -ForegroundColor Yellow;
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Build-ModuleDocs.ps1') -ModuleBasePath $ModuleBasePath -Strict $false | Out-Null;
 }
 
 # Build process is complete
