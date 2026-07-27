@@ -178,6 +178,8 @@ function New-ModuleBaseEnvironment()
             'AccessControl'      = $null;
             'IsBackgroundDaemon' = $false;
             'ModulesImported'    = $false;
+            'IsAutomationRun'    = $false;
+            'NoColorizedOutput'  = $false;
         };
     };
 }
