@@ -339,21 +339,13 @@ All custom declarations must be added above this comment block.
 #>
 New-ModuleBaseEnvironment;
 
-$ModuleRoot = Get-ModuleRootDirectory;
-$LibDir     = Join-Path -Path $ModuleRoot -ChildPath 'lib';
+[string]$KernelPath = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Kernel.ps1');
 
-if (-not (Test-Path -Path $LibDir)) {
-    throw "Icinga for Windows: 'lib' directory not found at '$LibDir'. Run Build-ModuleProject first.";
+if (Test-Path -Path $KernelPath) {
+    . $KernelPath;
+} else {
+    Write-Warning "Icinga for Windows kernel file not found at '$KernelPath'. Run Build-ModuleProject first.";
 }
 
-[array]$LibFiles = Get-ChildItem -Path $LibDir -Recurse -Filter '*.ps1' | Sort-Object FullName;
-
-foreach ($libFile in $LibFiles) {
-    . $libFile.FullName;
-}
-
-# Export the Icinga for Windows function
-Export-ModuleMember -Alias @( 'ifw' );
-Export-ModuleMember -Function @(
-    'Use-IcingaForWindows'
-);
+# Export alias and all public functions
+Export-ModuleMember -Alias @( 'ifw' ) -Function @( 'Use-IcingaForWindows' );

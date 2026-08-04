@@ -88,7 +88,7 @@ function Get-IcingaModuleStructure()
     }
 
     [hashtable]$ModuleStructure = @{ 
-        'Public'  = @{ };
+        'Public'  = @();
         'Private' = @();
     };
     [int]$FileCount             = 0;
@@ -103,15 +103,9 @@ function Get-IcingaModuleStructure()
         $relativePath                                = $UniversalPath.Substring($PowerShellSourcePath.Length).TrimStart('\');
         [System.Collections.ArrayList]$CodeStructure = $relativePath.Split('\');
 
-        [string]$LibName = [string]::Format('IcingaForWindows.{0}.ps1', $relativePath.Replace($sourceFile.Name, '').Replace('Public', '').Replace('Private', '').Replace('\', '.').Replace('-', '').Replace(' ', '').TrimEnd('.'));
-
-        if (-not $ModuleStructure['Public'].ContainsKey($LibName)) {
-            $ModuleStructure['Public'][$LibName] = @();
-        }
-
         if ($CodeStructure -contains 'Public') {
-            $ModuleStructure['Public'][$LibName] += $sourceFile.FullName;
-        } elseif ($CodeStructure -Contains 'Private') {
+            $ModuleStructure['Public'] += $sourceFile.FullName;
+        } elseif ($CodeStructure -contains 'Private') {
             $ModuleStructure['Private'] += $sourceFile.FullName;
         }
     }
@@ -140,18 +134,7 @@ if ($Components.Public.Count -eq 0) {
     throw "No components found in $SourcePath"
 }
 
-Write-Host "  ✓ Found $($Components.Public.Count) component(s)" -ForegroundColor Green;
-
-foreach ($component in ($Components.Public.Keys | Sort-Object)) {
-    $ComponentName        = $component.Replace('IcingaForWindows.', '').Replace('.ps1', '');
-    [array]$SubComponents = $ComponentName.Split('.');
-
-    if ($SubComponents.Count -eq 1) {
-        Write-Host "    📦 $ComponentName" -ForegroundColor White;
-    } else {
-        Write-Host "    📦 $($ComponentName.Replace('.',' → '))" -ForegroundColor Gray;
-    }
-}
+Write-Host "  ✓ Found $($Components.Public.Count) public function file(s) and $($Components.Private.Count) private function file(s)" -ForegroundColor Green;
 
 # Make sure we always start with a clean output directory
 Write-Host "`n[2/4] Preparing output directory..." -ForegroundColor Yellow;
@@ -160,111 +143,96 @@ Write-Host "`n[2/4] Preparing output directory..." -ForegroundColor Yellow;
 
 if (Test-Path $OutputPath) {
     Write-Host "  Cleaning existing output directory" -ForegroundColor Yellow
-    Remove-Item -Path (Join-Path -Path $OutputPath -ChildPath '*.ps1') -Force -ErrorAction SilentlyContinue;
     Remove-Item -Path (Join-Path -Path $OutputPath -ChildPath '*.psm1') -Force -ErrorAction SilentlyContinue;
+    Remove-Item -Path (Join-Path -Path $OutputPath -ChildPath '*.ps1') -Force -ErrorAction SilentlyContinue;
 } else {
     New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null;
 }
 
 Write-Host "  ✓ Output directory ready: $OutputPath" -ForegroundColor Green;
 
-# Now lets read all our files for each component and build the module files
-Write-Host "`n[3/4] Building components..." -ForegroundColor Yellow;
+# Build single consolidated module file
+Write-Host "`n[3/4] Building single consolidated module..." -ForegroundColor Yellow;
 
-[array]$PublicFunctionList = @();
+[string]$SingleModuleName = 'IcingaForWindows.Kernel.ps1';
+[string]$ModuleOutput     = Join-Path -Path $OutputPath -ChildPath $SingleModuleName;
+[hashtable]$FncCache      = @{ };
 
-foreach ($component in ($Components.Public.Keys | Sort-Object)) {
-    $ComponentName        = $component.Replace('IcingaForWindows.', '').Replace('.ps1', '');
-    [array]$PublicFiles   = $Components['Public'][$component];
-    [array]$PrivateFiles  = $Components['Private'];
-    [string]$ModuleOutput = Join-Path -Path $OutputPath -ChildPath $component;
-    [int]$Index           = 0;
-    [hashtable]$FncCache  = @{ };
+[System.Text.StringBuilder]$ModuleContent = New-Object System.Text.StringBuilder;
 
-    Write-Host "  🔨 Building $($ComponentName.Replace('.',' → '))..." -ForegroundColor White;
+# Add module header
+$ModuleContent.AppendLine('<#') | Out-Null;
+$ModuleContent.AppendLine('.SYNOPSIS') | Out-Null;
+$ModuleContent.AppendLine('    Icinga for Windows - Kernel Module') | Out-Null;
+$ModuleContent.AppendLine('.DESCRIPTION') | Out-Null;
+$ModuleContent.AppendLine('    Single compiled kernel file containing all Icinga for Windows private and public functions') | Out-Null;
+$ModuleContent.AppendLine("    Auto-generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')") | Out-Null;
+$ModuleContent.AppendLine('.NOTES') | Out-Null;
+$ModuleContent.AppendLine("    Source: $ModuleBasePath\src") | Out-Null;
+$ModuleContent.AppendLine('#>') | Out-Null;
+$ModuleContent.AppendLine() | Out-Null;
 
-    [System.Text.StringBuilder]$ModuleContent = New-Object System.Text.StringBuilder;
-
-    # Add module header
-    $ModuleContent.AppendLine('<#') | Out-Null;
-    $ModuleContent.AppendLine('.SYNOPSIS') | Out-Null;
-    $ModuleContent.AppendLine("    Icinga for Windows - $ComponentName component") | Out-Null;
-    $ModuleContent.AppendLine('.DESCRIPTION') | Out-Null;
-    $ModuleContent.AppendLine("    Compiled module containing all $ComponentName functions") | Out-Null;
-    $ModuleContent.AppendLine("    Auto-generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')") | Out-Null;
-    $ModuleContent.AppendLine('.NOTES') | Out-Null;
-    $ModuleContent.AppendLine("    Source: $ModuleBasePath\src\$ComponentName") | Out-Null;
-    $ModuleContent.AppendLine('#>') | Out-Null;
+# Append all private functions once
+Write-Host "  🔨 Appending $($Components['Private'].Count) private function file(s)..." -ForegroundColor White;
+foreach ($privateFile in $Components['Private']) {
+    $FileContent = Read-IcingaSourceFile -Path $privateFile;
+    $ModuleContent.AppendLine($FileContent) | Out-Null;
     $ModuleContent.AppendLine() | Out-Null;
-
-    # Append private functions first
-    foreach ($privateFile in $PrivateFiles) {
-        $FileContent = Read-IcingaSourceFile -Path $privateFile;
-        $ModuleContent.AppendLine($FileContent) | Out-Null;
-        $ModuleContent.AppendLine() | Out-Null;
-    }
-
-    # Append public functions next
-    foreach ($publicFile in $PublicFiles) {
-        $FileContent = Read-IcingaSourceFile -Path $publicFile;
-
-        $FunctionMatches = [regex]::Matches($FileContent, '(?m)^\s*function\s+([a-zA-Z0-9_-]+)');
-
-        foreach ($match in $FunctionMatches) {
-            $fnName = $match.Groups[1].Value;
-            if (-not $FncCache.ContainsKey($fnName)) {
-                # Ensure our "prompt" function is never added anywhere for export or public listing
-                if ($fnName -eq 'prompt') {
-                    continue;
-                }
-                $FncCache.Add($fnName, 0);
-            }
-        }
-
-        $ModuleContent.AppendLine($FileContent) | Out-Null;
-        $ModuleContent.AppendLine() | Out-Null;
-    }
-
-    if ($FncCache.Keys.Count -eq 0) {
-        Write-Host "    ⚠️  No public functions found in component $($ComponentName.Replace('.',' → ')), skipping export statement." -ForegroundColor Yellow;
-    } else {
-        Write-Host "    🚀 Found $($FncCache.Keys.Count) public function(s) in component $($ComponentName.Replace('.',' → '))." -ForegroundColor Green;
-
-        $ModuleContent.AppendLine() | Out-Null;
-
-        [System.Text.StringBuilder]$ExportFunctions = New-Object System.Text.StringBuilder;
-
-        $ExportFunctions.AppendLine('# Export all public functions') | Out-Null;
-        $ExportFunctions.AppendLine("Export-ModuleMember -Alias @( '*' ) -Function @(") | Out-Null;
-        foreach ($fnc in ($FncCache.Keys | Sort-Object)) {
-            $ExportFunctions.AppendLine("    '$fnc',") | Out-Null;
-        }
-
-        # Remove the last comma from the final function and close the array and statement
-        if ($FncCache.Keys.Count -gt 0) {
-            $ExportFunctions = $ExportFunctions.ToString().TrimEnd(",$NewLine");
-        }
-
-        $ExportFunctions.AppendLine() | Out-Null;
-        $ExportFunctions.AppendLine(');') | Out-Null;
-
-        $ModuleContent.AppendLine($ExportFunctions.ToString()) | Out-Null;
-    }
-
-    $PublicFunctionList += $FncCache.Keys;
-
-    # Finally write the module file
-    Set-Content -Path $ModuleOutput -Value $ModuleContent.ToString() -Encoding UTF8 -Force;
 }
 
-Write-Host "  ✓ All components built successfully." -ForegroundColor Green;
+# Append all public functions once
+Write-Host "  🔨 Appending $($Components['Public'].Count) public function file(s)..." -ForegroundColor White;
+foreach ($publicFile in $Components['Public']) {
+    $FileContent = Read-IcingaSourceFile -Path $publicFile;
+
+    $FunctionMatches = [regex]::Matches($FileContent, '(?m)^\s*function\s+([a-zA-Z0-9_-]+)');
+
+    foreach ($match in $FunctionMatches) {
+        $fnName = $match.Groups[1].Value;
+        if (-not $FncCache.ContainsKey($fnName)) {
+            if ($fnName -eq 'prompt') {
+                continue;
+            }
+            $FncCache.Add($fnName, 0);
+        }
+    }
+
+    $ModuleContent.AppendLine($FileContent) | Out-Null;
+    $ModuleContent.AppendLine() | Out-Null;
+}
+
+[array]$PublicFunctionList = @($FncCache.Keys | Sort-Object);
+
+Write-Host "  🚀 Found $($PublicFunctionList.Count) public function(s) to export." -ForegroundColor Green;
+
+$ModuleContent.AppendLine() | Out-Null;
+$ModuleContent.AppendLine('# Export all public functions') | Out-Null;
+$ModuleContent.AppendLine("Export-ModuleMember -Alias @( '*' ) -Function @(") | Out-Null;
+
+for ($i = 0; $i -lt $PublicFunctionList.Count; $i++) {
+    $fn = $PublicFunctionList[$i];
+    if ($i -eq $PublicFunctionList.Count - 1) {
+        $ModuleContent.AppendLine("    '$fn'") | Out-Null;
+    } else {
+        $ModuleContent.AppendLine("    '$fn',") | Out-Null;
+    }
+}
+
+$ModuleContent.AppendLine(');') | Out-Null;
+
+Set-Content -Path $ModuleOutput -Value $ModuleContent.ToString() -Encoding UTF8 -Force;
+
+Write-Host "  ✓ Kernel file built successfully: $SingleModuleName" -ForegroundColor Green;
+
+Write-Host "`n[4/4] Module manifest..." -ForegroundColor Yellow;
+Write-Host "  ✓ Using static manifest (IcingaForWindows.psd1)" -ForegroundColor Green;
 
 # Final step: Run tests unless skipped
 if (-not $SkipTests) {
-    Write-Host "`n[4/4] Running tests..." -ForegroundColor Yellow;
+    Write-Host "`n[5/5] Running tests..." -ForegroundColor Yellow;
     
     $TestPath = Join-Path -Path $ModuleBasePath -ChildPath 'Tests';
-
+    
     if (Test-Path $TestPath) {
         # Prüfe ob Pester installiert ist
         if (-not (Get-Module -ListAvailable -Name Pester)) {
@@ -289,7 +257,7 @@ if (-not $SkipTests) {
         Write-Warning "  Test directory not found: $TestPath";
     }
 } else {
-    Write-Host "`n[4/4] Tests skipped" -ForegroundColor Gray;
+    Write-Host "`n[5/5] Tests skipped" -ForegroundColor Gray;
 }
 
 # Optional: generate API documentation from comment-based help blocks

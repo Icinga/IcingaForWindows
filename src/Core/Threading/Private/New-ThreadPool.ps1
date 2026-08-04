@@ -53,7 +53,7 @@ function New-ThreadPool()
         $SessionConfiguration = [System.Management.Automation.Runspaces.InitialSessionState]::CreateFromSessionConfigurationFile($SessionFile);
     }
     #>
-    $SessionConfiguration = [System.Management.Automation.RunSpaces.InitialSessionState]::CreateDefault();
+    $SessionConfiguration = [System.Management.Automation.RunSpaces.InitialSessionState]::CreateDefault2();
 
     $RunSpaces = [RunSpaceFactory]::CreateRunSpacePool(
         $MinInstances,
