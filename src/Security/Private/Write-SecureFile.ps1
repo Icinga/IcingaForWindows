@@ -76,9 +76,13 @@ function Write-SecureFile()
                 [System.IO.FileShare]::Read
             );
 
-            $ContentBytes = [System.Text.Encoding]::UTF8.GetBytes($Value);
-            $FileStream.Write($ContentBytes, 0, $ContentBytes.Length);
-            $FileStream.Dispose();
+            try {
+                $ContentBytes = [System.Text.Encoding]::UTF8.GetBytes($Value);
+                $FileStream.Write($ContentBytes, 0, $ContentBytes.Length);
+            } finally {
+                $FileStream.Dispose();
+            }
+
             $FileUpdated = $TRUE;
             break;
         } catch {

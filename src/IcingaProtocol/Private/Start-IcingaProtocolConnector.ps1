@@ -36,6 +36,7 @@ function Start-IcingaProtocolConnector()
         foreach ($key in $Global:IcingaForWindows.Public.IcingaProtocol.Config.Endpoints.PSObject.Properties) {
             $EndpointName   = $key.Name
             $EndpointConfig = $key.Value
+            $TcpClient = $null;
             try {
                 Write-LoggingEntry -Message 'Attempting to connect to Icinga endpoint' -Level 'Info' -Data @{ 'EndpointName' = $EndpointName; 'EndpointAddress' = "$($EndpointConfig.Address):$($EndpointConfig.Port)"; };
 
@@ -64,6 +65,10 @@ function Start-IcingaProtocolConnector()
                 # Start the socket reader in a new thread
                 New-Thread -Command 'Start-IcingaProtocolSocketReader' -Parameters @{ '-Client' =  $TcpClient; 'IsClient' = $true; 'Endpoint' = $EndpointName } -Start;
             } catch {
+                if ($null -ne $TcpClient) {
+                    $TcpClient.Dispose();
+                    $TcpClient = $null;
+                }
                 Write-LoggingEntry -Message 'Failed to connect to Icinga endpoint' -Level 'Warning' -Data @{ 'ExceptionMessage' = $_.Exception.Message; 'Endpoints' = $Global:IcingaForWindows.Public.IcingaProtocol.Config.Endpoints; };
             }
         }

@@ -58,21 +58,24 @@ function Read-SecureFile()
                 [System.IO.FileShare]::Read
             );
 
-            $ReadArray     = New-Object Byte[] $FileStream.Length;
-            [bool]$UTF8BOM = $FALSE;
+            try {
+                $ReadArray     = New-Object Byte[] $FileStream.Length;
+                [bool]$UTF8BOM = $FALSE;
 
-            if ((Get-FileEncoding -Path $File) -eq 'UTF8-BOM') {
-                $UTF8BOM = $TRUE;
+                if ((Get-FileEncoding -Path $File) -eq 'UTF8-BOM') {
+                    $UTF8BOM = $TRUE;
+                }
+
+                $UTF8Encoding  = New-Object System.Text.UTF8Encoding $UTF8BOM;
+                $FileContent   = '';
+
+                while ($FileStream.Read($ReadArray, 0 , $ReadArray.Length)) {
+                    $FileContent = [System.String]::Concat($FileContent, $UTF8Encoding.GetString($ReadArray));
+                }
+            } finally {
+                $FileStream.Dispose();
             }
 
-            $UTF8Encoding  = New-Object System.Text.UTF8Encoding $UTF8BOM;
-            $FileContent   = '';
-
-            while ($FileStream.Read($ReadArray, 0 , $ReadArray.Length)) {
-                $FileContent = [System.String]::Concat($FileContent, $UTF8Encoding.GetString($ReadArray));
-            }
-
-            $FileStream.Dispose();
             $ConfigRead = $TRUE;
             break;
         } catch {

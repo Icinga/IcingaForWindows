@@ -83,6 +83,7 @@ function Start-RestApiWorker()
                 # If we read the body and the user exceeded content length, we already closed the connection with
                 # 413 Payload Too Large. We don't need to continue processing.
                 if (-not (Test-TCPConnection)) {
+                    Close-TCPConnection;
                     continue;
                 }
 
