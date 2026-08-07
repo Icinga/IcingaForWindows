@@ -47,27 +47,28 @@ function Get-TlsCertificate()
         $Store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $TlsCertConfig.CertStore, $TlsCertConfig.CertStoreLocation;
         $Store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadOnly);
 
-        $Certs = $Store.Certificates;
+        try {
+            $Certs = $Store.Certificates;
 
-        if (-not [string]::IsNullOrEmpty($TlsCertConfig.CertThumbprint)) {
-            $FilteredCerts = $Certs | Where-Object { $_.Thumbprint -eq $TlsCertConfig.CertThumbprint };
-        } else {
-            $FilteredCerts = $Certs | Where-Object {
-                ($_.Subject -like "*CN=$($TlsCertConfig.CertCN)*") -and
-                ($_.Issuer -like "*$($TlsCertConfig.CertIssuer)*")
-            };
+            if (-not [string]::IsNullOrEmpty($TlsCertConfig.CertThumbprint)) {
+                $FilteredCerts = $Certs | Where-Object { $_.Thumbprint -eq $TlsCertConfig.CertThumbprint };
+            } else {
+                $FilteredCerts = $Certs | Where-Object {
+                    ($_.Subject -like "*CN=$($TlsCertConfig.CertCN)*") -and
+                    ($_.Issuer -like "*$($TlsCertConfig.CertIssuer)*")
+                };
+            }
+
+            if ($FilteredCerts.Count -eq 0) {
+                return (Write-FunctionReturnValue -ReturnValue 'TlsCertNotFoundInStore' -Data @{ 'TlsCertConfig' = $TlsCertConfig } -OverrideReturn $null);
+            }
+
+            # Return the first matching certificate.
+            $Cert = $FilteredCerts[0];
+            return (Write-FunctionReturnValue -ReturnValue 'TlsCertLoadedFromStore' -Data @{ 'Certificate' = $Cert } -OverrideReturn $Cert);
+        } finally {
+            $Store.Close();
         }
-
-        if ($FilteredCerts.Count -eq 0) {
-            return (Write-FunctionReturnValue -ReturnValue 'TlsCertNotFoundInStore' -Data @{ 'TlsCertConfig' = $TlsCertConfig } -OverrideReturn $null);
-        }
-
-        # Return the first matching certificate.
-        $Cert = $FilteredCerts[0];
-
-        $Store.Close();
-
-        return (Write-FunctionReturnValue -ReturnValue 'TlsCertLoadedFromStore' -Data @{ 'Certificate' = $Cert } -OverrideReturn $Cert);
     } catch {
         return (Write-FunctionReturnValue -ReturnValue 'TlsCertLoadFromStoreFailed' -Data @{ 'TlsCertConfig' = $TlsCertConfig; 'Exception' = $_.Exception } -OverrideReturn $null);
     }

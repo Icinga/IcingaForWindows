@@ -32,9 +32,12 @@ function Get-FileEncoding()
     }
 
     $FileStream = [System.IO.File]::OpenRead($Path);
-    $Bytes      = New-Object Byte[] 4;
-    $FileStream.Read($Bytes, 0, 4) | Out-Null;
-    $FileStream.Close();
+    try {
+        $Bytes = New-Object Byte[] 4;
+        $FileStream.Read($Bytes, 0, 4) | Out-Null;
+    } finally {
+        $FileStream.Close();
+    }
 
     if ($Bytes[0] -eq 0xef -and $Bytes[1] -eq 0xbb -and $Bytes[2] -eq 0xbf) {
         return 'UTF8-BOM';

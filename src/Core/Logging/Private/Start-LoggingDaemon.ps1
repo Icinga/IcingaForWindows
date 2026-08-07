@@ -46,6 +46,7 @@ function Start-LoggingDaemon()
         # Check if we should log this message based on the current logging level
         # In case we have a huge backlog of log messages, we want to skip unnecessary ones
         if (-not (Test-LoggingWriteLog -Level $LogObject.Level)) {
+            $LogObject = $null;
             continue;
         }
 
