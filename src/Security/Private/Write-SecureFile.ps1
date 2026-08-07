@@ -67,7 +67,7 @@ function Write-SecureFile()
     [bool]$FileUpdated = $FALSE;
 
     # Lets wait 5 seconds before cancelling writing
-    while ($WaitTicks -lt (($WaitTicks + 1) * 50)) {
+    while ($WaitTicks -lt 50) {
         try {
             [System.IO.FileStream]$FileStream = [System.IO.File]::Open(
                 $File,
