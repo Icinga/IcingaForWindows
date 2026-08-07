@@ -49,7 +49,7 @@ function Read-SecureFile()
     [bool]$ConfigRead = $FALSE;
 
     # Lets wait 5 seconds before cancelling reading
-    while ($WaitTicks -lt (($WaitTicks + 1) * 50)) {
+    while ($WaitTicks -lt 50) {
         try {
             [System.IO.FileStream]$FileStream = [System.IO.File]::Open(
                 $File,
