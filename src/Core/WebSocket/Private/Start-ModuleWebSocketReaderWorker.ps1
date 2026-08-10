@@ -52,7 +52,11 @@ function Start-ModuleWebSocketReaderWorker()
      # If the WebSocket is not open, we don't need to proceed and close the thread
     while (Test-ThreadRunning -CheckWebSocket) {
         try {
-            [string]$WebSocketMessage = $GlobalVariable.Public.WebSocket.$WebSocketName.ReaderWorker.Take();
+            [string]$WebSocketMessage = $null;
+            if (-not $GlobalVariable.Public.WebSocket.$WebSocketName.ReaderWorker.TryTake([ref]$WebSocketMessage, 10000)) {
+                Set-ThreadProcessing;
+                continue;
+            }
             Set-ThreadProcessing;
 
             # Just continue if the WebSocket is not connected, as the

@@ -36,7 +36,11 @@ function Start-LoggingDaemon()
                 'TimeStamp' = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss:ffff');
             }
         #>
-        $LogObject          =  (Get-GlobalRuntimeVariable).Public.Logging.Queue.Take();
+        $LogObject = $null;
+        if (-not (Get-GlobalRuntimeVariable).Public.Logging.Queue.TryTake([ref]$LogObject, 10000)) {
+            Set-ThreadProcessing;
+            continue;
+        }
         [string]$DataDump   = '';
         [string]$LogMessage = '';
         [string]$LogColor   = (Get-GlobalRuntimeVariable).Public.Config.Colors.$($LogObject.Level);

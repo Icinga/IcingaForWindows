@@ -77,7 +77,11 @@ function Start-IcingaProtocolSocketWriter()
     # Start reading from the socket as long as the connection is valid
     while (Test-ThreadRunning -CheckTcpConnection -NoSleep) {
         try {
-            $TcpMessage = $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint.Take();
+            $TcpMessage = $null;
+            if (-not $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint.TryTake([ref]$TcpMessage, 10000)) {
+                Set-ThreadProcessing;
+                continue;
+            }
 
             Set-ThreadProcessing;
 

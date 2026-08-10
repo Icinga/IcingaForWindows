@@ -75,6 +75,9 @@ function Test-ThreadRunning()
 
             # Update the last seen timestamp to now
             $GlobalVariable.Public.Threading.Threads.$ThreadId.LastSeen = (Get-Date);
+            if ($null -ne $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch) {
+                $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch.Restart();
+            }
             $RetValue = $true;
             break;
         };
@@ -83,12 +86,18 @@ function Test-ThreadRunning()
             # This is basically a misconfiguration scenario, as ALIVE threads are configured with WaitForJobs,
             # but the state is never updated to Processing with Set-ThreadProcessing after taking a job
             $GlobalVariable.Public.Threading.Threads.$ThreadId.LastSeen = (Get-Date);
+            if ($null -ne $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch) {
+                $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch.Restart();
+            }
             $RetValue = $true;
             break;
         };
         'PROCESSING' {
             # If we are in PROCESSING mode, we simply update the last seen timestamp to now
             $GlobalVariable.Public.Threading.Threads.$ThreadId.LastSeen = (Get-Date);
+            if ($null -ne $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch) {
+                $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch.Restart();
+            }
             # We are actually part of a processing thread, which means we always have to have for work to do
             # To ensure we don't restart threads every time, we have to move the thread to a different state now
             # to ensure the housekeeper does not mark us as frozen, because we are actually waiting for work
@@ -101,6 +110,9 @@ function Test-ThreadRunning()
             # in keep alive scenarios without a worker queue or similar. We should then change the state to ALIVE
             # which should handle the same procedure as PROCESSING threads, but are meant to be kept alive
             $GlobalVariable.Public.Threading.Threads.$ThreadId.LastSeen = (Get-Date);
+            if ($null -ne $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch) {
+                $GlobalVariable.Public.Threading.Threads.$ThreadId.Stopwatch.Restart();
+            }
             $GlobalVariable.Public.Threading.Threads.$ThreadId.State    = 'ALIVE';
 
             Write-FunctionReturnValue `

@@ -48,7 +48,11 @@ function Start-RestApiWorker()
     # Start processing messages from the worker queue
     while (Test-ThreadRunning) {
         try {
-            [System.Net.Sockets.TcpClient]$TcpClient = $GlobalVariable.Public.RestApi.WorkerQueue[$WorkerId].Take();
+            [System.Net.Sockets.TcpClient]$TcpClient = $null;
+            if (-not $GlobalVariable.Public.RestApi.WorkerQueue[$WorkerId].TryTake([ref]$TcpClient, 10000)) {
+                Set-ThreadProcessing;
+                continue;
+            }
             Set-ThreadProcessing;
 
             if ((Update-TCPConnection -Client $TcpClient) -eq $GlobalVariable.Public.ReturnCodes.TlsHandshakeSuccessful.Code) {
