@@ -43,7 +43,11 @@ function Start-IcingaProtocolWorker()
     while (Test-ThreadRunning -NoSleep) {
         try {
             # Wait for a new RPC message to process
-            $RPCObject    = $Global:IcingaForWindows.Public.IcingaProtocol.WorkerQueue[$WorkerId].Take();
+            $RPCObject = $null;
+            if (-not $Global:IcingaForWindows.Public.IcingaProtocol.WorkerQueue[$WorkerId].TryTake([ref]$RPCObject, 10000)) {
+                Set-ThreadProcessing;
+                continue;
+            }
             $CheckStarted = (Get-IcingaUnixTime -Milliseconds);
 
             if ($null -eq $RPCObject -or $null -eq $RPCObject.Message) {

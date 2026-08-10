@@ -67,13 +67,25 @@ function Start-ThreadHouseKeeper()
                         $GlobalVariable.Public.Threading.Threads.PSObject.Properties.Remove($threadId) | Out-Null;
                         break;
                     };
+                    'ZOMBIE' {
+                        # If a thread has been in ZOMBIE state for more than 30 minutes (1800 seconds),
+                        # remove it from the global thread list without stopping or disposing the shell
+                        # to avoid hanging the housekeeper thread.
+                        $ZombieTimestamp = $GlobalVariable.Public.Threading.Threads.$threadId.ZombieTimestamp;
+                        if ($null -ne $ZombieTimestamp -and ((Get-Date) - $ZombieTimestamp).TotalSeconds -gt 1800) {
+                            Write-LoggingEntry -Message 'Housekeeper: Cleaning up abandoned ZOMBIE thread after 30 minute timeout' -Level 'Info' -Data @{ 'ThreadId' = $threadId };
+                            $GlobalVariable.Public.Threading.Threads.PSObject.Properties.Remove($threadId) | Out-Null;
+                        }
+                        break;
+                    };
                     'FROZEN' {
                         # If a thread is frozen, we cannot stop it because PowerShell does not support that
                         # Instead we log a warning and leave it be for now in a ZOMBIE state, but try to restart
                         # it in case the thread logic supports that
                         Write-LoggingEntry -Message 'Housekeeper: Detected frozen thread, attempting to restart' -Level 'Warning' -Data @{ 'ThreadId' = $threadId };
                         # Set the thread state to ZOMBIE to indicate it is no longer active
-                        $GlobalVariable.Public.Threading.Threads.$threadId.State = 'ZOMBIE';
+                        $GlobalVariable.Public.Threading.Threads.$threadId.State           = 'ZOMBIE';
+                        $GlobalVariable.Public.Threading.Threads.$threadId.ZombieTimestamp = (Get-Date);
                         # null the existing shell and handle to ensure we do not keep references
                         # Do NOT try to stop or dispose the shell as it is frozen and will also freeze this housekeeper thread
                         $GlobalVariable.Public.Threading.Threads.$threadId.Shell  = $null;

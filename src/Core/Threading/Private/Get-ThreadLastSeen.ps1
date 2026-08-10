@@ -32,15 +32,21 @@ function Get-ThreadLastSeen()
         return $null;
     }
 
-    # Check last seen timestamp to determine if the thread is still alive
-    $LastSeen = (Get-GlobalRuntimeVariable).Public.Threading.Threads.$threadId.LastSeen;
+    $ThreadObj = (Get-GlobalRuntimeVariable).Public.Threading.Threads.$threadId;
+
+    if ($null -ne $ThreadObj.Stopwatch) {
+        return ([Math]::Round($ThreadObj.Stopwatch.Elapsed.TotalSeconds, 2));
+    }
+
+    # Fallback to LastSeen timestamp if no Stopwatch is present
+    $LastSeen = $ThreadObj.LastSeen;
 
     # If LastSeen is null, return null
     if ($null -eq $LastSeen) {
         return $null;
     }
 
-    # The the time difference in seconds
+    # Get the time difference in seconds
     $TimeDiff = (Get-Date) - $LastSeen;
 
     # Return the total seconds since last seen

@@ -129,6 +129,7 @@ function New-Thread()
     Add-Member -InputObject $ThreadObj -MemberType NoteProperty -Name 'WaitForJobs'  -Value ([bool]$WaitForJobs);
     Add-Member -InputObject $ThreadObj -MemberType NoteProperty -Name 'ParentThread' -Value $ParentThread;
     Add-Member -InputObject $ThreadObj -MemberType NoteProperty -Name 'LastSeen'     -Value (Get-Date);
+    Add-Member -InputObject $ThreadObj -MemberType NoteProperty -Name 'Stopwatch'    -Value ([System.Diagnostics.Stopwatch]::StartNew());
     Add-Member -InputObject $ThreadObj -MemberType NoteProperty -Name 'Handle'       -Value $null;
     Add-Member -InputObject $ThreadObj -MemberType NoteProperty -Name 'State'        -Value 'STOPPED';
 
