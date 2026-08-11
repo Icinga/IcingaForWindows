@@ -64,6 +64,7 @@ function Open-SSLStream()
         # The client must provide the endpoint name for Ssl authentication, to ensure the server certificate matches
         # Only required if we are acting as a client
         if ([string]::IsNullOrEmpty($Endpoint)) {
+            Close-TCPConnection;
             return (Write-FunctionReturnValue -ReturnValue 'ProtocolMissingEndpoint' -Data @{ 'Endpoint' = $Endpoint; 'IsClient' = $IsClient });
         }
 
