@@ -26,6 +26,13 @@ function Start-ThreadHouseKeeper()
             [array]$ThreadIdList = $GlobalVariable.Public.Threading.Threads.PSobject.Properties.Name;
 
             foreach ($threadId in $ThreadIdList) {
+                # Check if the thread has naturally completed its execution (e.g. function reached the end).
+                # If so, mark it as TERMINATED so the housekeeper can dispose the runspace and free the memory.
+                $ThreadHandle = $GlobalVariable.Public.Threading.Threads.$threadId.Handle;
+                if ($null -ne $ThreadHandle -and $ThreadHandle.IsCompleted) {
+                    $GlobalVariable.Public.Threading.Threads.$threadId.State = 'TERMINATED';
+                }
+
                 switch ($GlobalVariable.Public.Threading.Threads.$threadId.State) {
                     'RUNNING' {
                         # RUNNING, ALIVE and PROCESSING threads are similar in monitoring
