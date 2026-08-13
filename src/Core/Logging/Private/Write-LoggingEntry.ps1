@@ -49,15 +49,18 @@ function Write-LoggingEntry()
 
     # TODO: Fix Audit log to make it configurable for printing only access violations or try some different handling
     if ($Level -eq 'Audit') {
+        $Data = $null;
         return;
     }
 
     if ([string]::IsNullOrEmpty($Message)) {
         Write-LoggingEntry 'Failed to write log message: Message is null or empty' -Level 'Error';
+        $Data = $null;
         return;
     }
 
     if (-not (Test-LoggingWriteLog -Level $Level)) {
+        $Data = $null;
         return;
     }
 

@@ -31,16 +31,22 @@ function Get-LoggingEventLogSeverity()
     }
 
     switch ($Severity) {
-        'Info'    {
+        'Info' {
             return 'Information';
         };
-        'Success'    {
+        'Success' {
             return 'Information';
         };
-        'Debug'    {
-            return 'Verbose';
+        'Debug' {
+            return 'Information';
         };
-        'Audit'    {
+        'Warning' {
+            return 'Warning';
+        };
+        'Error' {
+            return 'Error';
+        };
+        'Audit' {
             return 'Information';
         };
         'Output' {
