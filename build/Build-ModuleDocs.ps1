@@ -41,7 +41,7 @@ exit code if any file violates these rules.
 | Strict | System.Boolean  | Fail with a non-zero exit code if any function violates the doc rules.   | True    |
 
 .OUTPUTS
-System.Int32 — Number of Markdown files written. Throws on strict violations.
+System.Int32 -- Number of Markdown files written. Throws on strict violations.
 
 .EXAMPLE
 PS> .\build\Build-ModuleDocs.ps1
@@ -108,15 +108,14 @@ function Read-IcingaHelpBlock()
     | Path | System.String | Absolute path to a Icinga `.ps1` source.|         |
 
     .OUTPUTS
-    System.Collections.Hashtable — Parsed structure with keys:
-    `File`, `FunctionName`, `Visibility` (`Public`/`Private`),
-    `Help` (nested hashtable of sections) or `$null` if missing.
+    System.Collections.Hashtable -- Parsed structure with keys:
+    Visibility, FunctionName, Synopsis, Description, Parameters, Outputs, Example, Notes.
 
     .EXAMPLE
     PS> Read-IcingaHelpBlock -Path '.\src\Core\Logging\Public\Set-IcingaLogLevel.ps1'
 
     .NOTES
-    Pure parser — does not import or execute the source file.
+    Pure parser -- does not import or execute the source file.
     #>
     [CmdletBinding()]
     param (
@@ -259,7 +258,7 @@ function Test-IcingaHelpCompleteness()
     | DeclaredParameters | System.String[]      | Parameter names found in the source file's `param( ... )` block.         | @()     |
 
     .OUTPUTS
-    System.String[] — Zero or more violation messages.
+    System.String[] -- Zero or more violation messages.
 
     .EXAMPLE
     PS> Test-IcingaHelpCompleteness -ParsedEntry $entry -DeclaredParameters @('Name', 'Count')
@@ -338,7 +337,7 @@ function Get-IcingaDeclaredParameters()
     | Path | System.String | Absolute path to a Icinga `.ps1` source.|         |
 
     .OUTPUTS
-    System.String[] — Parameter names (without `$` prefix).
+    System.String[] -- Parameter names (without `$` prefix).
 
     .EXAMPLE
     PS> Get-IcingaDeclaredParameters -Path '.\src\Core\Logging\Private\Write-LoggingEntry.ps1'
@@ -385,12 +384,11 @@ function Get-IcingaDeclaredParameters()
 # ---------------------------------------------------------------------------
 # Discovery
 # ---------------------------------------------------------------------------
-Write-Host '' -ForegroundColor White;
-Write-Host '╔═════════════════════════════════════════════════════════════════════╗' -ForegroundColor Cyan;
-Write-Host '║                                                                     ║' -ForegroundColor Cyan;
-Write-Host '║                       Icinga Documentation Builder                 ║' -ForegroundColor Cyan;
-Write-Host '║                                                                     ║' -ForegroundColor Cyan;
-Write-Host '╚═════════════════════════════════════════════════════════════════════╝' -ForegroundColor Cyan;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
+Write-Host '|                                                                     |' -ForegroundColor Cyan;
+Write-Host '|                       Icinga Documentation Builder                 |' -ForegroundColor Cyan;
+Write-Host '|                                                                     |' -ForegroundColor Cyan;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
 Write-Host '' -ForegroundColor White;
 
 $BuildStartTime = Get-Date;
@@ -403,7 +401,7 @@ if (-not $IncludePrivate) {
     $SourceFiles = $SourceFiles | Where-Object { $_.FullName -match '[\\/]Public[\\/]' };
 }
 
-Write-Host "  ✓ Found $($SourceFiles.Count) source files" -ForegroundColor Green;
+Write-Host "  * Found $($SourceFiles.Count) source files" -ForegroundColor Green;
 
 # ---------------------------------------------------------------------------
 # Parse + validate
@@ -438,9 +436,9 @@ foreach ($file in $SourceFiles) {
     [void]$Parsed.Add($entry);
 }
 
-Write-Host "  ✓ Parsed $($Parsed.Count) functions" -ForegroundColor Green;
+Write-Host "  * Parsed $($Parsed.Count) functions" -ForegroundColor Green;
 if ($Violations.Count -gt 0) {
-    Write-Host "  ⚠ $($Violations.Count) violation(s) found" -ForegroundColor Yellow;
+    Write-Host "  ! $($Violations.Count) violation(s) found" -ForegroundColor Yellow;
 }
 
 # ---------------------------------------------------------------------------
@@ -477,7 +475,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
     [void]$md.AppendLine("# Icinga.$componentName");
     [void]$md.AppendLine();
     $srcDir = $componentName.Replace('.', '/');
-    [void]$md.AppendLine('*Auto-generated from `src/' + $srcDir + '/`. Do not edit by hand — run `build/Build-ModuleDocs.ps1` to regenerate.*');
+    [void]$md.AppendLine('*Auto-generated from `src/' + $srcDir + '/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*');
     [void]$md.AppendLine();
 
     $publicFns  = $group.Group | Where-Object { $_.Visibility -eq 'Public'  } | Sort-Object FunctionName;
@@ -510,7 +508,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
         [void]$md.AppendLine();
 
         if ($null -eq $fn.Help) {
-            [void]$md.AppendLine('> ⚠ No comment-based help block found in source.');
+            [void]$md.AppendLine('> ! No comment-based help block found in source.');
             [void]$md.AppendLine();
             continue;
         }
@@ -599,7 +597,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
 Set-Content -Path $indexFile -Value $idx.ToString() -Encoding UTF8 -Force;
 $WrittenFiles++;
 
-Write-Host "  ✓ Wrote $WrittenFiles Markdown file(s)" -ForegroundColor Green;
+Write-Host "  * Wrote $WrittenFiles Markdown file(s)" -ForegroundColor Green;
 
 # ---------------------------------------------------------------------------
 # Report violations
@@ -608,30 +606,31 @@ Write-Host '' -ForegroundColor White;
 Write-Host '[4/4] Reporting documentation violations ...' -ForegroundColor Yellow;
 
 if ($Violations.Count -eq 0) {
-    Write-Host '  ✓ No violations — every function meets the CLAUDE.md doc rules' -ForegroundColor Green;
+    Write-Host '  * No violations -- every function meets the CLAUDE.md doc rules' -ForegroundColor Green;
 } else {
-    Write-Host "  ⚠ $($Violations.Count) violation(s):" -ForegroundColor Yellow;
+    Write-Host "  ! $($Violations.Count) violation(s):" -ForegroundColor Yellow;
     $Violations |
         Sort-Object Visibility, File |
         ForEach-Object {
-            Write-Host ("    [{0,-7}] {1} :: {2} — {3}" -f $_.Visibility, $_.FunctionName, $_.File, $_.Issue) -ForegroundColor DarkYellow;
+            Write-Host ("    [{0,-7}] {1} :: {2} -- {3}" -f $_.Visibility, $_.FunctionName, $_.File, $_.Issue) -ForegroundColor DarkYellow;
         };
 }
 
 $BuildDuration = (Get-Date) - $BuildStartTime;
+$DurationText  = "{0:N2}s" -f $BuildDuration.TotalSeconds;
 
 Write-Host '' -ForegroundColor White;
-Write-Host '╔═════════════════════════════════════════════════════════════════════╗' -ForegroundColor Green;
-Write-Host '║                                                                     ║' -ForegroundColor Green;
-Write-Host '║                       ✓ DOCUMENTATION BUILD DONE                    ║' -ForegroundColor Green;
-Write-Host '║                                                                     ║' -ForegroundColor Green;
-Write-Host '╚═════════════════════════════════════════════════════════════════════╝' -ForegroundColor Green;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Green;
+Write-Host '|                                                                     |' -ForegroundColor Green;
+Write-Host '|                       * DOCUMENTATION BUILD DONE                    |' -ForegroundColor Green;
+Write-Host '|                                                                     |' -ForegroundColor Green;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Green;
 Write-Host '' -ForegroundColor White;
 Write-Host "  Components:           $($Grouped.Count)"     -ForegroundColor White;
 Write-Host "  Functions documented: $($Parsed.Count)"      -ForegroundColor White;
 Write-Host "  Markdown files:       $WrittenFiles"         -ForegroundColor White;
 Write-Host "  Violations:           $($Violations.Count)"  -ForegroundColor White;
-Write-Host "  Build duration:       $($BuildDuration.TotalSeconds.ToString('0.00'))s" -ForegroundColor White;
+Write-Host "  Build duration:       $DurationText"         -ForegroundColor White;
 Write-Host "  Output:               $OutputPath"           -ForegroundColor Gray;
 Write-Host '' -ForegroundColor White;
 

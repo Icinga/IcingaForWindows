@@ -6,7 +6,7 @@ param (
     [switch]$TestDaemonMemoryLeaks = $false
 );
 
-$ErrorActionPreference  =  'Stop';
+$ErrorActionPreference  = 'Stop';
 $ProgressPreference     = 'SilentlyContinue';
 [string]$ModuleBasePath = '';
 $NewLine                = [Environment]::NewLine;
@@ -48,7 +48,7 @@ function Read-IcingaSourceFile()
     $UTF8Encoding  = New-Object System.Text.UTF8Encoding $false;
     $FileContent   = '';
 
-    while ($FileStream.Read($ReadArray, 0 , $ReadArray.Length)) {
+    while ($FileStream.Read($ReadArray, 0, $ReadArray.Length)) {
         $FileContent = [System.String]::Concat($FileContent, $UTF8Encoding.GetString($ReadArray));
     }
 
@@ -114,15 +114,11 @@ function Get-IcingaModuleStructure()
     return $ModuleStructure;
 }
 
-Write-Host @"
-
-╔═════════════════════════════════════════════════════════════════════╗
-║                                                                     ║
-║                Icinga for Windows - Module Compiler                 ║
-║                                                                     ║
-╚═════════════════════════════════════════════════════════════════════╝
-
-"@ -ForegroundColor Cyan;
+Write-Host "`n+---------------------------------------------------------------------+" -ForegroundColor Cyan;
+Write-Host "|                                                                     |" -ForegroundColor Cyan;
+Write-Host "|                Icinga for Windows - Module Compiler                 |" -ForegroundColor Cyan;
+Write-Host "|                                                                     |" -ForegroundColor Cyan;
+Write-Host "+---------------------------------------------------------------------+`n" -ForegroundColor Cyan;
 
 $BuildStartTime = Get-Date
 
@@ -135,7 +131,7 @@ if ($Components.Public.Count -eq 0) {
     throw "No components found in $SourcePath"
 }
 
-Write-Host "  ✓ Found $($Components.Public.Count) public function file(s) and $($Components.Private.Count) private function file(s)" -ForegroundColor Green;
+Write-Host "  * Found $($Components.Public.Count) public function file(s) and $($Components.Private.Count) private function file(s)" -ForegroundColor Green;
 
 # Make sure we always start with a clean output directory
 Write-Host "`n[2/4] Preparing output directory..." -ForegroundColor Yellow;
@@ -150,7 +146,7 @@ if (Test-Path $OutputPath) {
     New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null;
 }
 
-Write-Host "  ✓ Output directory ready: $OutputPath" -ForegroundColor Green;
+Write-Host "  * Output directory ready: $OutputPath" -ForegroundColor Green;
 
 # Build single consolidated module file
 Write-Host "`n[3/4] Building single consolidated module..." -ForegroundColor Yellow;
@@ -174,7 +170,7 @@ $ModuleContent.AppendLine('#>') | Out-Null;
 $ModuleContent.AppendLine() | Out-Null;
 
 # Append all private functions once
-Write-Host "  🔨 Appending $($Components['Private'].Count) private function file(s)..." -ForegroundColor White;
+Write-Host "  * Appending $($Components['Private'].Count) private function file(s)..." -ForegroundColor White;
 foreach ($privateFile in $Components['Private']) {
     $FileContent = Read-IcingaSourceFile -Path $privateFile;
     $ModuleContent.AppendLine($FileContent) | Out-Null;
@@ -182,7 +178,7 @@ foreach ($privateFile in $Components['Private']) {
 }
 
 # Append all public functions once
-Write-Host "  🔨 Appending $($Components['Public'].Count) public function file(s)..." -ForegroundColor White;
+Write-Host "  * Appending $($Components['Public'].Count) public function file(s)..." -ForegroundColor White;
 foreach ($publicFile in $Components['Public']) {
     $FileContent = Read-IcingaSourceFile -Path $publicFile;
 
@@ -204,7 +200,7 @@ foreach ($publicFile in $Components['Public']) {
 
 [array]$PublicFunctionList = @($FncCache.Keys | Sort-Object);
 
-Write-Host "  🚀 Found $($PublicFunctionList.Count) public function(s) to export." -ForegroundColor Green;
+Write-Host "  * Found $($PublicFunctionList.Count) public function(s) to export." -ForegroundColor Green;
 
 $ModuleContent.AppendLine() | Out-Null;
 $ModuleContent.AppendLine('# Export all public functions') | Out-Null;
@@ -223,16 +219,16 @@ $ModuleContent.AppendLine(');') | Out-Null;
 
 Set-Content -Path $ModuleOutput -Value $ModuleContent.ToString() -Encoding UTF8 -Force;
 
-Write-Host "  ✓ Kernel file built successfully: $SingleModuleName" -ForegroundColor Green;
+Write-Host "  * Kernel file built successfully: $SingleModuleName" -ForegroundColor Green;
 
 Write-Host "`n[4/4] Module manifest..." -ForegroundColor Yellow;
-Write-Host "  ✓ Using static manifest (IcingaForWindows.psd1)" -ForegroundColor Green;
+Write-Host "  * Using static manifest (IcingaForWindows.psd1)" -ForegroundColor Green;
 
 $ManifestFile = Get-ChildItem -Path $ModuleBasePath -Filter '*.psd1' -File | Select-Object -First 1;
 if ($null -ne $ManifestFile) {
     Import-Module -Name $ManifestFile.FullName -Force;
     Import-Module -Name $ManifestFile.FullName -Force -Global;
-    Write-Host "  ✓ Module loaded successfully into session" -ForegroundColor Green;
+    Write-Host "  * Module loaded successfully into session" -ForegroundColor Green;
 }
 
 # Final step: Run tests unless skipped
@@ -242,7 +238,7 @@ if (-not $SkipTests) {
     $TestPath = Join-Path -Path $ModuleBasePath -ChildPath 'Tests';
     
     if (Test-Path $TestPath) {
-        # Prüfe ob Pester installiert ist
+        # Check if Pester is installed
         if (-not (Get-Module -ListAvailable -Name Pester)) {
             Write-Warning "  Pester not installed, skipping tests";
         } else {
@@ -253,7 +249,7 @@ if (-not $SkipTests) {
                     throw "Tests failed! Failed: $($TestResults.FailedCount)";
                 }
                 
-                Write-Host "  ✓ All tests passed" -ForegroundColor Green;
+                Write-Host "  * All tests passed" -ForegroundColor Green;
                 Write-Host "    Total: $($TestResults.TotalCount), Passed: $($TestResults.PassedCount)" -ForegroundColor Gray;
                 
             } catch {
@@ -277,32 +273,29 @@ if ($GenerateDocs) {
 # Optional: AST-based Memory Leak tests for Daemons
 if ($TestDaemonMemoryLeaks) {
     Write-Host "`n[+] Running Daemon Memory Leak tests..." -ForegroundColor Yellow;
-    . (Join-Path -Path $PSScriptRoot -ChildPath 'Test-ModuleDaemonMemoryLeak.ps1')
+    . (Join-Path -Path $PSScriptRoot -ChildPath 'Test-ModuleDaemonMemoryLeak.ps1');
     
-    $SourcePath = Join-Path -Path $ModuleBasePath -ChildPath 'src'
+    $SourcePath = Join-Path -Path $ModuleBasePath -ChildPath 'src';
     if (-not (Test-ModuleDaemonMemoryLeak -SourceFolder $SourcePath)) {
-        throw 'Daemon Memory Leak test failed! Un-nulled variables were found in endless loops.'
+        throw 'Daemon Memory Leak test failed! Un-nulled variables were found in endless loops.';
     }
-    Write-Host "  ✓ No Daemon memory leaks detected" -ForegroundColor Green;
+    Write-Host "  * No Daemon memory leaks detected" -ForegroundColor Green;
 }
 
 # Build process is complete
 
-$BuildDuration = (Get-Date) - $BuildStartTime
+$BuildDuration = (Get-Date) - $BuildStartTime;
+$DurationText  = "{0:N2}s" -f $BuildDuration.TotalSeconds;
 
-Write-Host @"
-
-╔═════════════════════════════════════════════════════════════════════╗
-║                                                                     ║
-║                          ✓ BUILD COMPLETED                          ║
-║                                                                     ║
-╚═════════════════════════════════════════════════════════════════════╝
-
-"@ -ForegroundColor Green;
+Write-Host "`n+---------------------------------------------------------------------+" -ForegroundColor Green;
+Write-Host "|                                                                     |" -ForegroundColor Green;
+Write-Host "|                          * BUILD COMPLETED                          |" -ForegroundColor Green;
+Write-Host "|                                                                     |" -ForegroundColor Green;
+Write-Host "+---------------------------------------------------------------------+`n" -ForegroundColor Green;
 
 Write-Host "  Components built:     $($Components.Public.Count)" -ForegroundColor White;
 Write-Host "  Functions exported:   $($PublicFunctionList.Count)" -ForegroundColor White;
-Write-Host "  Build duration:       $($BuildDuration.TotalSeconds.ToString('0.00'))s" -ForegroundColor White;
+Write-Host "  Build duration:       $DurationText" -ForegroundColor White;
 Write-Host "  Output directory:     $OutputPath" -ForegroundColor Gray;
 
 Write-Host "`n  Next steps:" -ForegroundColor Yellow;
