@@ -71,6 +71,7 @@ function Start-IcingaProtocolWorker()
                     [string]$ExecuteCommand = $RPCMessage.params.macros.ifw_api_command;
 
                     <#
+                    TODO: Actuall check logic
                     # Read the command definition and arguments type, to ensure we properly handle SecureStrings
                     $CommandHelp    = Get-Help -Name $ExecuteCommand -Full;
                     $CommandDetails = @{ };
@@ -113,7 +114,7 @@ function Start-IcingaProtocolWorker()
                     }#>
 
                     #$ExitCode      = & $RPCMessage.params.macros.ifw_api_command @Arguments;
-                    $CheckFinished = (Get-IcingaUnixTime -Milliseconds)
+                    
                     <#
                     $CheckResultData = @{
                         'host'    = $RPCMessage.params.host;
@@ -143,12 +144,15 @@ function Start-IcingaProtocolWorker()
                     };
 
                     $CheckFinished = (Get-IcingaUnixTime -Milliseconds);
+                    $CheckResult   = $CheckFinished;
 
                     $CheckResultData = @{
                         'host'    = $RPCMessage.params.host;
                         'service' = $RPCMessage.params.service;
                         'cr'      = @{
-                            'output'           = ([string]::Format('[OK] Everything is faked and healthy: {0}', (Get-Date -Format "yyyy-MM-dd HH:mm:ss:ffff")));
+                            'check_source'     = $Global:IcingaForWindows.Public.IcingaProtocol.Config.Hostname;
+                            'command'          = 'full call stack with arguments';
+                            'output'           = $CheckResult;
                             'exit_status'      = 0;
                             'active'           = $TRUE;
                             'state'            = 0;
@@ -156,14 +160,15 @@ function Start-IcingaProtocolWorker()
                             'execution_start'  = $CheckStarted;
                             'execution_end'    = $CheckFinished;
                             'performance_data' = @();
-                        }
+                        };
                     };
 
                     Send-IcingaProtocolCheckResult -CheckResult $CheckResultData;
-                    $CheckResultData = $null;
                     break;
                 };
                 'event::Heartbeat' {
+                    # Update the current log position to the parent with every heartbeat
+                    Send-IcingaProtocolLogPosition;
                     Write-LoggingEntry -Message '  ✓ Received Heartbeat event' -Level 'Debug';
                     break;
                 };
@@ -171,18 +176,34 @@ function Start-IcingaProtocolWorker()
                     Write-LoggingEntry -Message '  ✓ Received Config Update event' -Level 'Debug';
                     break;
                 };
+                'log::SetLogPosition' {
+                    Write-LoggingEntry -Message '  ✓ Received SetLogPosition event' -Level 'Debug' -Data @{ 'Message' = $RPCMessage; };
+                    break;
+                }
+                'pki::UpdateCertificate' {
+                    # This will in general fail, as we normally are not running as Administrator. Will be done during installation.
+                    # Import-IcingaCertAuthority -Certificate $RPCMessage.params.ca;
+                    New-IcingaProtocolCertificate -CommonName $Global:IcingaForWindows.Public.IcingaProtocol.Config.Hostname -SignedCert $RPCMessage.params.cert;
+                    # Once we received a new certificte, we should close the connection immediatels and let our handler create a new one afterwards
+                    Close-TcpConnection;
+                    Close-TcpSocket;
+                    break;
+                };
                 default {
-                    Write-LoggingEntry -Message '  ✓ Received unhandled RPC method' -Level 'Debug' -Data @{ 'Method' = $RPCMessage.method; };
+                    Write-LoggingEntry -Message '  ✓ Received unhandled RPC method' -Level 'Error' -Data @{ 'Method' = $RPCMessage.method; };
                     break;
                 };
             }
         } catch {
             Write-LoggingEntry -Message 'An error occurred in Icinga Protocol Worker' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; };
         } finally {
-            $RPCMessage     = $null;
-            $RPCObject      = $null;
-            $CheckStarted   = $null;
-            $ExecuteCommand = $null;
+            $RPCMessage      = $null;
+            $RPCObject       = $null;
+            $CheckStarted    = $null;
+            $CheckFinished   = $null;
+            $ExecuteCommand  = $null;
+            $CheckResult     = $null;
+            $CheckResultData = $null;
         }
     }
 }

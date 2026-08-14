@@ -1,10 +1,9 @@
 # Icinga API Reference
 
-*Auto-generated on 2026-08-14 13:50:34.*
+*Auto-generated on 2026-08-14 15:34:25.*
 
 | Component | Public functions | Private helpers |
 |-----------|------------------|-----------------|
-| [Icinga.Api](Icinga.Api.md) | 4 | 3 |
 | [Icinga.Config](Icinga.Config.md) | 0 | 2 |
 | [Icinga.Core.AccessControl](Icinga.Core.AccessControl.md) | 3 | 4 |
 | [Icinga.Core.ErrorHandling](Icinga.Core.ErrorHandling.md) | 0 | 2 |
@@ -14,14 +13,14 @@
 | [Icinga.Core.TCPStack](Icinga.Core.TCPStack.md) | 4 | 10 |
 | [Icinga.Core.Threading](Icinga.Core.Threading.md) | 2 | 14 |
 | [Icinga.Core.WebSocket](Icinga.Core.WebSocket.md) | 3 | 16 |
-| [Icinga.IcingaProtocol](Icinga.IcingaProtocol.md) | 4 | 17 |
+| [Icinga.IcingaProtocol](Icinga.IcingaProtocol.md) | 5 | 19 |
 | [Icinga.Security](Icinga.Security.md) | 0 | 7 |
-| [Icinga.Tools](Icinga.Tools.md) | 4 | 3 |
+| [Icinga.Tools](Icinga.Tools.md) | 4 | 5 |
 
 ## Totals
 
-- Components: 13
-- Documented functions: 142
-- Public: 20
-- Private: 122
+- Components: 12
+- Documented functions: 146
+- Public: 23
+- Private: 123
 

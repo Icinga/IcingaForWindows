@@ -70,7 +70,7 @@ certificate file, thumbprint, CN, issuer, or alternative store settings.
 
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| CertIssuer | System.String | Issuer name to match when searching certificate stores. | |
+| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores. | |
 
 #### Outputs
 
@@ -236,7 +236,7 @@ It validates that at least one selector is provided.
 
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| CertIssuer | System.String | Issuer name filter for store search | $null |
+| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores | $null |
 
 #### Outputs
 

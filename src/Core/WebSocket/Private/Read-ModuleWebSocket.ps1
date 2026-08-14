@@ -56,12 +56,12 @@ function Read-ModuleWebSocket()
     }
 
     [string]$WebSocketName = $GlobalVariable.Private.WebSocket.Name;
+    $WebSocketBuffer       = [Net.WebSockets.WebSocket]::CreateClientBuffer(2048, 2048);
 
     # If the WebSocket is not open, we don't need to proceed
     while (Test-ThreadRunning -CheckWebSocket) {
         try {
-            $WebSocketBuffer    = [Net.WebSockets.WebSocket]::CreateClientBuffer(2048, 2048);
-            $ResponseMsg        = '';
+            $ResponseMsgBuilder = [System.Text.StringBuilder]::new();
             [bool]$EndOfMessage = $false;
 
             # Loop this to ensure we receive the full message, as WebSocket messages can be fragmented and we need to wait until we received the full message before we can process it
@@ -76,10 +76,14 @@ function Read-ModuleWebSocket()
                     Start-Sleep -Milliseconds 10; 
                 }
 
+                if (-not $RequestProgress.IsCompleted -or $RequestProgress.IsFaulted -or $RequestProgress.IsCanceled) {
+                    break;
+                }
+
                 # Set this thread as processing to avoid being killed by the thread manager, once we received a message
                 Set-ThreadProcessing;
 
-                $ResponseMsg += ([System.Text.Encoding]::UTF8.GetString($WebSocketBuffer, 0, $RequestProgress.Result.Count));
+                $ResponseMsgBuilder.Append([System.Text.Encoding]::UTF8.GetString($WebSocketBuffer, 0, $RequestProgress.Result.Count)) | Out-Null;
                 [bool]$EndOfMessage = $RequestProgress.Result.EndOfMessage;
             } while (-not $EndOfMessage -and (Test-ModuleWebSocket));
 
@@ -87,15 +91,17 @@ function Read-ModuleWebSocket()
             $RequestProgress = $null;
 
             # Log the received message for debugging purposes
+            [string]$ResponseMsg = $ResponseMsgBuilder.ToString();
             Write-LoggingEntry -Message 'Received WebSocket message' -Data @{ 'Name' = $WebSocketName; 'Message' = $ResponseMsg; } -Severity 'Debug' | Out-Null;
 
             # Push the received message to the reader worker queue
-            $GlobalVariable.Public.WebSocket.$WebSocketName.ReaderWorker.Add([string]($ResponseMsg)) | Out-Null;
+            $GlobalVariable.Public.WebSocket.$WebSocketName.ReaderWorker.Add($ResponseMsg) | Out-Null;
         } catch {
             Write-FunctionReturnValue -ReturnValue 'WebSocketReadError' -Data @{ 'Name' = $WebSocketName; 'Exception' = $_.Exception } | Out-Null;
         } finally {
-            $WebSocketBuffer = $null;
-            $ResponseMsg     = $null;
+            $WebSocketBuffer    = $null;
+            $ResponseMsgBuilder = $null;
+            $ResponseMsg        = $null;
 
             # Clear our request progress which would otherwise cause a memory leak as in case we
             # cannot establish a connection to the remote server, this function is called frequently

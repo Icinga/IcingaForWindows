@@ -4,6 +4,10 @@
 
 ## Public functions
 
+- [Import-IcingaCertAuthority](#import-icingacertauthority)
+- [New-IcingaProtocolCertificate](#new-icingaprotocolcertificate)
+- [New-IcingaProtocolEndpoint](#new-icingaprotocolendpoint)
+- [New-IcingaProtocolEnvironment](#new-icingaprotocolenvironment)
 - [Start-IcingaAgent](#start-icingaagent)
 
 ## Private helpers
@@ -15,9 +19,11 @@
 - [New-IcingaRPCMessage](#new-icingarpcmessage)
 - [Read-IcingaProtocolConnection](#read-icingaprotocolconnection)
 - [Read-IcingaRPCMessage](#read-icingarpcmessage)
+- [Send-IcingaProtocolCertificateRequest](#send-icingaprotocolcertificaterequest)
 - [Send-IcingaProtocolCheckResult](#send-icingaprotocolcheckresult)
 - [Send-IcingaProtocolHeartbeat](#send-icingaprotocolheartbeat)
 - [Send-IcingaProtocolHello](#send-icingaprotocolhello)
+- [Send-IcingaProtocolLogPosition](#send-icingaprotocollogposition)
 - [Start-IcingaProtocolConnector](#start-icingaprotocolconnector)
 - [Start-IcingaProtocolHeartbeat](#start-icingaprotocolheartbeat)
 - [Start-IcingaProtocolListener](#start-icingaprotocollistener)
@@ -25,6 +31,234 @@
 - [Start-IcingaProtocolSocketWriter](#start-icingaprotocolsocketwriter)
 - [Start-IcingaProtocolWorker](#start-icingaprotocolworker)
 - [Test-IcingaProtocolClientStatus](#test-icingaprotocolclientstatus)
+
+---
+
+### Import-IcingaCertAuthority
+
+*Public function*
+
+**Synopsis:** Import the Icinga CA certificate into the Windows CertificateAuthority store or local directory.
+
+#### Description
+
+Import-IcingaCertAuthority accepts an Icinga CA certificate either as a direct
+PEM string (-Certificate) or via a local/web path (-Path). Depending on the
+operating system, it imports the certificate directly into the CurrentUser
+CertificateAuthority store (on Windows) or saves it to the module's certificate
+directory as 'ca.crt' (on Linux/macOS).
+
+#### Parameters
+
+**`$Certificate`**
+
+| Name        | Type          | Description                                | Default |
+|-------------|---------------|--------------------------------------------|---------|
+| Certificate | System.String | The PEM-formatted CA certificate payload.  |         |
+
+**`$Path`**
+
+| Name | Type          | Description                                         | Default |
+|------|---------------|-----------------------------------------------------|---------|
+| Path | System.String | Local file path or HTTP/HTTPS URL to the CA cert.   |         |
+
+#### Outputs
+
+None — Performs the import or file write without returning a value.
+
+#### Examples
+
+```powershell
+PS> Import-IcingaCertAuthority -Certificate '-----BEGIN CERTIFICATE-----...'
+
+Imports the CA certificate from a direct string payload.
+```
+
+```powershell
+PS> Import-IcingaCertAuthority -Path 'https://icinga.example.com/ca.crt'
+
+Downloads and imports the CA certificate from a web server.
+```
+
+#### Notes
+
+Operates on the CurrentUser CertificateAuthority store to avoid Windows security prompts.
+Does not require administrative elevation.
+
+*Source: [src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1](../../src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1)*
+
+---
+
+### New-IcingaProtocolCertificate
+
+*Public function*
+
+**Synopsis:** Generate a self-signed certificate or merge an existing private key with a signed certificate.
+
+#### Description
+
+New-IcingaProtocolCertificate generates a new self-signed RSA certificate
+for the specified Common Name (CN). If the SignedCert parameter is provided,
+it instead merges the signed PEM certificate with the existing private key.
+Depending on the operating system, the certificate is either saved exclusively
+to the Windows certificate store (on Windows) or written to the filesystem as
+a passwordless PFX file (on Linux/macOS). When merging on Windows, the old
+certificate is removed from the store automatically.
+
+#### Parameters
+
+**`$CommonName`**
+
+| Name       | Type          | Description                                | Default |
+|------------|---------------|--------------------------------------------|---------|
+| CommonName | System.String | The common name (CN) for the certificate.  | $null   |
+
+**`$SignedCert`**
+
+| Name       | Type          | Description                                | Default |
+|------------|---------------|--------------------------------------------|---------|
+| SignedCert | System.String | The PEM-formatted signed certificate.      | $null   |
+
+#### Outputs
+
+System.Object — Returns a structured result via Write-FunctionReturnValue containing the storage path.
+
+#### Examples
+
+```powershell
+PS> New-IcingaProtocolCertificate -CommonName 'IcingaNode'
+
+Generates a new self-signed certificate for 'IcingaNode' and saves it to the local store or filesystem.
+```
+
+```powershell
+PS> New-IcingaProtocolCertificate -CommonName 'IcingaNode' -SignedCert '-----BEGIN CERTIFICATE-----...'
+
+Merges the signed certificate with the existing private key for 'IcingaNode'.
+```
+
+#### Notes
+
+Requires administrative privileges on Windows to access the LocalMachine certificate store.
+Cross-platform compatible; relies on .NET cryptography classes.
+
+*Source: [src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1](../../src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1)*
+
+---
+
+### New-IcingaProtocolEndpoint
+
+*Public function*
+
+**Synopsis:** Creates a new Icinga Protocol endpoint configuration object.
+
+#### Description
+
+Creates a hashtable representing an Icinga Protocol endpoint with the specified Name, Address, and Port.
+This object is typically passed into New-IcingaProtocolEnvironment.
+
+#### Parameters
+
+**`$Name`**
+
+| Name | Type          | Description                                | Default |
+|------|---------------|--------------------------------------------|---------|
+| Name | System.String | The human-readable name of the endpoint.   |         |
+
+**`$Address`**
+
+| Name    | Type          | Description                                | Default |
+|---------|---------------|--------------------------------------------|---------|
+| Address | System.String | The IP address or FQDN of the endpoint.    |         |
+
+**`$Port`**
+
+| Name | Type         | Description                                | Default |
+|------|--------------|--------------------------------------------|---------|
+| Port | System.Int32 | The TCP port to connect to.                |         |
+
+#### Outputs
+
+System.Collections.Hashtable — Returns a hashtable with the endpoint configuration.
+
+#### Examples
+
+```powershell
+PS> New-IcingaProtocolEndpoint -Name 'Master1' -Address '192.168.1.10' -Port 5665
+
+Creates a new endpoint object for Master1.
+```
+
+#### Notes
+
+This object is required for configuring the Icinga environment structure.
+
+*Source: [src/IcingaProtocol/Public/New-IcingaProtocolEndpoint.ps1](../../src/IcingaProtocol/Public/New-IcingaProtocolEndpoint.ps1)*
+
+---
+
+### New-IcingaProtocolEnvironment
+
+*Public function*
+
+**Synopsis:** Generates and saves the Icinga Protocol environment configuration.
+
+#### Description
+
+This function configures the Icinga Protocol connection settings, including endpoints, zone name, hostname, 
+and TLS certificate configuration. It either saves the configuration to 'IcingaProtocol\Connection.json' 
+or returns a diff against the current configuration if -DryRun is used.
+
+#### Parameters
+
+**`$Endpoints`**
+
+| Name      | Type         | Description                                | Default |
+|-----------|--------------|--------------------------------------------|---------|
+| Endpoints | System.Array | An array of endpoint hashtables.           | @()     |
+
+**`$Zone`**
+
+| Name | Type          | Description                                | Default  |
+|------|---------------|--------------------------------------------|----------|
+| Zone | System.String | The name of the Icinga zone.               | 'master' |
+
+**`$Hostname`**
+
+| Name     | Type          | Description                                | Default     |
+|----------|---------------|--------------------------------------------|-------------|
+| Hostname | System.String | The local hostname for this node.          | '$hostname' |
+
+**`$TlsCertConfig`**
+
+| Name          | Type           | Description                                | Default |
+|---------------|----------------|--------------------------------------------|---------|
+| TlsCertConfig | PSCustomObject | The TLS certificate configuration object.  | $null   |
+
+**`$DryRun`**
+
+| Name   | Type   | Description                                | Default |
+|--------|--------|--------------------------------------------|---------|
+| DryRun | switch | Outputs a diff without saving the file.    | $false  |
+
+#### Outputs
+
+System.Object — Returns a status object from Write-FunctionReturnValue or a diff string.
+
+#### Examples
+
+```powershell
+PS> $Endpoints = @(New-IcingaProtocolEndpoint -Name 'master' -Address '10.0.0.1' -Port 5665)
+PS> New-IcingaProtocolEnvironment -Endpoints $Endpoints -Zone 'master' -Hostname 'agent01' -TlsCertConfig $CertConfig
+
+Generates the protocol configuration and writes it to disk.
+```
+
+#### Notes
+
+Writes configuration data to the internal Icinga Protocol connection JSON file.
+
+*Source: [src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1](../../src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1)*
 
 ---
 
@@ -134,7 +368,7 @@ a message object for processing by one of the module's worker threads. The funct
 performs round-robin worker selection by incrementing the global LastWorkerId and
 wrapping it when it reaches the configured WorkerCount. If the message is null or empty,
 the function returns immediately via Write-FunctionReturnValue. The message is first
-deserialized with ConvertFrom-Json and only forwarded when its method is icinga::Hello
+deserialized with ConvertFrom-ModuleJson and only forwarded when its method is icinga::Hello
 or event::ExecuteCommand; all other methods are dropped. The enqueued object contains
 the parsed message, the current global TCP client and the global stream. This function
 mutates $Global:IcingaForWindows.Private.TCP.LastWorkerId as a side effect.
@@ -350,44 +584,84 @@ The configuration file is read through Read-SecureFile to enforce path approval.
 
 *Private function*
 
-**Synopsis:** Parses one or more length-prefixed JSON-RPC frames from a string buffer.
+**Synopsis:** Parses one or more length-prefixed JSON-RPC frames from a StringBuilder buffer.
 
 #### Description
 
-Read-IcingaRPCMessage processes the accumulated string buffer JSONRPCMessage in a
+Read-IcingaRPCMessage processes the accumulated StringBuilder buffer in a
 loop. For each iteration it strips a leading comma if present, reads the numeric
 length prefix before the first colon, extracts exactly that many characters as the
 RPC payload and passes the payload to Add-IcingaRPCMessageToWorker for worker
 dispatch. The consumed portion is removed from the buffer and the loop continues
 until the buffer is empty, the size prefix is invalid or insufficient data remains
-for a complete frame. The function returns the remaining (possibly partial) buffer
-string so the caller can append the next chunk of data and call again.
+for a complete frame.
 
 #### Parameters
 
-**`$JSONRPCMessage`**
+**`$Buffer`**
 
-| Name           | Type          | Description                                                                 | Default |
-|----------------|---------------|-----------------------------------------------------------------------------|---------|
-| JSONRPCMessage | System.String | Accumulated string buffer containing one or more length-prefixed RPC frames. | ''      |
+| Name   | Type                      | Description                                                                 | Default |
+|--------|---------------------------|-----------------------------------------------------------------------------|---------|
+| Buffer | System.Text.StringBuilder | Accumulated StringBuilder buffer containing one or more length-prefixed RPC frames. | $null   |
 
 #### Outputs
 
-System.String — Remaining buffer content after all complete frames have been consumed.
+None — The buffer is modified in place.
 
 #### Examples
 
 ```powershell
-PS> $remaining = Read-IcingaRPCMessage -JSONRPCMessage $buffer
+PS> Read-IcingaRPCMessage -Buffer $buffer
 ```
 
 #### Notes
 
 Each call may process multiple complete frames in a single pass. Partial frames at
-the end of the buffer are preserved in the returned string for the next read cycle.
+the end of the buffer are preserved for the next read cycle.
 Complete messages are dispatched via Add-IcingaRPCMessageToWorker.
 
 *Source: [src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1](../../src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1)*
+
+---
+
+### Send-IcingaProtocolCertificateRequest
+
+*Private function*
+
+**Synopsis:** Send a certificate request message over the Icinga protocol
+
+#### Description
+
+Sends an Icinga RPC message with the method 'pki::RequestCertificate'
+to request a new certificate. This is typically part of the initial node
+setup and certificate signing request (CSR) workflow. If a ticket is
+provided it is included in the RPC parameters for auto-signing.
+
+#### Parameters
+
+**`$Ticket`**
+
+| Name   | Type          | Description                                | Default |
+|--------|---------------|--------------------------------------------|---------|
+| Ticket | System.String | The ticket to use for auto-signing.        | $null   |
+
+#### Outputs
+
+None — Does not return any value.
+
+#### Examples
+
+```powershell
+PS> Send-IcingaProtocolCertificateRequest -Ticket '1234567890abcdef'
+
+Sends a certificate request to the connected Icinga endpoint.
+```
+
+#### Notes
+
+Requires an active TCP connection to the Icinga endpoint.
+
+*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolCertificateRequest.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolCertificateRequest.ps1)*
 
 ---
 
@@ -500,6 +774,39 @@ This function bypasses the writer queue and calls Send-TCPMessage directly,
 making it suitable for early handshake messages before the queue is initialized.
 
 *Source: [src/IcingaProtocol/Private/Send-IcingaProtocolHello.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolHello.ps1)*
+
+---
+
+### Send-IcingaProtocolLogPosition
+
+*Private function*
+
+**Synopsis:** Send a log position update message over the Icinga protocol
+
+#### Description
+
+Sends an Icinga RPC message with the method 'log::SetLogPosition'
+to update the current log position on the connected endpoint. The
+log position is automatically set to the current Unix timestamp
+using Get-IcingaUnixTime.
+
+#### Outputs
+
+None — Does not return any value.
+
+#### Examples
+
+```powershell
+PS> Send-IcingaProtocolLogPosition
+
+Sends the log position update to the connected Icinga endpoint.
+```
+
+#### Notes
+
+Requires an active TCP connection to the Icinga endpoint.
+
+*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1)*
 
 ---
 

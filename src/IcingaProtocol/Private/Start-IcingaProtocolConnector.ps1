@@ -34,9 +34,10 @@ function Start-IcingaProtocolConnector()
     while (Test-ThreadRunning) {
         # Attempt to connect to each configured endpoint
         foreach ($key in $Global:IcingaForWindows.Public.IcingaProtocol.Config.Endpoints.PSObject.Properties) {
-            $EndpointName   = $key.Name
-            $EndpointConfig = $key.Value
-            $TcpClient = $null;
+            $EndpointName   = $key.Name;
+            $EndpointConfig = $key.Value;
+            $TcpClient      = $null;
+
             try {
                 Write-LoggingEntry -Message 'Attempting to connect to Icinga endpoint' -Level 'Info' -Data @{ 'EndpointName' = $EndpointName; 'EndpointAddress' = "$($EndpointConfig.Address):$($EndpointConfig.Port)"; };
 

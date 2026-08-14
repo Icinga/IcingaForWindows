@@ -11,6 +11,8 @@
 
 ## Private helpers
 
+- [ConvertFrom-ModuleJson](#convertfrom-modulejson)
+- [ConvertTo-ModuleJson](#convertto-modulejson)
 - [ConvertTo-StringNormalizedArray](#convertto-stringnormalizedarray)
 - [Get-NormalizedTextContent](#get-normalizedtextcontent)
 - [Remove-ModuleAmbitiousCharacters](#remove-moduleambitiouscharacters)
@@ -255,6 +257,90 @@ Simple regex literal checks are performed before DNS resolution to avoid unneces
 lookups. Error conditions are surfaced via Write-FunctionReturnValue.
 
 *Source: [src/Tools/Public/Resolve-IcingaIPAddress.ps1](../../src/Tools/Public/Resolve-IcingaIPAddress.ps1)*
+
+---
+
+### ConvertFrom-ModuleJson
+
+*Private function*
+
+**Synopsis:** Converts a JSON formatted string to a hashtable or dictionary safely across PowerShell versions.
+
+#### Description
+
+ConvertFrom-ModuleJson provides a cross-platform, cross-version safe way to parse JSON
+strings into hashtables. It addresses the well-known memory leak (ETS cache bloat) in
+Windows PowerShell 5.1 by falling back to System.Web.Script.Serialization.JavaScriptSerializer,
+which natively returns dictionaries instead of PSCustomObjects. In PowerShell 6 and higher,
+it uses the native ConvertFrom-Json cmdlet with the -AsHashtable switch.
+
+#### Parameters
+
+**`$InputObject`**
+
+| Name        | Type          | Description                                | Default |
+|-------------|---------------|--------------------------------------------|---------|
+| InputObject | System.String | The JSON string to deserialize.            | ''      |
+
+#### Outputs
+
+System.Collections.Hashtable — Returns a hashtable (or dictionary) representation of the JSON string.
+Returns `$null` if the input is empty or parsing fails.
+
+#### Examples
+
+```powershell
+PS> $hashtable = ConvertFrom-ModuleJson -InputObject '{"key": "value"}'
+```
+
+#### Notes
+
+In Windows PowerShell 5.1, this function dynamically loads the System.Web.Extensions
+assembly if it is not already loaded in the current runspace.
+
+*Source: [src/Tools/Private/ConvertFrom-ModuleJson.ps1](../../src/Tools/Private/ConvertFrom-ModuleJson.ps1)*
+
+---
+
+### ConvertTo-ModuleJson
+
+*Private function*
+
+**Synopsis:** Converts an object to a JSON formatted string safely across PowerShell versions.
+
+#### Description
+
+ConvertTo-ModuleJson provides a cross-platform, cross-version safe way to serialize
+objects into JSON strings. It addresses memory leaks in Windows PowerShell 5.1
+associated with the native ConvertTo-Json cmdlet when called rapidly by falling
+back to System.Web.Script.Serialization.JavaScriptSerializer. In PowerShell 6
+and higher, it uses the native ConvertTo-Json cmdlet.
+
+#### Parameters
+
+**`$InputObject`**
+
+| Name        | Type          | Description                                | Default |
+|-------------|---------------|--------------------------------------------|---------|
+| InputObject | System.Object | The object to serialize.                   | $null   |
+
+#### Outputs
+
+System.String — Returns a JSON string representation of the object.
+Returns an empty string if the input is null or serialization fails.
+
+#### Examples
+
+```powershell
+PS> $json = ConvertTo-ModuleJson -InputObject @{ key = "value" }
+```
+
+#### Notes
+
+In Windows PowerShell 5.1, this function dynamically loads the System.Web.Extensions
+assembly if it is not already loaded.
+
+*Source: [src/Tools/Private/ConvertTo-ModuleJson.ps1](../../src/Tools/Private/ConvertTo-ModuleJson.ps1)*
 
 ---
 

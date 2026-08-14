@@ -44,20 +44,13 @@ function New-IcingaRPCMessage()
         'params'  = $Parameters;
     };
 
-    $JsonMessage = (ConvertTo-Json -InputObject $MessageHash -Depth 100 -Compress);
-    $JsonMessage = [string]::Format(
-        '{0}:{1},',
-        [System.Text.Encoding]::UTF8.GetBytes(
-            $JsonMessage
-        ).Length,
-        $JsonMessage
-    );
+    $JsonMessage      = (ConvertTo-ModuleJson -InputObject $MessageHash);
+    [int]$ByteCount   = [System.Text.Encoding]::UTF8.GetByteCount($JsonMessage);
+    $FormattedMessage = [string]::Format('{0}:{1},', $ByteCount, $JsonMessage);
 
-    Write-LoggingEntry -Message 'Creating Icinga RPC Message' -Level 'Debug' -Data @{ 'JsonMessage' = $JsonMessage; };
+    Write-LoggingEntry -Message 'Creating Icinga RPC Message' -Level 'Debug' -Data @{ 'JsonMessage' = $FormattedMessage; };
 
-    $EncodedMessage = [System.Text.Encoding]::UTF8.GetBytes(
-        $JsonMessage
-    );
+    $EncodedMessage = [System.Text.Encoding]::UTF8.GetBytes($FormattedMessage);
 
     return @{
         'message' = $EncodedMessage;

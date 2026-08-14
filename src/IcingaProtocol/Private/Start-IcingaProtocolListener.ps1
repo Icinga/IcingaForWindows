@@ -29,11 +29,14 @@ Exceptions are caught per iteration to keep the listener loop alive.
 #>
 function Start-IcingaProtocolListener()
 {
+    # Fetch the Tls certificate
+    $TlsCert = Get-TlsCertificate -TlsCertConfig $Global:IcingaForWindows.Public.IcingaProtocol.Config.TlsCertConfig;
+
     # Open a TCP socket to listen for incoming connections
     Open-TCPSocket `
         -Address $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenAddress `
         -Port $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenPort `
-        -TlsCertificate $Global:IcingaForWindows.Public.IcingaProtocol.Certificate `
+        -TlsCertificate $TlsCert `
         -Start;
 
     Write-LoggingEntry -Message 'Icinga Protocol Listener started, waiting for incoming connections' -Level 'Debug' -Data @{ 'ListenAddress' = $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenAddress; 'ListenPort' = $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenPort; 'Listener' = $Global:IcingaForWindows.Private.TCP.Listener; };
@@ -51,7 +54,7 @@ function Start-IcingaProtocolListener()
             Write-LoggingEntry -Message 'Accepted new connection from' -Level 'Info' -Data @{ 'Client' = $Global:IcingaForWindows.Private.TCP.Client; };
 
             # Check the client connection status and validate if we are maybe already connected
-            $TestStatus = Test-IcingaProtocolClientStatus -Address $Global:IcingaForWindows.Private.TCP.Client.Client.RemoteEndPoint.Address.ToString();
+            [decimal]$TestStatus = Test-IcingaProtocolClientStatus -Address $Global:IcingaForWindows.Private.TCP.Client.Client.RemoteEndPoint.Address.ToString();
 
             # Only connect and create a new connection if we do not have a valid existing one
             if ($TestStatus -ne $Global:IcingaForWindows.Public.ReturnCodes.IcingaClientCreated.Code -and $TestStatus -ne $Global:IcingaForWindows.Public.ReturnCodes.IcingaClientReplaced.Code) {

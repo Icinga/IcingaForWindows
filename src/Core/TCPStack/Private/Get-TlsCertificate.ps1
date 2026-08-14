@@ -56,11 +56,21 @@ function Get-TlsCertificate()
             $Certs = $Store.Certificates;
 
             if (-not [string]::IsNullOrEmpty($TlsCertConfig.CertThumbprint)) {
-                $FilteredCerts = $Certs | Where-Object { $_.Thumbprint -eq $TlsCertConfig.CertThumbprint };
+                $FilteredCerts = $Certs | Where-Object { $_.Thumbprint -eq $TlsCertConfig.CertThumbprint; };
             } else {
                 $FilteredCerts = $Certs | Where-Object {
-                    ($_.Subject -like "*CN=$($TlsCertConfig.CertCN)*") -and
-                    ($_.Issuer -like "*$($TlsCertConfig.CertIssuer)*")
+                    $cert           = $_;
+                    $subjectMatches = ($cert.Subject -like "*CN=$($TlsCertConfig.CertCN)*");
+                    $issuerMatches  = $false;
+
+                    foreach ($issuer in @($TlsCertConfig.CertIssuer)) {
+                        if ($cert.Issuer -like "*$issuer*") {
+                            $issuerMatches = $true;
+                            break;
+                        }
+                    }
+
+                    $subjectMatches -and $issuerMatches;
                 };
             }
 

@@ -57,8 +57,11 @@ function New-ModuleBaseEnvironment()
         return;
     }
 
+    [string]$OSType = 'Windows';
+
     # Fix for Linux and MacOS where ProgramData is not set by default, using a .ProgramData folder in the user's home directory as fallback
     if ($null -eq $env:ProgramData) {
+        $OSType          = 'Linux';
         $env:ProgramData = Join-Path -Path $env:HOME -ChildPath 'ProgramData';
         New-Item -Path $env:ProgramData -ItemType Directory -ErrorAction Ignore | Out-Null;
     }
@@ -121,6 +124,7 @@ function New-ModuleBaseEnvironment()
                         'Endpoints'     = $null;
                         'Zone'          = $null;
                         'Hostname'      = $null;
+                        'TlsCertConfig' = $null;
                         'WorkerCount'   = 5;
                     };
                     'Certificate' = $null;
@@ -180,6 +184,8 @@ function New-ModuleBaseEnvironment()
             'ModulesImported'    = $false;
             'IsAutomationRun'    = $false;
             'NoColorizedOutput'  = $false;
+            'OSType'             = $OSType;
+            'Version'            = '27.0.0.0';
         };
     };
 }

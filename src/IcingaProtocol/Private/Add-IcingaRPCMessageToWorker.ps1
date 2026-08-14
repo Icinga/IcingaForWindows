@@ -8,7 +8,7 @@ a message object for processing by one of the module's worker threads. The funct
 performs round-robin worker selection by incrementing the global LastWorkerId and
 wrapping it when it reaches the configured WorkerCount. If the message is null or empty,
 the function returns immediately via Write-FunctionReturnValue. The message is first
-deserialized with ConvertFrom-Json and only forwarded when its method is icinga::Hello
+deserialized with ConvertFrom-ModuleJson and only forwarded when its method is icinga::Hello
 or event::ExecuteCommand; all other methods are dropped. The enqueued object contains
 the parsed message, the current global TCP client and the global stream. This function
 mutates $Global:IcingaForWindows.Private.TCP.LastWorkerId as a side effect.
@@ -41,27 +41,11 @@ function Add-IcingaRPCMessageToWorker()
         return (Write-FunctionReturnValue -ReturnValue 'IcingaClientRPCMessageNull');
     }
 
-    # Get the real JSON message object and check the content, to only send messages
-    # we actually care about
+    # Get the real JSON message
     try {
-        $RPCMessage = ConvertFrom-Json -InputObject $Message.Replace('"macros":{"":"$",', '"macros":{');
+        $RPCMessage = ConvertFrom-ModuleJson -InputObject $Message.Replace('"":"$",', '').Replace(',"":"$"', '');
     } catch {
         return (Write-FunctionReturnValue -ReturnValue 'IcingaClientRPCMessageParseError' -Data @{ 'Message' = $Message; 'Exception' = $_.Exception; } -OverrideReturn $null);
-    }
-
-    switch ($RPCMessage.method) {
-        'icinga::Hello' {
-            # Forward icinga:hello
-            break;
-        };
-        'event::ExecuteCommand' {
-            # Forward command execution
-            break;
-        };
-        default {
-            # For other methods, just drop the message
-            return;
-        };
     }
 
     # Determine which worker should receive this message based on a round-robin approach

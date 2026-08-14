@@ -19,7 +19,7 @@ bytes, string and parsed JSON (if applicable).
 | PreReadBodyBytes | byte[] | Any body bytes that were read along with the headers. | @() |
 
 .OUTPUTS
-System.Collections.Hashtable — object with keys `RawBytes`, `RawString`, `JsonObj` and `ContentLength`.
+Hashtable with keys `RawBytes`, `RawString`, `JsonObj`, `ContentLength`.
 
 .EXAMPLE
 PS> Read-RestApiBody -ParsedHeaders $parsed -PreReadBodyBytes $extraBytes
@@ -39,14 +39,14 @@ function Read-RestApiBody()
         return (Write-FunctionReturnValue -ReturnValue 'NoParsedHeadersProvided' -OverrideReturn $null);
     };
 
-    $GlobalVariable                          = Get-GlobalRuntimeVariable;
-    [byte[]]$BodyBuffer                      = @();
-    [byte[]]$ReadBuffer                      = New-Object byte[] 65534;
-    [int]$ContentLength                      = 0;
-    [int]$BytesRead                          = 0;
-    [int]$TotalBytesRead                     = 0;
-    [bool]$ContentLengthExists               = $false;
-    [System.Diagnostics.Stopwatch]$Stopwatch = [System.Diagnostics.Stopwatch]::StartNew();
+    $GlobalVariable                           = Get-GlobalRuntimeVariable;
+    [System.IO.MemoryStream]$BodyBufferStream = [System.IO.MemoryStream]::new();
+    [byte[]]$ReadBuffer                       = New-Object byte[] 65534;
+    [int]$ContentLength                       = 0;
+    [int]$BytesRead                           = 0;
+    [int]$TotalBytesRead                      = 0;
+    [bool]$ContentLengthExists                = $false;
+    [System.Diagnostics.Stopwatch]$Stopwatch  = [System.Diagnostics.Stopwatch]::StartNew();
 
     try {
         # Check if Content-Length header exists
@@ -57,6 +57,8 @@ function Read-RestApiBody()
 
         # If no Content-Length, return empty body
         if (-not $ContentLengthExists -or $ContentLength -eq 0) {
+            $BodyBufferStream.Dispose();
+
             return (
                 Write-FunctionReturnValue -ReturnValue 'RestApiNoBodyToRead' -OverrideReturn @{
                     'RawBytes'      = @();
@@ -78,14 +80,15 @@ function Read-RestApiBody()
             Send-TCPMessage -MsgObj (New-RestApiResponse -StatusCode 413 -StatusMessage 'Payload Too Large' -ResponseBody @{ 'error' = "Content length $ContentLength exceeds allowed limit for your user"} ) | Out-Null;
             # Close the connection
             Close-TCPConnection;
+            $BodyBufferStream.Dispose();
             # Return null to indicate failure
             return $null;
         };
 
         # Initialize body buffer with pre-read bytes (from header reading phase)
         if ($PreReadBodyBytes.Count -gt 0) {
-            [byte[]]$BodyBuffer = $PreReadBodyBytes;
-            $TotalBytesRead     = $PreReadBodyBytes.Count;
+            $BodyBufferStream.Write($PreReadBodyBytes, 0, $PreReadBodyBytes.Count);
+            $TotalBytesRead = $PreReadBodyBytes.Count;
         };
 
         # Read body data until Content-Length is reached
@@ -97,7 +100,7 @@ function Read-RestApiBody()
 
             if ($BytesRead -gt 0) {
                 # Append read bytes to body buffer
-                [byte[]]$BodyBuffer += $ReadBuffer[0..($BytesRead - 1)];
+                $BodyBufferStream.Write($ReadBuffer, 0, $BytesRead);
                 $TotalBytesRead     += $BytesRead;
             } else {
                 Start-Sleep -Milliseconds 10;
@@ -109,6 +112,7 @@ function Read-RestApiBody()
         };
 
         # Convert body to string (for JSON)
+        [byte[]]$BodyBuffer  = $BodyBufferStream.ToArray();
         [string]$BodyString  = [System.Text.Encoding]::UTF8.GetString($BodyBuffer);
         [hashtable]$BodyData = @{
             'RawBytes'      = $BodyBuffer;
@@ -117,8 +121,14 @@ function Read-RestApiBody()
             'ContentLength' = $TotalBytesRead;
         };
 
+        $BodyBufferStream.Dispose();
+
         return (Write-FunctionReturnValue -ReturnValue 'RestApiBodyReadSuccess' -Data @{ 'BodyData' = $BodyData } -OverrideReturn $BodyData);
     } catch {
+        if ($null -ne $BodyBufferStream) {
+            $BodyBufferStream.Dispose();
+        }
+
         return (Write-FunctionReturnValue -ReturnValue 'RestApiBodyReadError' -Data @{ 'Exception' = $_.Exception } -OverrideReturn $null);
     };
 }

@@ -60,14 +60,14 @@ function Test-IcingaProtocolClientStatus()
         }
 
         if (-not $IsConnected) {
-            return (Write-FunctionReturnValue -ReturnValue 'IcingaClientReplaced' -Object $Address);
+            return (Write-FunctionReturnValue -ReturnValue 'IcingaClientReplaced' -Data @{ 'Address' = $Address; });
         } else {
             # Client is still valid
-            return (Write-FunctionReturnValue -ReturnValue 'IcingaClientConnected' -Object $Address);
+            return (Write-FunctionReturnValue -ReturnValue 'IcingaClientConnected' -Data @{ 'Address' = $Address; });
         }
     }
 
     # No existing entry, add new one
     $Global:IcingaForWindows.Public.IcingaProtocol.Connections.Add($Address, $TcpClient);
-    return (Write-FunctionReturnValue -ReturnValue 'IcingaClientCreated' -Object $Address);
+    return (Write-FunctionReturnValue -ReturnValue 'IcingaClientCreated' -Data @{ 'Address' = $Address; });
 }

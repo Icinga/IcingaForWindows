@@ -721,7 +721,7 @@ bytes, string and parsed JSON (if applicable).
 
 #### Outputs
 
-System.Collections.Hashtable — object with keys `RawBytes`, `RawString`, `JsonObj` and `ContentLength`.
+Hashtable with keys `RawBytes`, `RawString`, `JsonObj`, `ContentLength`.
 
 #### Examples
 
@@ -784,7 +784,7 @@ raw bytes and any extra body bytes that were read alongside the headers.
 
 #### Outputs
 
-System.Collections.Hashtable — object with `RawString`, `RawBytes` and `ExtraBodyBytes`.
+Hashtable with `RawString`, `RawBytes`, and `ExtraBodyBytes`.
 
 #### Examples
 

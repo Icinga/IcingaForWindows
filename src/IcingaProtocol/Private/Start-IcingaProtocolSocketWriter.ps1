@@ -69,16 +69,25 @@ function Start-IcingaProtocolSocketWriter()
         return;
     }
 
+    if ($null -ne $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint) {
+        # Clear out any remaining messages in the queue
+        $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint.Dispose();
+        $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint = $null;
+        [void]($Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.PSObject.Properties.Remove($Endpoint));
+    }
+
+    $MyQueue = New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject]);
+    
     $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue | Add-Member -MemberType NoteProperty `
         -Name $Endpoint `
-        -Value (New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject])) `
+        -Value $MyQueue `
         -Force;
 
     # Start reading from the socket as long as the connection is valid
     while (Test-ThreadRunning -CheckTcpConnection -NoSleep) {
         try {
             $TcpMessage = $null;
-            if (-not $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint.TryTake([ref]$TcpMessage, 10000)) {
+            if (-not $MyQueue.TryTake([ref]$TcpMessage, 10000)) {
                 Set-ThreadProcessing;
                 continue;
             }
@@ -91,7 +100,7 @@ function Start-IcingaProtocolSocketWriter()
 
             $EncodedMessage = [System.Text.Encoding]::UTF8.GetString($TcpMessage.message);
 
-            Write-LoggingEntry -Message 'Sending message to Icinga endpoint' -Level 'Warning' -Data @{ 'Endpoint' = $Endpoint; 'Message' = $EncodedMessage; };
+            Write-LoggingEntry -Message 'Sending message to Icinga endpoint' -Level 'Debug' -Data @{ 'Endpoint' = $Endpoint; 'Message' = $EncodedMessage; };
 
             Send-TCPMessage -MsgObj $TcpMessage;
         } catch {

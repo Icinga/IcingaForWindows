@@ -375,7 +375,7 @@ function Set-InternalExitCodes()
         };
         'IcingaClientConfigNotFound' = @{
             'Code'     = 2008;
-            'Message'  = 'The Icinga Protocol connection configuration file was not found at {0}';
+            'Message'  = 'The Icinga Protocol connection configuration file was not found';
             'Severity' = 'Error';
             'Area'     = 'IcingaProtocol';
         };
@@ -1071,13 +1071,13 @@ function Set-InternalExitCodes()
         };
         'IcingaClientConnected' = @{
             'Code'     = 50000;
-            'Message'  = 'We are already connected to the Icinga node at {0}';
+            'Message'  = 'We are already connected to the Icinga node';
             'Severity' = 'Info';
             'Area'     = 'IcingaProtocol';
         };
         'IcingaClientCreated' = @{
             'Code'     = 50001;
-            'Message'  = 'We have established a new connection to Icinga node {0}';
+            'Message'  = 'We have established a new connection to Icinga node';
             'Severity' = 'Info';
             'Area'     = 'IcingaProtocol';
         };
@@ -1089,19 +1089,19 @@ function Set-InternalExitCodes()
         };
         'IcingaClientReplaced' = @{
             'Code'     = 50003;
-            'Message'  = 'The Icinga node with address {0} has been replaced with a new connection';
+            'Message'  = 'The Icinga node with the mentioned address has been replaced with a new connection';
             'Severity' = 'Info';
             'Area'     = 'IcingaProtocol';
         };
         'IcingaClientAdded' = @{
             'Code'     = 50004;
-            'Message'  = 'Added a new known Icinga endpoint to our connection pool {0}';
+            'Message'  = 'Added a new known Icinga endpoint to our connection pool';
             'Severity' = 'Info';
             'Area'     = 'IcingaProtocol';
         };
         'IcingaClientAddingFailed' = @{
             'Code'     = 50005;
-            'Message'  = 'Adding the Icinga client object failed as either the address or the client was invalid {0}';
+            'Message'  = 'Adding the Icinga client object failed as either the address or the client was invalid';
             'Severity' = 'Error';
             'Area'     = 'IcingaProtocol';
         };
@@ -1113,7 +1113,7 @@ function Set-InternalExitCodes()
         };
         'IcingaClientCertificateFileNotFound' = @{
             'Code'        = 50007;
-            'Message'     = 'The Icinga Protocol client certificate file was not found at {0}';
+            'Message'     = 'The Icinga Protocol client certificate file was not found';
             'Severity'    = 'Error';
             'Area'        = 'IcingaProtocol';
             'Description' = 'The Icinga Agent certificate file was not found at the specified path. Please ensure you have placed the certificate with the correct name and that the Icinga for Windows service has the necessary permissions to access it. The specified hostname in your Icinga Protocol configuration should match the certificate filename, without the .pfx extension.';
@@ -1123,6 +1123,83 @@ function Set-InternalExitCodes()
             'Message'  = 'An error occurred while parsing the RPC message for enqueuing';
             'Severity' = 'Error';
             'Area'     = 'IcingaProtocol';
+        };
+        'IcingaCertCommonNameMissing' = @{
+            'Code'        = 50009;
+            'Message'     = 'No common name was provided for the self-signed certificate';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'No common name was provided for the self-signed certificate. You must provide a common name when generating a self-signed certificate.';
+        };
+        'IcingaCertStoredLocally' = @{
+            'Code'        = 50010;
+            'Message'     = 'The self-signed certificate has been successfully stored locally';
+            'Severity'    = 'Info';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The self-signed certificate has been successfully stored locally. You can now use this certificate with Icinga for Windows to establish a secure connection to Icinga nodes.';
+        };
+        'IcingaCertStoredCertStore' = @{
+            'Code'        = 50011;
+            'Message'     = 'The self-signed certificate has been successfully stored in the Windows certificate store';
+            'Severity'    = 'Info';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The self-signed certificate has been successfully stored in the Windows certificate store.';
+        };
+        'IcingaCertMissingForMerge' = @{
+            'Code'        = 50012;
+            'Message'     = 'The Icinga Protocol certificate file was not found';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga Protocol certificate file was not found at the specified path. Please ensure you have placed the certificate with the correct name and that the Icinga for Windows service has the necessary permissions to access it. The specified hostname in your Icinga Protocol configuration should match the certificate filename, without the .pfx extension.';
+        };
+        'IcingaCAImportPathNotfound' = @{
+            'Code'        = 50013;
+            'Message'     = 'The Icinga CA file to import was not found at the specified path';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga CA file was not found at the specified path. Please ensure you have placed the certificate with the correct name and that the Icinga for Windows service has the necessary permissions to access it.';
+        };
+        'IcingaCAContentIsEmpty' = @{
+            'Code'        = 50014;
+            'Message'     = 'The Icinga CA content to import is empty';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga CA content to import is empty. Please ensure you have provided a valid Icinga CA file.';
+        };
+        'IcingaEndpointsEmpty' = @{
+            'Code'        = 50015;
+            'Message'     = 'The Icinga endpoints to connect to are empty';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga endpoints to connect to are empty. Please ensure you have provided at least one Icinga endpoint.';
+        };
+        'IcingaZoneNameNotDefined' = @{
+            'Code'        = 50016;
+            'Message'     = 'The Icinga zone name is undefined';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga zone name is undefined. Please ensure you have provided a valid Icinga zone name.';
+        };
+        'IcingaHostnameNotDefined' = @{
+            'Code'        = 50017;
+            'Message'     = 'The Icinga hostname is not defined';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga hostname is not defined. Please ensure you have provided a valid Icinga hostname.';
+        };
+        'IcingaTlsCertConfigMissing' = @{
+            'Code'        = 50018;
+            'Message'     = 'The Icinga TLS certificate config is not defined';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga TLS certificate config is not defined. Please ensure you have provided a valid Icinga TLS certificate config.';
+        };
+        'IcingaProtoclConfigWritten' = @{
+            'Code'        = 50019;
+            'Message'     = 'The Icinga Protocol configuration has been successfully written to disk';
+            'Severity'    = 'Info';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The Icinga Protocol configuration has been successfully written to disk.';
         };
     };
 }

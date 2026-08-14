@@ -22,5 +22,11 @@ making it suitable for early handshake messages before the queue is initialized.
 #>
 function Send-IcingaProtocolHello()
 {
-    Send-TCPMessage -MsgObj (New-IcingaRPCMessage -Method 'icinga::Hello');
+    Add-IcingaRPCMessageToWriterQueue -MsgObj (
+        New-IcingaRPCMessage -Method 'icinga::Hello' -Parameters @{
+            'capabilities' = 2; # Todo: This will be replaced in the future
+            'version'      = 21600; # Todo: This should be removed later on
+            'agentversion' = [string]::Format('IcingaForWindows/{0}', $Global:IcingaForWindows.Protected.Version);
+        }
+    );
 }

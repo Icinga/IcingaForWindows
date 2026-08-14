@@ -43,8 +43,22 @@ function Open-SSLStream()
         return (Write-FunctionReturnValue -ReturnValue 'SslStreamAlreadyOpened' -Data @{ 'Endpoint' = $Endpoint; 'IsClient' = $IsClient });
     }
 
+    # The LocalCertificateSelectionCallback bypasses .NET's issuer-matching logic, which would
+    # otherwise silently drop our certificate when the remote side's CertificateRequest lists
+    # a CA that doesn't match our cert's issuer chain (common with self-signed Icinga PKI).
     # [IcingaIgnoreDisposeCheck]
-    $sslStream              = New-Object System.Net.Security.SslStream($GlobalVariable.Private.TCP.Client.GetStream(), $false);
+    $sslStream              = New-Object System.Net.Security.SslStream(
+        $GlobalVariable.Private.TCP.Client.GetStream(),
+        $false,
+        $null,
+        ([System.Net.Security.LocalCertificateSelectionCallback]{
+            param($CallbackSender, $TargetHost, $LocalCertificates, $RemoteCertificate, $AcceptableIssuers)
+            if ($LocalCertificates.Count -gt 0) {
+                return $LocalCertificates[0];
+            }
+            return $null;
+        })
+    );
     Write-LoggingEntry -Message 'Successfully created TLS stream for endpoint' -Data @{
         'Endpoint' = $Endpoint;
         'Client'   = $GlobalVariable.Private.TCP.Client;
@@ -58,6 +72,8 @@ function Open-SSLStream()
     $SSLCert                = $GlobalVariable.Private.TCP.Certificate;
 
     if (-not $SSLCert) {
+        # Close the TCP connection if no TLS cert was found
+        Close-TCPConnection;
         return (Write-FunctionReturnValue -ReturnValue 'TlsCertNotFound' -Data @{ 'Endpoint' = $Endpoint; 'IsClient' = $IsClient });
     }
 

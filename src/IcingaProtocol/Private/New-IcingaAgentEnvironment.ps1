@@ -48,6 +48,7 @@ function New-IcingaAgentEnvironment()
         $Global:IcingaForWindows.Public.IcingaProtocol.Config.Endpoints     = $ConnectionConfig.Endpoints;
         $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenAddress = $ConnectionConfig.ListenAddress;
         $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenPort    = $ConnectionConfig.ListenPort;
+        $Global:IcingaForWindows.Public.IcingaProtocol.Config.TlsCertConfig = $ConnectionConfig.TlsCertConfig;
     }
 
     # Set default listen address if not provided
@@ -59,14 +60,6 @@ function New-IcingaAgentEnvironment()
     if ($null -eq $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenPort) {
         $Global:IcingaForWindows.Public.IcingaProtocol.Config.ListenPort = 5665;
     }
-
-    $CertificateFilePath = Join-Path -Path $CertificateDirectory -ChildPath ([string]::Format('{0}.pfx', $ConnectionConfig.Hostname));
-
-    if (-not (Test-Path -Path $CertificateFilePath)) {
-        return (Write-FunctionReturnValue -ReturnValue 'IcingaClientCertificateFileNotFound' -Object $CertificateFilePath);
-    }
-
-    $Global:IcingaForWindows.Public.IcingaProtocol.Certificate = New-Object Security.Cryptography.X509Certificates.X509Certificate2 $CertificateFilePath;
 
     Write-LoggingEntry -Message 'Icinga Protocol Environment initialized' -Level 'Debug' -Data @{ 'IcingaProtocol' = $Global:IcingaForWindows.Public.IcingaProtocol; };
 
