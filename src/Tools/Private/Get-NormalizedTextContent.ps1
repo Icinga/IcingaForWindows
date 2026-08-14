@@ -42,7 +42,12 @@ function Get-NormalizedTextContent()
     try {
         # Attempt JSON normalization; return the original string when the input is
         # not valid JSON so that plain-text inputs pass through unchanged.
-        $Parsed = ConvertFrom-Json -InputObject $Content -ErrorAction Stop;
+        $Parsed = ConvertFrom-ModuleJson -InputObject $Content;
+
+        # If the function returns $null, simply return the content
+        if ($null -eq $Parsed) {
+            return $Content;
+        }
 
         return (ConvertTo-Json -InputObject $Parsed -Depth 20);
     } catch {

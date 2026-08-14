@@ -26,7 +26,7 @@ function Read-IcingaProtocolConnection()
     [string]$ConnectionConfig = Join-Path -Path $ConfigDir -ChildPath 'IcingaProtocol\Connection.json';
 
     if (-not (Test-Path $ConnectionConfig)) {
-        return (Write-FunctionReturnValue -ReturnValue 'IcingaClientConfigNotFound' -Object $ConnectionConfig -OverrideReturn $null);
+        return (Write-FunctionReturnValue -ReturnValue 'IcingaClientConfigNotFound' -Data @{ 'Config' = $ConnectionConfig; } -OverrideReturn $null);
     }
 
     $ConfigJson = Read-SecureFile -File $ConnectionConfig;

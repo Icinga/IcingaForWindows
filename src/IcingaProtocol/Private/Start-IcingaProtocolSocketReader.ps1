@@ -57,7 +57,7 @@ function Start-IcingaProtocolSocketReader()
     }
 
     # Make sure we set the Icinga Protocol certificate for this thread instance
-    $Global:IcingaForWindows.Private.TCP.Certificate = $Global:IcingaForWindows.Public.IcingaProtocol.Certificate;
+    $Global:IcingaForWindows.Private.TCP.Certificate = Get-TlsCertificate -TlsCertConfig $Global:IcingaForWindows.Public.IcingaProtocol.Config.TlsCertConfig;
 
     # Update the global TCP client and stream for reading
     if ((Update-TCPConnection -Client $Client -Endpoint $Endpoint -IsClient:$IsClient) -ne $Global:IcingaForWindows.Public.ReturnCodes.TlsHandshakeSuccessful.Code) {
@@ -86,35 +86,31 @@ function Start-IcingaProtocolSocketReader()
         '-SslStream' = $Global:IcingaForWindows.Private.TCP.Stream;
     } -Start -WaitForJobs;
 
-    # If this is a client connection, send the initial Hello message
-    if ($IsClient) {
-        Send-IcingaProtocolHello;
-    }
+    # Always send Hello and Certificate Request on connection, regardless of incoming or outgoing
+    Send-IcingaProtocolHello;
+    Send-IcingaProtocolCertificateRequest;
 
     # Create read buffer and variables
     $Global:IcingaForWindows.Private.TCP.LastWorkerId = -1;
     [int]$BufferSize                                  = 4096;
-    [string]$JSONRPCMessage                           = '';
+    [System.Text.StringBuilder]$JSONRPCBuffer         = New-Object System.Text.StringBuilder;
+    [byte[]]$bytes                                    = New-Object byte[] $BufferSize;
 
     # Start reading from the socket as long as the connection is valid
     while (Test-ThreadRunning -CheckTcpConnection) {
         try {
-            $StartRead  = (Get-IcingaUnixTime -Milliseconds);
             # Read data from the SSL stream if available
             if ($Global:IcingaForWindows.Private.TCP.Stream.CanRead -and $Global:IcingaForWindows.Private.TCP.Client.GetStream().DataAvailable) {
 
-                # Prepare read buffer and read data
-                [byte[]]$bytes          = New-Object byte[] $BufferSize;
-                $ReadBytes              = $Global:IcingaForWindows.Private.TCP.Stream.Read($bytes, 0, $BufferSize);
-                # Prepare the actual read buffer and variables
-                [byte[]]$RealBuffersize = New-Object byte[] $ReadBytes;
-                [array]::Copy($bytes, 0, $RealBuffersize, 0, $ReadBytes);
-                # Expand the JSONRPCMessage with the newly read data
-                [string]$JSONRPCMessage += [System.Text.Encoding]::UTF8.GetString($RealBuffersize);
+                # Read data into buffer
+                $ReadBytes = $Global:IcingaForWindows.Private.TCP.Stream.Read($bytes, 0, $BufferSize);
+                if ($ReadBytes -gt 0) {
+                    # Expand the JSONRPCBuffer with the newly read data
+                    [void]$JSONRPCBuffer.Append([System.Text.Encoding]::UTF8.GetString($bytes, 0, $ReadBytes));
 
-                # Parse complete messages from buffer
-                Read-IcingaRPCMessage -Buffer $JSONRPCBuffer;
-
+                    # Parse complete messages from buffer
+                    Read-IcingaRPCMessage -Buffer $JSONRPCBuffer;
+                }
                 $ReadBytes = $null;
                 continue;
             }

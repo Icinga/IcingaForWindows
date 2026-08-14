@@ -45,7 +45,7 @@ function Resolve-IcingaIPAddress()
     );
 
     if ([string]::IsNullOrEmpty($Address)) {
-        return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupEmpty' -Object $Address -OverrideReturn $null);
+        return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupEmpty' -Data @{ 'Address' = $Address; } -OverrideReturn $null);
     }
 
     # Check if we already have an IP address
@@ -59,7 +59,7 @@ function Resolve-IcingaIPAddress()
 
         # If we have no addresses, return null with an error
         if ($IPAddresses.Count -eq 0) {
-            return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupFailure' -Object $Address -OverrideReturn $null);
+            return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupFailure' -Data @{ 'Address' = $Address; } -OverrideReturn $null);
         }
 
         # We should prefer IPv4 addresses over IPv6, so return the first IPv4 if available
@@ -77,8 +77,8 @@ function Resolve-IcingaIPAddress()
         }
 
         # This shouldn't happen anymore, but just in case
-        return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupFailedForV4AndV6' -Object $Address, $IPAddresses -OverrideReturn $null);
+        return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupFailedForV4AndV6' -Data @{ 'Address' = $Address; 'IPAddresses' = $IPAddresses; } -OverrideReturn $null);
     } catch {
-        return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupException' -Object $Address, $_.Exception.Message -OverrideReturn $null);
+        return (Write-FunctionReturnValue -ReturnValue 'IPAddressLookupException' -Data @{ 'Address' = $Address; 'ExceptionMessage' = $_.Exception.Message; } -OverrideReturn $null);
     }
 }

@@ -34,7 +34,7 @@ function Send-IcingaProtocolHeartbeat()
         # Send the heartbeat message
         Write-LoggingEntry -Message '  → Sending IcingaProtocol Heartbeat' -Level 'Debug';
         $MsgObj = New-IcingaRPCMessage -Method 'event::Heartbeat' -Parameters @{ 'timeout' = 120 };
-        Send-TCPMessage -MsgObj $MsgObj;
+        Add-IcingaRPCMessageToWriterQueue -MsgObj $MsgObj;
         # Update the last heartbeat time
         $Global:IcingaForWindows.Private.TCP.HeartbeatTimer = $TimeNow;
     }

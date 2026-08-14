@@ -35,7 +35,7 @@ It validates that at least one selector is provided.
 .PARAMETER CertIssuer
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| CertIssuer | System.String | Issuer name filter for store search | $null |
+| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores | $null |
 
 .OUTPUTS
 System.Management.Automation.PSCustomObject — Constructed TLS configuration object, returned via `Write-FunctionReturnValue`.
@@ -54,7 +54,7 @@ function New-TlsCertConfig()
         [string]$CertCN            = $null,
         [string]$CertStore         = 'My',
         [string]$CertStoreLocation = 'LocalMachine',
-        [string]$CertIssuer        = $null
+        [array]$CertIssuer         = $null
     );
 
     # Now check if required parameters are provided. We either need a path or thumbprint or use the filter for Issuer and CN.

@@ -36,7 +36,7 @@ certificate file, thumbprint, CN, issuer, or alternative store settings.
 .PARAMETER CertIssuer
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| CertIssuer | System.String | Issuer name to match when searching certificate stores. | |
+| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores. | |
 
 .OUTPUTS
 System.Object — TLS certificate configuration object for the TCP stack, returned from `New-TlsCertConfig`.
@@ -57,7 +57,7 @@ function New-IcingaTlsCertConfig()
         [string]$CertCN            = $null,
         [string]$CertStore         = 'My',
         [string]$CertStoreLocation = 'LocalMachine',
-        [string]$CertIssuer        = $null
+        [array]$CertIssuer         = $null
     );
 
     return (

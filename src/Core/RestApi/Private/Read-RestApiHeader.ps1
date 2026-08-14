@@ -8,7 +8,7 @@ encountered or a timeout occurs. Returns a hashtable with raw header string,
 raw bytes and any extra body bytes that were read alongside the headers.
 
 .OUTPUTS
-System.Collections.Hashtable — object with `RawString`, `RawBytes` and `ExtraBodyBytes`.
+Hashtable with `RawString`, `RawBytes`, and `ExtraBodyBytes`.
 
 .EXAMPLE
 PS> Read-RestApiHeader
@@ -18,13 +18,14 @@ This function reads directly from `(Get-GlobalRuntimeVariable).Private.TCP.Strea
 #>
 function Read-RestApiHeader()
 {
-    [byte[]]$HeaderBuffer                    = @();
-    [byte[]]$ReadBuffer                      = New-Object byte[] 1024;
-    [int]$BytesRead                          = 0;
-    [string]$HeaderString                    = '';
-    [bool]$HeaderComplete                    = $false;
-    [System.Diagnostics.Stopwatch]$Stopwatch = [System.Diagnostics.Stopwatch]::StartNew();
-    $GlobalVariable                          = Get-GlobalRuntimeVariable;
+    [System.IO.MemoryStream]$HeaderBufferStream = [System.IO.MemoryStream]::new();
+    [byte[]]$HeaderBuffer                       = @();
+    [byte[]]$ReadBuffer                         = New-Object byte[] 1024;
+    [int]$BytesRead                             = 0;
+    [string]$HeaderString                       = '';
+    [bool]$HeaderComplete                       = $false;
+    [System.Diagnostics.Stopwatch]$Stopwatch    = [System.Diagnostics.Stopwatch]::StartNew();
+    $GlobalVariable                             = Get-GlobalRuntimeVariable;
     
     try {
         while (-not $HeaderComplete -and $Stopwatch.Elapsed.TotalSeconds -lt $GlobalVariable.Private.TCP.SocketTimeoutInSeconds) {
@@ -32,8 +33,8 @@ function Read-RestApiHeader()
 
             if ($BytesRead -gt 0) {
                 # Append newly read bytes to header buffer
-                [byte[]]$HeaderBuffer += $ReadBuffer[0..($BytesRead - 1)];
-                $HeaderString = [System.Text.Encoding]::UTF8.GetString($HeaderBuffer);
+                $HeaderBufferStream.Write($ReadBuffer, 0, $BytesRead);
+                $HeaderString = [System.Text.Encoding]::UTF8.GetString($HeaderBufferStream.GetBuffer(), 0, [int]$HeaderBufferStream.Length);
 
                 # Check for double newline (HTTP header terminator)
                 if ($HeaderString -match "`r`n`r`n") {
@@ -46,13 +47,16 @@ function Read-RestApiHeader()
                         # Calculate actual byte position accounting for potential multi-byte UTF8 characters
                         [string]$HeaderOnlyString = $HeaderString.Substring(0, $HeaderEndIndex + 4);
                         [byte[]]$HeaderOnlyBytes  = [System.Text.Encoding]::UTF8.GetBytes($HeaderOnlyString);
+                        [byte[]]$FullBuffer       = $HeaderBufferStream.ToArray();
 
                         # Extract any extra body bytes that were read along with headers
-                        if ($HeaderOnlyBytes.Count -lt $HeaderBuffer.Count) {
-                            $ExtraBodyBytes = $HeaderBuffer[$HeaderOnlyBytes.Count..($HeaderBuffer.Count - 1)];
+                        if ($HeaderOnlyBytes.Count -lt $FullBuffer.Count) {
+                            $ExtraBodyBytes = $FullBuffer[$HeaderOnlyBytes.Count..($FullBuffer.Count - 1)];
                         };
 
                         # Trim header buffer to only include headers
+                        $HeaderBufferStream.SetLength(0);
+                        $HeaderBufferStream.Write($HeaderOnlyBytes, 0, $HeaderOnlyBytes.Count);
                         [byte[]]$HeaderBuffer = $HeaderOnlyBytes;
                         $HeaderString         = $HeaderOnlyString;
                         $HeaderComplete       = $true;
@@ -74,8 +78,13 @@ function Read-RestApiHeader()
         };
 
         # Return header buffer and string
+        $HeaderBufferStream.Dispose();
         return (Write-FunctionReturnValue -ReturnValue 'RestApiHeaderReadSuccess' -Data @{ 'RawString' = $HeaderString; 'ExtraBodyBytes' = $ExtraBodyBytes.Count } -OverrideReturn $HeaderData);
     } catch {
+        if ($null -ne $HeaderBufferStream) {
+            $HeaderBufferStream.Dispose();
+        }
+
         Write-LoggingEntry -Message $_.Exception.GetType() -Level 'Error';
         return (Write-FunctionReturnValue -ReturnValue 'RestApiHeaderReadError' -Data @{ 'Exception' = $_.Exception } -OverrideReturn $null);
     };

@@ -129,5 +129,141 @@ InModuleScope 'IcingaForWindows' {
                 }
             }
         }
+
+        Context "IcingaProtocol Worker Memory Constraints" {
+            It "Should not leak OS handles after processing Icinga Protocol check commands" {
+                # Setup
+                $GlobalVariable = Get-GlobalRuntimeVariable
+                
+                # 1. Create a dummy self-signed certificate for IcingaProtocol
+                $Cert = New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "cert:\CurrentUser\My" -ErrorAction Stop
+                
+                try {
+                    $TlsCertConfig = [PSCustomObject]@{
+                        CertStore         = 'My'
+                        CertStoreLocation = 'CurrentUser'
+                        CertThumbprint    = $Cert.Thumbprint
+                        CertCN            = 'localhost'
+                        CertIssuer        = @('localhost')
+                    }
+                    
+                    # Configure IcingaProtocol runtime state
+                    $GlobalVariable.Public.IcingaProtocol.Certificate = $Cert
+                    $GlobalVariable.Public.IcingaProtocol.Config = [PSCustomObject]@{
+                        ListenAddress = '127.0.0.1'
+                        ListenPort    = 56656
+                        WorkerCount   = 1
+                        Hostname      = 'localhost'
+                        TlsCertConfig = $TlsCertConfig
+                    }
+                    $GlobalVariable.Public.IcingaProtocol.Connections = @{}
+                    $GlobalVariable.Public.IcingaProtocol.WriterQueue = [PSCustomObject]@{}
+                    
+                    # Initialize the worker queue
+                    $GlobalVariable.Public.IcingaProtocol.WorkerQueue = New-Object System.Collections.ArrayList
+                    $GlobalVariable.Public.IcingaProtocol.WorkerQueue.Add(
+                        (New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject]))
+                    ) | Out-Null
+                    
+                    # Start the Listener Thread
+                    $ListenerThread = New-Thread -Command 'Start-IcingaProtocolListener' -Start
+                    
+                    # Start the Worker Thread (WorkerId 0)
+                    $WorkerThread = New-Thread -Command 'Start-IcingaProtocolWorker' -Parameters @{ 'WorkerId' = 0 } -Start
+                    
+                    # Allow threads to initialize and initialize PerformanceCounters
+                    Start-Sleep -Seconds 2
+                    
+                    # Measure Handles BEFORE load
+                    [System.GC]::Collect()
+                    Start-Sleep -Seconds 1
+                    $HandlesBefore = (Get-Process -Id $PID).HandleCount
+                    
+                    # 1. Stress test via direct TCP / TLS socket connection with JSON-RPC frames
+                    try {
+                        $TcpClient = New-Object System.Net.Sockets.TcpClient('127.0.0.1', 56656)
+                        $SslStream = New-Object System.Net.Security.SslStream(
+                            $TcpClient.GetStream(),
+                            $false,
+                            ([System.Net.Security.RemoteCertificateValidationCallback]{ $true })
+                        )
+                        $SslStream.AuthenticateAsClient('localhost')
+                        
+                        $JsonPayload = '{"jsonrpc":"2.0","method":"event::ExecuteCommand","params":{"host":"test-host","service":"cpu","command":"check_cpu","macros":{"ifw_api_command":"Invoke-IcingaCheckCPU"}}}'
+                        $FramedMessage = "$($JsonPayload.Length):$JsonPayload"
+                        $Bytes = [System.Text.Encoding]::UTF8.GetBytes($FramedMessage)
+                        
+                        for ($i = 0; $i -lt 20; $i++) {
+                            $SslStream.Write($Bytes, 0, $Bytes.Length)
+                            $SslStream.Flush()
+                        }
+                        
+                        Start-Sleep -Seconds 1
+                        $SslStream.Dispose()
+                        $TcpClient.Dispose()
+                    } catch {
+                        # Ignore connection errors during stress testing
+                    }
+                    
+                    # 2. Stress test via direct Worker Queue check executions
+                    $ExecuteMsg = [PSCustomObject]@{
+                        'method' = 'event::ExecuteCommand'
+                        'params' = [PSCustomObject]@{
+                            'host'    = 'test-host'
+                            'service' = 'cpu'
+                            'command' = 'check_cpu'
+                            'macros'  = [PSCustomObject]@{
+                                'ifw_api_command' = 'Invoke-IcingaCheckCPU'
+                            }
+                        }
+                    }
+                    $HeartbeatMsg = [PSCustomObject]@{
+                        'method' = 'event::Heartbeat'
+                        'params' = [PSCustomObject]@{}
+                    }
+                    
+                    for ($i = 0; $i -lt 30; $i++) {
+                        $RPCObject = [PSCustomObject]@{
+                            'Message' = if ($i % 5 -eq 0) { $HeartbeatMsg } else { $ExecuteMsg }
+                            'Client'  = $null
+                            'Stream'  = $null
+                        }
+                        $GlobalVariable.Public.IcingaProtocol.WorkerQueue[0].Add($RPCObject)
+                    }
+                    
+                    # Wait for the worker queue to be drained
+                    $Timeout = 10
+                    while ($GlobalVariable.Public.IcingaProtocol.WorkerQueue[0].Count -gt 0 -and $Timeout -gt 0) {
+                        Start-Sleep -Milliseconds 200
+                        $Timeout -= 0.2
+                    }
+                    
+                    Start-Sleep -Seconds 2
+                    
+                    # Measure Handles AFTER load
+                    [System.GC]::Collect()
+                    Start-Sleep -Seconds 1
+                    $HandlesAfter = (Get-Process -Id $PID).HandleCount
+                    
+                    # Stop Threads
+                    if ($null -ne $ListenerThread) {
+                        Stop-Thread -ThreadId $ListenerThread.ThreadId
+                    }
+                    if ($null -ne $WorkerThread) {
+                        Stop-Thread -ThreadId $WorkerThread.ThreadId
+                    }
+                    
+                    Write-Host "IcingaProtocol Handles Before: $HandlesBefore, Handles After: $HandlesAfter"
+                    
+                    # Assertion
+                    $IsSafe = $HandlesAfter -le ($HandlesBefore + 100)
+                    $IsSafe | Should Be $true
+                    
+                } finally {
+                    # Cleanup certificate
+                    Remove-Item -Path "cert:\CurrentUser\My\$($Cert.Thumbprint)" -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
     }
 }
