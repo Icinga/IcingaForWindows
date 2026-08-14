@@ -98,7 +98,7 @@ function Read-ModuleWebSocket()
             Write-FunctionReturnValue -ReturnValue 'WebSocketReadError' -Data @{ 'Name' = $WebSocketName; 'Exception' = $_.Exception } | Out-Null;
         }
 
-        $WebSocketBuffer = $null;
-        $ResponseMsg     = $null;
+        $ResponseMsgBuilder = $null;
+        $ResponseMsg        = $null;
     }
 }

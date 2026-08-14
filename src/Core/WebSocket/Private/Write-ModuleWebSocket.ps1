@@ -97,6 +97,11 @@ function Write-ModuleWebSocket()
             $RequestProgress = $null;
         } catch {
             Write-FunctionReturnValue -ReturnValue 'WebSocketWriteError' -Data @{ 'Name' = $WebSocketName; 'Exception' = $_.Exception } | Out-Null;
+        } finally {
+            $WebSocketMessage = $null;
+            $Bytes            = $null;
+            $SocketMsg        = $null;
+            $RequestProgress  = $null;
         }
     };
 }

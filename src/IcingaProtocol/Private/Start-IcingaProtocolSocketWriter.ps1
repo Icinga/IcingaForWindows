@@ -95,8 +95,23 @@ function Start-IcingaProtocolSocketWriter()
 
             Send-TCPMessage -MsgObj $TcpMessage;
         } catch {
-            Write-LoggingEntry -Message "Error reading from Icinga Protocol writer queue" -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; 'Endpoint' = $Endpoint; };
-            break;
+            Write-LoggingEntry -Message 'Caught exception in Icinga Protocol Socket Writer' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; 'Endpoint' = $Endpoint; };
+        } finally {
+            $TcpMessage     = $null;
+            $EncodedMessage = $null;
+        }
+    }
+
+    if (-not [string]::IsNullOrEmpty($Endpoint) -and $null -ne $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue) {
+        if ($null -ne $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint) {
+            # Only dispose and remove the queue if it is STILL our queue!
+            # (Prevents a dying thread from deleting the queue of a newly established connection)
+            if ($Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint -eq $MyQueue) {
+                try {
+                    $MyQueue.Dispose();
+                } catch { }
+                $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.PSObject.Properties.Remove($Endpoint) | Out-Null;
+            }
         }
     }
 }

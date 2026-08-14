@@ -112,8 +112,10 @@ function Start-IcingaProtocolSocketReader()
                 # Expand the JSONRPCMessage with the newly read data
                 [string]$JSONRPCMessage += [System.Text.Encoding]::UTF8.GetString($RealBuffersize);
 
-                # Now we the entire message and properly parse it
-                $JSONRPCMessage = Read-IcingaRPCMessage -JSONRPCMessage $JSONRPCMessage;
+                # Parse complete messages from buffer
+                Read-IcingaRPCMessage -Buffer $JSONRPCBuffer;
+
+                $ReadBytes = $null;
                 continue;
             }
         } catch {

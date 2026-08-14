@@ -62,9 +62,6 @@ function Start-RestApiWorker()
 
                 if ($AclTest -ne $GlobalVariable.Public.ReturnCodes.RestApiAccessControlPermissionGranted.Code -and $AclTest -ne $GlobalVariable.Public.ReturnCodes.RestApiAccessControlNotDefined.Code) {
                     Send-TCPMessage -MsgObj (New-RestApiResponse -StatusCode 403 -StatusMessage 'Forbidden' -ResponseBody @{ 'error' = 'You do not have access to this resource'} ) | Out-Null;
-                    # Close the connection
-                    Close-TCPConnection;
-
                     continue;
                 }
 
@@ -76,7 +73,6 @@ function Start-RestApiWorker()
                 if ($null -eq $RawHttpHeader) {
                     # No data available, likely the client disconnected
                     Write-LoggingEntry -Message 'No data available on TCP connection, skipping processing' -Level 'Debug' -Data @{ 'WorkerId' = $WorkerId; 'Client' = $TcpClient };
-                    Close-TCPConnection;
                     continue;
                 }
 
@@ -87,7 +83,6 @@ function Start-RestApiWorker()
                 # If we read the body and the user exceeded content length, we already closed the connection with
                 # 413 Payload Too Large. We don't need to continue processing.
                 if (-not (Test-TCPConnection)) {
-                    Close-TCPConnection;
                     continue;
                 }
 
@@ -112,9 +107,6 @@ function Start-RestApiWorker()
                         $GlobalVariable.Private.RestApi.ContentLength = 0;
 
                         Send-TCPMessage -MsgObj (New-RestApiResponse -StatusCode 403 -StatusMessage 'Forbidden' -ResponseBody @{ 'error' = 'You do not have access to this resource'} ) | Out-Null;
-                        # Close the connection
-                        Close-TCPConnection;
-
                         continue;
                     }
                 }
@@ -141,15 +133,20 @@ function Start-RestApiWorker()
             }
         } catch {
             Write-LoggingEntry -Message 'Error processing RestApi Worker connection' -Level 'Error' -Data @{ 'WorkerId' = $WorkerId; 'Exception' = $_.Exception };
+        } finally {
+            # Clear RestApi context to ensure we fresh start for the next connection
+            $GlobalVariable.Private.RestApi.Body          = $null;
+            $GlobalVariable.Private.RestApi.WebPath       = $null;
+            $GlobalVariable.Private.RestApi.Header        = $null;
+            $GlobalVariable.Private.RestApi.ContentLength = 0;
+
+            $RawHttpHeader    = $null;
+            $ParsedHttpHeader = $null;
+            $AclTest          = $null;
+            $TcpClient        = $null;
+
+            # Close the connection once we are done
+            Close-TCPConnection;
         }
-
-        # Clear RestApi context to ensure we fresh start for the next connection
-        $GlobalVariable.Private.RestApi.Body          = $null;
-        $GlobalVariable.Private.RestApi.WebPath       = $null;
-        $GlobalVariable.Private.RestApi.Header        = $null;
-        $GlobalVariable.Private.RestApi.ContentLength = 0;
-
-        # Close the connection once we are done
-        Close-TCPConnection;
     }
 }
