@@ -73,7 +73,7 @@ with the supplied parameters.
 
 #### Outputs
 
-System.Object — The return value of the invoked Command; error conditions return structured objects via Write-FunctionReturnValue.
+Varies. The invoked `Command` determines output; error conditions return structured cmdlet returns.
 
 #### Examples
 
@@ -83,7 +83,10 @@ PS> Set-ThreadData -PublicSpace $GlobalPublic -AccessControl $ac -ThreadId $tid 
 
 #### Notes
 
-This function calls `New-BaseEnvironment` and sets `(Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemon` to `$true`.
+Called exclusively by New-Thread; do not invoke directly. Calls New-ModuleBaseEnvironment to set
+up the runspace and sets (Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemon to $true so
+that downstream functions know they are executing in a background context. Thread identity is
+tracked via Update-LoggingThreadLoggingId for log correlation.
 
 *Source: [src/Core/Threading/Public/Set-ThreadData.ps1](../../src/Core/Threading/Public/Set-ThreadData.ps1)*
 
@@ -377,7 +380,7 @@ The function supports keep-alive semantics and parent/child relationships.
 
 #### Outputs
 
-System.String — The newly created thread id.
+System.String. The newly created thread id.
 
 #### Examples
 

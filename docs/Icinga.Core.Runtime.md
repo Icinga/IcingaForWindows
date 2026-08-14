@@ -5,7 +5,6 @@
 ## Public functions
 
 - [Exit-Icinga](#exit-icinga)
-- [Use-IcingaForWindows](#use-icingaforwindows)
 
 ## Private helpers
 
@@ -42,65 +41,6 @@ a graceful shutdown cannot be achieved. Use with caution: cleanup routines and
 background jobs will not complete and state may be lost or inconsistent.
 
 *Source: [src/Core/Runtime/Public/Exit-Icinga.ps1](../../src/Core/Runtime/Public/Exit-Icinga.ps1)*
-
----
-
-### Use-IcingaForWindows
-
-*Public function*
-
-**Synopsis:** Initialize the IcingaForWindows runtime environment in the current session
-
-#### Description
-
-`Use-IcingaForWindows` performs the necessary startup tasks for the Icinga
-PowerShell module. When called without `-NoNewShell` it spawns a new
-PowerShell process (preferring pwsh over powershell.exe) and re-invokes
-itself with `-NoNewShell` in that child process. When called with
-`-NoNewShell` it initializes the base environment, applies the log level,
-loads configuration and access control, and starts the standard background
-daemon threads (logging, garbage collector, housekeeper, REST API, WebSocket
-and Icinga agent). The function is idempotent; repeated calls while already
-initialized return immediately.
-
-#### Parameters
-
-**`$LogLevel`**
-
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| LogLevel | System.String | Minimum log level for the session. Accepted values: Debug, Audit, Info, Success, Warning, Error, Fatal. | Warning |
-
-**`$NoBackgroundDaemons`**
-
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| NoBackgroundDaemons | System.Management.Automation.SwitchParameter | Reserved for future use; currently has no effect on daemon startup. | $false |
-
-**`$NoNewShell`**
-
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| NoNewShell | System.Management.Automation.SwitchParameter | When set, initialize directly in the current shell instead of spawning a new process. | $false |
-
-#### Outputs
-
-None — Side effects only: starts background threads and configures global runtime state.
-
-#### Examples
-
-```powershell
-PS> Use-IcingaForWindows
-```
-
-#### Notes
-
-Depends on New-ModuleBaseEnvironment, New-ModuleConfigEnvironment,
-Read-ModuleAccessControl and the daemon functions being available in scope.
-The alias `ifw` maps to this function. When running without `-NoNewShell`
-the function blocks until the spawned child process exits.
-
-*Source: [src/Core/Runtime/Public/Use-Icinga.ps1](../../src/Core/Runtime/Public/Use-Icinga.ps1)*
 
 ---
 

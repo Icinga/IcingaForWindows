@@ -49,7 +49,7 @@ multiple times because it will not overwrite an existing table.
 
 *Private function*
 
-**Synopsis:** Emit a standardized numeric return value and optional log entry
+**Synopsis:** Emit a standardized numeric return value and optional log entry.
 
 #### Description
 
@@ -76,12 +76,19 @@ Supports returning an override value instead of the mapped code.
 
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| OverrideReturn | System.Object | If provided (not 'Core::IgnoreOverride'), this value is returned instead of the mapped numeric code. Can be a boolean or numeric value. | Core::IgnoreOverride |
+| OverrideReturn | System.Object | If provided (not 'Core::IgnoreOverride'), this value is returned instead of the mapped numeric code. Booleans are returned via explicit cast to preserve type. | Core::IgnoreOverride |
+
+**`$AutomationRun`**
+
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| AutomationRun | System.Management.Automation.SwitchParameter | When set, returns @{ ExitCode; Output } instead of the numeric code. ExitCode is 0 for Info/Audit/Debug severities, 2 for all others. | $false |
 
 #### Outputs
 
-System.Int32
-Numeric return code mapped from the semantic `ReturnValue`, or the provided `OverrideReturn`.
+System.Int32 — Numeric code from the return-code table when neither -OverrideReturn nor -AutomationRun is active.
+System.Collections.Hashtable — @{ ExitCode = System.Int32; Output = System.String } when -AutomationRun is set.
+System.Object — The -OverrideReturn value as-is when provided, taking precedence over both the numeric code and -AutomationRun.
 
 #### Examples
 
@@ -91,7 +98,10 @@ PS> Write-FunctionReturnValue -ReturnValue 'TlsHandshakeSuccessful'
 
 #### Notes
 
-This helper depends on `Set-InternalExitCodes` and `Write-LoggingEntry`.
+Calls Set-InternalExitCodes to ensure the return-code table is populated before the first lookup.
+Enqueues a log entry via Write-LoggingEntry only when the entry's severity is enabled in the
+current logging configuration and is not 'Audit'. Must be called from the main thread or via
+Get-GlobalRuntimeVariable in daemon context.
 
 *Source: [src/Core/ErrorHandling/Private/Write-FunctionReturnValue.ps1](../../src/Core/ErrorHandling/Private/Write-FunctionReturnValue.ps1)*
 

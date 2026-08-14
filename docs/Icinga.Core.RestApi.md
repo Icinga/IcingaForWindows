@@ -202,7 +202,7 @@ return objects as the underlying private implementation.
 
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 10000 |
+| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 5668 |
 
 **`$TlsCertConfig`**
 
@@ -215,6 +215,12 @@ return objects as the underlying private implementation.
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
 | WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5 |
+
+**`$DryRun`**
+
+| Name   | Type                                         | Description                                                                                       | Default |
+|--------|----------------------------------------------|---------------------------------------------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false |
 
 #### Outputs
 
@@ -403,35 +409,40 @@ spaces and handlers.
 
 *Private function*
 
-**Synopsis:** Route an incoming HTTP request to the matching RestApi space handler
+**Synopsis:** Resolve the REST API path to a configured handler and execute it.
 
 #### Description
 
-Reads the parsed web path and space configuration from the global RestApi
-private context and dispatches the request to the configured handler via
-`Invoke-RestApiCommandExecutionField`. When no matching space or action is
-found the function sends the appropriate HTTP error or HTML listing response
-directly over the TCP connection and returns a structured return value. All
-context (web path, header, body) must be populated in
-`(Get-GlobalRuntimeVariable).Private.RestApi` before calling this function.
+Core dispatcher of the Icinga for Windows REST API. Reads the parsed web-path
+and headers from `$Global.Private.RestApi.*`, walks the configured
+spaces hashtable (Space → Action → Resource) to locate an
+`ApiCommandExecution` field and invokes the bound PowerShell function
+via `Invoke-RestApiCommandExecutionField`. Emits the appropriate JSON
+response on success and well-formed error responses on failure
+(missing space → 404, invalid path depth → 400, command error → 500,
+no spaces configured → 500, no command at all → HTML endpoint listing
+or 200 / 404 for JSON callers).
 
 #### Outputs
 
-None — sends responses via `Send-TCPMessage` and returns structured return
-codes through `Write-FunctionReturnValue`.
+System.Int32 — A semantic return code resolved through
+`Write-FunctionReturnValue` for downstream diagnostics. The HTTP
+response is sent directly over the worker's TCP stream.
 
 #### Examples
 
 ```powershell
 PS> Invoke-RestApiCall
+
+Called by `Start-RestApiWorker` after the request line and body have
+been parsed; arguments are taken from worker-private state.
 ```
 
 #### Notes
 
-Must only be called from within a RestApi worker thread after the request
-headers and body have been fully parsed. Relies on the global runtime
-variables `Private.RestApi.Spaces`, `Private.RestApi.WebPath` and
-`Private.RestApi.Header`.
+Path schema is `/v1/<Space>/<Action>/<Resource>`. The actual
+`ApiCommandExecution` lookup supports 2, 3 or 4 segments (segment
+count is checked before the handler runs).
 
 *Source: [src/Core/RestApi/Private/Invoke-RestApiCall.ps1](../../src/Core/RestApi/Private/Invoke-RestApiCall.ps1)*
 
@@ -665,7 +676,7 @@ into a single byte array suitable for sending over a TCP socket. When the
 
 #### Outputs
 
-System.Collections.Hashtable — response object with `Message` (byte[]) and `Length` (int) keys.
+Hashtable with `Message` (byte[]) and `Length` (int) keys.
 
 #### Examples
 
@@ -959,6 +970,12 @@ configuration and writes the configuration to the module config directory as
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
 | WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5 |
+
+**`$DryRun`**
+
+| Name   | Type                                         | Description                                                                                       | Default |
+|--------|----------------------------------------------|---------------------------------------------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false |
 
 #### Outputs
 
