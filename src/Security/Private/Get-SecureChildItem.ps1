@@ -58,7 +58,7 @@ function Get-SecureChildItem()
         [switch]$Directory = $false,
         [switch]$Recurse   = $false
     )
-    
+
     # Validate the Path parameter
     if ([string]::IsNullOrEmpty($Path)) {
         return (Write-FunctionReturnValue -ReturnValue 'ChildItemPathArgumentEmpty' -Data @{ 'Path' = $Path } -OverrideReturn $null);

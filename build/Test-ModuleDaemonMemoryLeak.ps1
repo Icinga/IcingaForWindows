@@ -23,7 +23,7 @@ function Test-ModuleDaemonMemoryLeak()
     param (
         [string]$SourceFolder = (Join-Path $PSScriptRoot '..\src')
     )
-    
+
     [bool]$Success = $true
     $Files = Get-ChildItem -Path $SourceFolder -Recurse -Include *.ps1,*.psm1
 
@@ -70,7 +70,7 @@ function Test-ModuleDaemonMemoryLeak()
             foreach ($Assign in $Assignments) {
                 $Left = $Assign.Left
                 $Right = $Assign.Right
-                
+
                 $VarName = $null
                 $IsExemptType = $false
 
@@ -123,11 +123,11 @@ function Test-ModuleDaemonMemoryLeak()
         $DisposedVars = @{}
 
         $AllAssignments = $Ast.FindAll({ $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] }, $true)
-        
+
         foreach ($Assign in $AllAssignments) {
             $Left = $Assign.Left
             $Right = $Assign.Right
-            
+
             $VarName = $null
             if ($Left -is [System.Management.Automation.Language.ConvertExpressionAst]) {
                 if ($Left.Child -is [System.Management.Automation.Language.VariableExpressionAst]) {
@@ -142,7 +142,7 @@ function Test-ModuleDaemonMemoryLeak()
                 if ($VarName -eq '_' -or $VarName -eq 'this' -or $VarName -match '^args$') { continue }
 
                 $IsDisposableAssignment = $false
-                
+
                 $NewObjCmd = $Right.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] -and $args[0].GetCommandName() -eq 'New-Object' }, $true)
                 if ($null -ne $NewObjCmd) {
                     foreach ($elem in $NewObjCmd.CommandElements) {
@@ -154,7 +154,7 @@ function Test-ModuleDaemonMemoryLeak()
                         }
                     }
                 }
-                
+
                 $InvokeMemberCmd = $Right.Find({ $args[0] -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and $args[0].Member.Extent.Text -match '^new$|^Create$' }, $true)
                 if ($null -ne $InvokeMemberCmd) {
                     $TypeName = $InvokeMemberCmd.Expression.Extent.Text -replace '\[|\]',''
@@ -185,7 +185,7 @@ function Test-ModuleDaemonMemoryLeak()
             if (-not $DisposedVars.ContainsKey($VarName)) {
                 $StartLine = $DisposableVars[$VarName]
                 $IsOptedOut = $false
-                
+
                 # Check line exactly before the assignment
                 if ($StartLine -gt 1) {
                     $PrevLine = $FileLines[$StartLine - 2]
@@ -193,7 +193,7 @@ function Test-ModuleDaemonMemoryLeak()
                         $IsOptedOut = $true
                     }
                 }
-                
+
                 # Fallback: Check for Opt-Out comment with variable name anywhere in the file text
                 if (-not $IsOptedOut) {
                     $OptOutString = "# [IcingaIgnoreDisposeCheck] `$$VarName"

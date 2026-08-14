@@ -33,7 +33,7 @@ function Get-ThreadCallStack()
     # callstack for actually creating the thread. To keep the naming and later displaying as limited as possible,
     # just remove it
     $ThreadName       = ($ActualBreadcrumb -join '::').Replace('<ScriptBlock>', 'Main').Replace('Set-ThreadData::', '');
-   
+
     # Return the thread name
     return $ThreadName;
 }

@@ -1,6 +1,6 @@
 # Icinga.IcingaProtocol
 
-*Auto-generated from `src/IcingaProtocol/`. Do not edit by hand — run `build/Build-ModuleDocs.ps1` to regenerate.*
+*Auto-generated from `src/IcingaProtocol/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
 
 ## Public functions
 
@@ -205,8 +205,8 @@ This object is required for configuring the Icinga environment structure.
 
 #### Description
 
-This function configures the Icinga Protocol connection settings, including endpoints, zone name, hostname, 
-and TLS certificate configuration. It either saves the configuration to 'IcingaProtocol\Connection.json' 
+This function configures the Icinga Protocol connection settings, including endpoints, zone name, hostname,
+and TLS certificate configuration. It either saves the configuration to 'IcingaProtocol\Connection.json'
 or returns a diff against the current configuration if -DryRun is used.
 
 #### Parameters

@@ -87,7 +87,7 @@ function Read-IcingaRPCMessage()
 
         # Extract the RPC message based on the determined size
         [string]$RPCMessage = $Buffer.ToString($ColonIndex + 1, $RPCSize);
-        
+
         if (-not [string]::IsNullOrEmpty($RPCMessage)) {
             # Add the complete RPC message to the worker queue for processing
             Add-IcingaRPCMessageToWorker -Message $RPCMessage | Out-Null;

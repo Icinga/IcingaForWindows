@@ -1,6 +1,6 @@
 # Icinga.Core.Threading
 
-*Auto-generated from `src/Core/Threading/`. Do not edit by hand — run `build/Build-ModuleDocs.ps1` to regenerate.*
+*Auto-generated from `src/Core/Threading/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
 
 ## Public functions
 

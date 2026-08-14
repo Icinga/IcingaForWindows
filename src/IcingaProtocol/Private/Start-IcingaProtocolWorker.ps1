@@ -114,7 +114,7 @@ function Start-IcingaProtocolWorker()
                     }#>
 
                     #$ExitCode      = & $RPCMessage.params.macros.ifw_api_command @Arguments;
-                    
+
                     <#
                     $CheckResultData = @{
                         'host'    = $RPCMessage.params.host;

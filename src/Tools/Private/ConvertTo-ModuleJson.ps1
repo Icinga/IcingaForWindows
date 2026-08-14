@@ -48,7 +48,7 @@ function ConvertTo-ModuleJson()
 
             $Serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer;
             $Serializer.MaxJsonLength = 2147483647;
-            
+
             return $Serializer.Serialize($InputObject);
         }
     } catch {

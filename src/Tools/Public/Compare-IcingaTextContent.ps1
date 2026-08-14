@@ -71,7 +71,7 @@ function Compare-IcingaTextContent()
         [switch]$Colorized = $false
     );
 
-    
+
     # Resolve OldConfig: a string without newlines that exists as a file on disk
     # is treated as a path; everything else is treated as inline content.
     [string]$OldResolved = $OldConfig;

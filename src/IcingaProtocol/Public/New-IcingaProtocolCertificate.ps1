@@ -58,9 +58,9 @@ function New-IcingaProtocolCertificate()
 
         # Create a new certificate request for the given Common Name
         $req  = [System.Security.Cryptography.X509Certificates.CertificateRequest]::New(
-            [string]::Format('CN={0}', $CommonName), 
-            $rsa, 
-            [System.Security.Cryptography.HashAlgorithmName]::SHA256, 
+            [string]::Format('CN={0}', $CommonName),
+            $rsa,
+            [System.Security.Cryptography.HashAlgorithmName]::SHA256,
             [System.Security.Cryptography.RSASignaturePadding]::Pkcs1
         );
 
@@ -100,8 +100,8 @@ function New-IcingaProtocolCertificate()
             }
 
             $oldCert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
-                $PfxPath, 
-                [string]::Empty, 
+                $PfxPath,
+                [string]::Empty,
                 [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
             );
         }
@@ -140,7 +140,7 @@ function New-IcingaProtocolCertificate()
         $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite);
 
         # Remove existing certificates with matching Subject to avoid duplicates.
-        # We check that the Issuer is either the same as the Subject (self-signed) 
+        # We check that the Issuer is either the same as the Subject (self-signed)
         # or contains 'Icinga' to avoid deleting unrelated certificates (like CA certs).
         foreach ($existingCert in $store.Certificates) {
             if ($existingCert.Subject -eq [string]::Format('CN={0}', $CommonName)) {
@@ -160,7 +160,6 @@ function New-IcingaProtocolCertificate()
 
         $store.Add($storeCert);
         $store.Close();
-        
         $store.Dispose();
         $storeCert.Dispose();
 

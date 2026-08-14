@@ -80,7 +80,7 @@ function Write-FunctionReturnValue()
         if (-not ($OverrideReturn -is [string] -and $OverrideReturn -eq 'Core::IgnoreOverride')) {
             return ,$OverrideReturn;
         }
-    
+
         # If we use automation like Ansible, we need to report properly mapped exit status
         # codes for success and failure
         if ($AutomationRun) {

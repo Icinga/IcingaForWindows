@@ -1,6 +1,6 @@
 # Icinga.Security
 
-*Auto-generated from `src/Security/`. Do not edit by hand — run `build/Build-ModuleDocs.ps1` to regenerate.*
+*Auto-generated from `src/Security/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
 
 ## Private helpers
 

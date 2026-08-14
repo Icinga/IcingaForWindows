@@ -51,13 +51,13 @@ function Expand-RestApiWebPath()
         'HasQuery'     = $false;
         'SegmentCount' = 0;
     };
-    
+
     try {
         # Split path into path part and query string
         [string[]]$PathParts = $WebPath -split '\?', 2;
         [string]$PathOnly    = $PathParts[0];
         [string]$QueryString = $null;
-        
+
         if ($PathParts.Count -gt 1) {
             $QueryString = $PathParts[1];
         } else {

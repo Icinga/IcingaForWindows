@@ -88,7 +88,7 @@ function Get-IcingaModuleStructure()
         throw 'Module base path must be provided to analyze the module structure.';
     }
 
-    [hashtable]$ModuleStructure = @{ 
+    [hashtable]$ModuleStructure = @{
         'Public'  = @();
         'Private' = @();
     };
@@ -234,9 +234,9 @@ if ($null -ne $ManifestFile) {
 # Final step: Run tests unless skipped
 if (-not $SkipTests) {
     Write-Host "`n[5/5] Running tests..." -ForegroundColor Yellow;
-    
+
     $TestPath = Join-Path -Path $ModuleBasePath -ChildPath 'Tests';
-    
+
     if (Test-Path $TestPath) {
         # Check if Pester is installed
         if (-not (Get-Module -ListAvailable -Name Pester)) {
@@ -244,14 +244,14 @@ if (-not $SkipTests) {
         } else {
             try {
                 $TestResults = Invoke-Pester -Path $TestPath -PassThru;
-                
+
                 if ($TestResults.FailedCount -gt 0) {
                     throw "Tests failed! Failed: $($TestResults.FailedCount)";
                 }
-                
+
                 Write-Host "  * All tests passed" -ForegroundColor Green;
                 Write-Host "    Total: $($TestResults.TotalCount), Passed: $($TestResults.PassedCount)" -ForegroundColor Gray;
-                
+
             } catch {
                 Write-Error "Test execution failed: $_";
                 throw;
@@ -274,7 +274,7 @@ if ($GenerateDocs) {
 if ($TestDaemonMemoryLeaks) {
     Write-Host "`n[+] Running Daemon Memory Leak tests..." -ForegroundColor Yellow;
     . (Join-Path -Path $PSScriptRoot -ChildPath 'Test-ModuleDaemonMemoryLeak.ps1');
-    
+
     $SourcePath = Join-Path -Path $ModuleBasePath -ChildPath 'src';
     if (-not (Test-ModuleDaemonMemoryLeak -SourceFolder $SourcePath)) {
         throw 'Daemon Memory Leak test failed! Un-nulled variables were found in endless loops.';

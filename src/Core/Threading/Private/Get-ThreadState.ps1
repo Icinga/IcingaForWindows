@@ -27,7 +27,7 @@ function Get-ThreadState()
     param (
         [string]$ThreadId = (Get-ThreadId)
     );
-    
+
     # Load the current thread
     $ThreadState = (Get-GlobalRuntimeVariable).Public.Threading.Threads.$ThreadId.State;
     $KeepAlive   = (Get-GlobalRuntimeVariable).Public.Threading.Threads.$ThreadId.KeepAlive;

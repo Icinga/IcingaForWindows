@@ -1,6 +1,6 @@
 # Icinga API Reference
 
-*Auto-generated on 2026-08-14 15:34:25.*
+*Auto-generated on 2026-08-14 16:48:47.*
 
 | Component | Public functions | Private helpers |
 |-----------|------------------|-----------------|

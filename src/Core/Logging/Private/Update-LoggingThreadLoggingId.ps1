@@ -35,5 +35,5 @@ function Update-LoggingThreadLoggingId()
         # until the first cycle of the thread is reached. This will ensure we can track everything
         # the thread did from it's creation to the first cycle properly
         (Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId = $ThreadId;
-    }  
+    }
 }

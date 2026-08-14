@@ -92,7 +92,7 @@ function Read-RestApiBody()
         };
 
         # Read body data until Content-Length is reached
-        while ($TotalBytesRead -lt $ContentLength -and $Stopwatch.Elapsed.TotalSeconds -lt $GlobalVariable.Private.TCP.SocketTimeoutInSeconds) {           
+        while ($TotalBytesRead -lt $ContentLength -and $Stopwatch.Elapsed.TotalSeconds -lt $GlobalVariable.Private.TCP.SocketTimeoutInSeconds) {
 
             [int]$RemainingBytes = $ContentLength - $TotalBytesRead;
             [int]$ReadSize       = [Math]::Min($ReadBuffer.Length, $RemainingBytes);

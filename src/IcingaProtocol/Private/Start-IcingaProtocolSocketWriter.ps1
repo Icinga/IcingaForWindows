@@ -77,7 +77,7 @@ function Start-IcingaProtocolSocketWriter()
     }
 
     $MyQueue = New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject]);
-    
+
     $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue | Add-Member -MemberType NoteProperty `
         -Name $Endpoint `
         -Value $MyQueue `

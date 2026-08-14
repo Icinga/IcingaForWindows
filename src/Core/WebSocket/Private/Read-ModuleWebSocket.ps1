@@ -73,7 +73,7 @@ function Read-ModuleWebSocket()
 
                 # Wait for the read to complete, also this waits for a message to be available
                 While ((Test-ModuleWebSocket) -And $RequestProgress.IsCompleted -eq $FALSE) {
-                    Start-Sleep -Milliseconds 10; 
+                    Start-Sleep -Milliseconds 10;
                 }
 
                 if (-not $RequestProgress.IsCompleted -or $RequestProgress.IsFaulted -or $RequestProgress.IsCanceled) {

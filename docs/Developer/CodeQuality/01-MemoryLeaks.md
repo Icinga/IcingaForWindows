@@ -1,10 +1,10 @@
 # Icinga for Windows - Code Quality & Linting
 
-This section of the documentation explains the internal Code Quality and Linting checks that are enforced during the build process of Icinga for Windows. 
+This section of the documentation explains the internal Code Quality and Linting checks that are enforced during the build process of Icinga for Windows.
 
 ## Memory Leak Prevention
 
-As background threads and daemons in Icinga for Windows usually run in endless loops, they are highly prone to memory leaks if local variables are not reset properly or unmanaged resources are not disposed. 
+As background threads and daemons in Icinga for Windows usually run in endless loops, they are highly prone to memory leaks if local variables are not reset properly or unmanaged resources are not disposed.
 
 The Icinga for Windows build process includes an **AST (Abstract Syntax Tree) Linter** (`Test-ModuleDaemonMemoryLeak.ps1`) which enforces two strict memory constraints on all scripts and modules:
 
@@ -16,7 +16,7 @@ Any object that implements `IDisposable` and manages unmanaged resources (e.g., 
 
 ## Opting out of the Dispose Check
 
-There are valid architectural reasons to intentionally not dispose an object (for example, if a background thread creates a `TcpClient` and pushes it into a global worker queue where another thread takes over ownership). 
+There are valid architectural reasons to intentionally not dispose an object (for example, if a background thread creates a `TcpClient` and pushes it into a global worker queue where another thread takes over ownership).
 
 In these specific cases, you must explicitly tell the Linter to ignore the missing `.Dispose()` call.
 

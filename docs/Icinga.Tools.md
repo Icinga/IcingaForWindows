@@ -1,6 +1,6 @@
 # Icinga.Tools
 
-*Auto-generated from `src/Tools/`. Do not edit by hand — run `build/Build-ModuleDocs.ps1` to regenerate.*
+*Auto-generated from `src/Tools/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
 
 ## Public functions
 

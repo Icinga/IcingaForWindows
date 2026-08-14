@@ -150,7 +150,7 @@ function Invoke-RestApiCommandExecutionField()
                     $FunctionParams[$ParamName] = ConvertFrom-ObjectToBool -Value $ParamValue;
                     break;
                 };
-                'array'  { 
+                'array'  {
                     # Assume comma-separated values for array, but keep possible strings within "" with
                     # a text and comma inside intact
                     if ($ParamValue -is [array]) {
@@ -163,7 +163,7 @@ function Invoke-RestApiCommandExecutionField()
                             $_.Value.Trim('"')
                         };
                     };
-                    break; 
+                    break;
                 };
                 default  {
                     $FunctionParams[$ParamName] = $ParamValue;

@@ -26,7 +26,7 @@ function Read-RestApiHeader()
     [bool]$HeaderComplete                       = $false;
     [System.Diagnostics.Stopwatch]$Stopwatch    = [System.Diagnostics.Stopwatch]::StartNew();
     $GlobalVariable                             = Get-GlobalRuntimeVariable;
-    
+
     try {
         while (-not $HeaderComplete -and $Stopwatch.Elapsed.TotalSeconds -lt $GlobalVariable.Private.TCP.SocketTimeoutInSeconds) {
             $BytesRead = $GlobalVariable.Private.TCP.Stream.Read($ReadBuffer, 0, $ReadBuffer.Length);

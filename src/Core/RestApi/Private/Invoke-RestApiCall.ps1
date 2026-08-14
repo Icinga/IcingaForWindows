@@ -58,7 +58,7 @@ function Invoke-RestApiCall()
         return (Write-FunctionReturnValue -ReturnValue 'RestApiNoSpaceInPath' -Data @{ 'WebPath' = $WebPath } -OverrideReturn $null);
     }
 
-    <# 
+    <#
     Now we need to navigate our space configuration to find the functions being used and
     fetch the objects properly from possible segments. Lets assume we have a space config like this:
     {
