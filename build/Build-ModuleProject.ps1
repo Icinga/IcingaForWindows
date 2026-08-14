@@ -1,8 +1,9 @@
 ﻿[CmdletBinding()]
 param (
-    [string]$BuildModule  = 'core',
-    [switch]$SkipTests    = $false,
-    [switch]$GenerateDocs = $false
+    [string]$BuildModule           = 'core',
+    [switch]$SkipTests             = $false,
+    [switch]$GenerateDocs          = $false,
+    [switch]$TestDaemonMemoryLeaks = $false
 );
 
 $ErrorActionPreference  =  'Stop';
@@ -264,6 +265,18 @@ if (-not $SkipTests) {
 if ($GenerateDocs) {
     Write-Host "`n[+] Generating API documentation..." -ForegroundColor Yellow;
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Build-ModuleDocs.ps1') -ModuleBasePath $ModuleBasePath -Strict $false | Out-Null;
+}
+
+# Optional: AST-based Memory Leak tests for Daemons
+if ($TestDaemonMemoryLeaks) {
+    Write-Host "`n[+] Running Daemon Memory Leak tests..." -ForegroundColor Yellow;
+    . (Join-Path -Path $PSScriptRoot -ChildPath 'Test-ModuleDaemonMemoryLeak.ps1')
+    
+    $SourcePath = Join-Path -Path $ModuleBasePath -ChildPath 'src'
+    if (-not (Test-ModuleDaemonMemoryLeak -SourceFolder $SourcePath)) {
+        throw 'Daemon Memory Leak test failed! Un-nulled variables were found in endless loops.'
+    }
+    Write-Host "  ✓ No Daemon memory leaks detected" -ForegroundColor Green;
 }
 
 # Build process is complete
