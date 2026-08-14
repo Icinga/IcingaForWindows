@@ -1,0 +1,9 @@
+{
+    "list": {
+        "ApiCommandExecution": {
+            "Method": ["GET"],
+            "Parameters": {},
+            "Function": "Show-IcingaThreads"
+        }
+    }
+}
