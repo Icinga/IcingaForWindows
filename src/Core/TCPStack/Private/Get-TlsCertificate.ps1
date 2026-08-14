@@ -37,6 +37,11 @@ function Get-TlsCertificate()
             $Cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList $TlsCertConfig.CertPath;
         } catch {
             return (Write-FunctionReturnValue -ReturnValue 'TlsCertLoadFromPathFailed' -Data @{ 'CertPath' = $TlsCertConfig.CertPath; 'Exception' = $_.Exception } -OverrideReturn $null);
+        } finally {
+            if ($null -ne $Cert) {
+                $Cert.Dispose();
+                $Cert = $null;
+            }
         }
 
         return (Write-FunctionReturnValue -ReturnValue 'TlsCertLoadedFromPath' -Data @{ 'Certificate' = $Cert } -OverrideReturn $Cert);
@@ -68,6 +73,8 @@ function Get-TlsCertificate()
             return (Write-FunctionReturnValue -ReturnValue 'TlsCertLoadedFromStore' -Data @{ 'Certificate' = $Cert } -OverrideReturn $Cert);
         } finally {
             $Store.Close();
+            $Store.Dispose();
+            $Store = $null;
         }
     } catch {
         return (Write-FunctionReturnValue -ReturnValue 'TlsCertLoadFromStoreFailed' -Data @{ 'TlsCertConfig' = $TlsCertConfig; 'Exception' = $_.Exception } -OverrideReturn $null);
