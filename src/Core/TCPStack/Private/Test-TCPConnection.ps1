@@ -19,9 +19,26 @@ function Test-TCPConnection()
 {
     $GlobalVariable = Get-GlobalRuntimeVariable;
 
-    if ($null -eq $GlobalVariable.Private.TCP.Stream -Or $null -eq $GlobalVariable.Private.TCP.Client) {
+    $Client = $GlobalVariable.Private.TCP.Client;
+    $Stream = $GlobalVariable.Private.TCP.Stream;
+
+    if ($null -eq $Stream -or $null -eq $Client -or $null -eq $Client.Client) {
         return $false;
     }
 
-    return $GlobalVariable.Private.TCP.Client.Connected;
+    if (-not $Client.Connected) {
+        return $false;
+    }
+
+    # In .NET, TcpClient.Connected only reflects the state of the last I/O operation.
+    # Check Poll for SelectRead with Available == 0 to detect if remote socket was closed/disconnected.
+    try {
+        if ($Client.Client.Poll(0, [System.Net.Sockets.SelectMode]::SelectRead) -and $Client.Client.Available -eq 0) {
+            return $false;
+        }
+    } catch {
+        return $false;
+    }
+
+    return $true;
 }

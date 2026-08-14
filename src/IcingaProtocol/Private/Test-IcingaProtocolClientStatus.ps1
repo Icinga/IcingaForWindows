@@ -46,11 +46,24 @@ function Test-IcingaProtocolClientStatus()
         # Check if the client object is still valid and present
         $KnownTcpClient = $Global:IcingaForWindows.Public.IcingaProtocol.Connections[$Address];
 
-        if ($null -eq $KnownTcpClient -or $KnownTcpClient.Connected -eq $false) {
+        [bool]$IsConnected = $false;
+        if ($null -ne $KnownTcpClient -and $null -ne $KnownTcpClient.Client -and $KnownTcpClient.Connected) {
+            try {
+                # In .NET, TcpClient.Connected only reflects the state of the last I/O operation.
+                # Check Poll for SelectRead with Available == 0 to detect if remote socket was closed/disconnected.
+                if (-not ($KnownTcpClient.Client.Poll(0, [System.Net.Sockets.SelectMode]::SelectRead) -and $KnownTcpClient.Client.Available -eq 0)) {
+                    $IsConnected = $true;
+                }
+            } catch {
+                $IsConnected = $false;
+            }
+        }
+
+        if (-not $IsConnected) {
             return (Write-FunctionReturnValue -ReturnValue 'IcingaClientReplaced' -Object $Address);
         } else {
             # Client is still valid
-            return (Write-FunctionReturnValue -ReturnValue 'IcingaClientConnected'-Object $Address);
+            return (Write-FunctionReturnValue -ReturnValue 'IcingaClientConnected' -Object $Address);
         }
     }
 
