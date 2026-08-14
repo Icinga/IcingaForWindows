@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param (
     [string]$BuildModule           = 'core',
     [switch]$SkipTests             = $false,
@@ -227,6 +227,13 @@ Write-Host "  ✓ Kernel file built successfully: $SingleModuleName" -Foreground
 
 Write-Host "`n[4/4] Module manifest..." -ForegroundColor Yellow;
 Write-Host "  ✓ Using static manifest (IcingaForWindows.psd1)" -ForegroundColor Green;
+
+$ManifestFile = Get-ChildItem -Path $ModuleBasePath -Filter '*.psd1' -File | Select-Object -First 1;
+if ($null -ne $ManifestFile) {
+    Import-Module -Name $ManifestFile.FullName -Force;
+    Import-Module -Name $ManifestFile.FullName -Force -Global;
+    Write-Host "  ✓ Module loaded successfully into session" -ForegroundColor Green;
+}
 
 # Final step: Run tests unless skipped
 if (-not $SkipTests) {
