@@ -81,17 +81,28 @@ function Start-LoggingDaemon()
 
         $EventLogMessage += "`r`n" + '============================' + "`r`n" + $LogMessage;
 
-        Write-EventLog `
-            -LogName $ModuleName `
-            -Source ([string]::Format('{0}::{1}', $ModuleName, $LogArea)) `
-            -EntryType $EntryType `
-            -EventId $LogObject.EventId `
-            -Message $EventLogMessage;
+        $EventLogSource = [string]::Format('{0}::{1}', $ModuleName, $LogArea);
+        $EventLog       = New-Object System.Diagnostics.EventLog;
+        try {
+            $EventLog.Log    = $ModuleName;
+            $EventLog.Source = $EventLogSource;
+            $EventLog.WriteEntry($EventLogMessage, $EntryType, $LogObject.EventId);
+        } finally {
+            $EventLog.Dispose();
+        }
 
         Format-LoggingConsoleMessage -Message $LogMessage;
 
-        $DataDump   = $null;
-        $LogObject  = $null;
-        $LogMessage = $null;
+        $DataDump        = $null;
+        $LogObject       = $null;
+        $LogObject.Data  = $null;
+        $LogMessage      = $null;
+        $EventLog        = $null;
+        $EventLogSource  = $null;
+        $EventLogMessage = $null;
+        $EntryType       = $null;
+        $LogArea         = $null;
+        $LogColor        = $null;
+        $DataDump        = $null;
     }
 }

@@ -146,11 +146,10 @@ function Format-LoggingConsoleObjects()
     # PSCustomObject and general objects (but not TcpClient or SslStream)
     if ($Object -is [PSObject] -and -not ($Object -is [System.Net.Sockets.TcpClient]) -and -not ($Object -is [System.Net.Security.SslStream]) -and -not ($Object -is [System.Security.Cryptography.X509Certificates.X509Certificate2]) -and -not ($Object -is [System.Net.Sockets.TcpListener])) {
 
-        [array]$Properties = @();
-        # Get all properties from the object
-        foreach ($prop in $Object.PSObject.Properties) {
+        # Get all properties from the object efficiently without array reallocation
+        $Properties = foreach ($prop in $Object.PSObject.Properties) {
             if ($prop.MemberType -eq 'NoteProperty' -or $prop.MemberType -eq 'Property') {
-                $Properties += $prop;
+                $prop;
             }
         }
 

@@ -65,18 +65,9 @@ function Write-FunctionReturnValue()
 
         # Only queue the log entry if the severity level is enabled in the current logging configuration
         # TODO: Fix Audit log to make it configurable for printing only access violations or try some different handling
-        if ((Test-LoggingWriteLog -Level $codeEntry.Severity) -and $codeEntry.Severity -ne 'Audit') {
-            # Enqueue log entry
-            $GlobalVariable.Public.Logging.Queue.Add(
-                [PSCustomObject]@{
-                    'Message'   = $codeEntry.Message;
-                    'Level'     = $codeEntry.Severity;
-                    'EventId'   = $codeEntry.Code;
-                    'Area'      = $codeEntry.Area;
-                    'Data'      = $Data;
-                    'TimeStamp' = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss:ffff');
-                }
-            );
+        if ($codeEntry.Severity -ne 'Audit') {
+            # Enqueue log entry via the central function
+            Write-LoggingEntry -Message $codeEntry.Message -Level $codeEntry.Severity -EventId $codeEntry.Code -Area $codeEntry.Area -Data $Data;
         }
 
         # Fixes OverrideReturn on bool states, as PowerShell would compare "string" to "bool" and therefore the result would be fales
