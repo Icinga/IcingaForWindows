@@ -39,7 +39,6 @@ function New-IcingaAgentEnvironment()
 {
     # Read connection configuration
     $ConnectionConfig     = Read-IcingaProtocolConnection;
-    $CertificateDirectory = Get-ModuleCertificateDirectory;
 
     # If we do not provide any connection configuration, it means the master/satellite will connect to us instead
     if ($null -ne $ConnectionConfig) {

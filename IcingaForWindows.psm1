@@ -213,11 +213,12 @@ function Get-ModuleCertificateDirectory()
 function Build-ModuleProject()
 {
     param (
-        [string]$BuildModule = 'core',
-        [switch]$SkipTests   = $false
+        [switch]$SkipTests             = $false,
+        [switch]$GenerateDocs          = $false,
+        [switch]$TestDaemonMemoryLeaks = $false
     );
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'build\Build-ModuleProject.ps1');
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'build\Build-ModuleProject.ps1') -SkipTests:$SkipTests -GenerateDocs:$GenerateDocs -TestDaemonMemoryLeaks:$TestDaemonMemoryLeaks;
 }
 
 function Get-GlobalRuntimeVariable()
@@ -250,10 +251,10 @@ initialized return immediately.
 |------|------|-------------|---------|
 | LogLevel | System.String | Minimum log level for the session. Accepted values: Debug, Audit, Info, Success, Warning, Error, Fatal. | Warning |
 
-.PARAMETER NoBackgroundDaemons
+.PARAMETER RunBackgroundDaemons
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| NoBackgroundDaemons | System.Management.Automation.SwitchParameter | Reserved for future use; currently has no effect on daemon startup. | $false |
+| RunBackgroundDaemons | System.Management.Automation.SwitchParameter | When set, start the standard background daemon threads (logging, garbage collector, housekeeper, REST API, WebSocket, Icinga agent). Default is false. | $false |
 
 .PARAMETER NoNewShell
 | Name | Type | Description | Default |
@@ -261,10 +262,11 @@ initialized return immediately.
 | NoNewShell | System.Management.Automation.SwitchParameter | When set, initialize directly in the current shell instead of spawning a new process. | $false |
 
 .OUTPUTS
-None — Side effects only: starts background threads and configures global runtime state.
+None — Side effects only: configures global runtime state and optionally starts background threads.
 
 .EXAMPLE
 PS> Use-IcingaForWindows
+PS> Use-IcingaForWindows -RunBackgroundDaemons
 
 .NOTES
 Depends on New-ModuleBaseEnvironment, New-ModuleConfigEnvironment,
@@ -277,9 +279,9 @@ function Use-IcingaForWindows()
 {
     param (
         [ValidateSet('Debug', 'Audit', 'Info', 'Success', 'Warning', 'Error', 'Fatal')]
-        [string]$LogLevel            = 'Warning',
-        [switch]$NoBackgroundDaemons = $false,
-        [switch]$NoNewShell          = $false
+        [string]$LogLevel             = 'Warning',
+        [switch]$RunBackgroundDaemons = $false,
+        [switch]$NoNewShell           = $false
     );
 
     if ($null -ne $Global:IcingaForWindows) {
@@ -301,13 +303,15 @@ function Use-IcingaForWindows()
         # Read and apply access control settings
         Read-ModuleAccessControl | Out-Null;
 
-        # Create our default background threads
-        New-Thread -Command 'Start-LoggingDaemon' -KeepAlive -WaitForJobs -Start;
-        New-Thread -Command 'Start-ModuleGarbageCollector' -KeepAlive -Start;
-        New-Thread -Command 'Start-ThreadHouseKeeper' -Start;
-        New-Thread -Command 'Start-RestApiDaemon' -Start;
-        New-Thread -Command 'Start-ModuleWebSocketDaemon' -Start;
-        New-Thread -Command 'Start-IcingaAgent' -Start;
+        if ($RunBackgroundDaemons) {
+            # Create our default background threads
+            New-Thread -Command 'Start-LoggingDaemon' -KeepAlive -WaitForJobs -Start;
+            New-Thread -Command 'Start-ModuleGarbageCollector' -KeepAlive -Start;
+            New-Thread -Command 'Start-ThreadHouseKeeper' -Start;
+            New-Thread -Command 'Start-RestApiDaemon' -Start;
+            New-Thread -Command 'Start-ModuleWebSocketDaemon' -Start;
+            New-Thread -Command 'Start-IcingaAgent' -Start;
+        }
 
         # Ensure we set our environment initialized flag to avoid re-initialization
         $Global:IcingaForWindows.Protected.Initialized = $true;
@@ -320,18 +324,19 @@ function Use-IcingaForWindows()
         }
 
         & $PSBinary -NoProfile -NoExit -ExecutionPolicy 'ByPass' -Command {
-            [string]$LogLevel = $args[0];
+            [string]$LogLevel           = $args[0];
+            [bool]$RunBackgroundDaemons = [bool]$args[1];
 
             # To prevent code duplication, just let this PowerShell session call
             # IcingaForWindows, but do not start a new shell. This will ensure we
             # have a proper call stack and can manage everything way easier
-            Use-IcingaForWindows -NoNewShell -LogLevel $LogLevel;
+            Use-IcingaForWindows -NoNewShell -LogLevel $LogLevel -RunBackgroundDaemons:$RunBackgroundDaemons;
 
             function prompt {
                 Write-Host -Object 'icinga' -NoNewline;
                 return '> '
             }
-        } -Args $LogLevel;
+        } -Args $LogLevel, $RunBackgroundDaemons;
     }
 }
 

@@ -28,19 +28,18 @@ function Close-TCPConnection()
             $GlobalVariable.Private.TCP.Stream.Close();
             $GlobalVariable.Private.TCP.Stream.Dispose();
         }
+        $GlobalVariable.Private.TCP.Stream = $null;
     } catch {
-        # Nothing to do
+        $GlobalVariable.Private.TCP.Stream = $null;
     }
-
-    $GlobalVariable.Private.TCP.Stream = $null;
 
     try {
         if ($null -ne $GlobalVariable.Private.TCP.Client) {
             $GlobalVariable.Private.TCP.Client.Close();
             $GlobalVariable.Private.TCP.Client.Dispose();
         }
+        $GlobalVariable.Private.TCP.Client = $null;
     } catch {
-        # Nothing to do
+        $GlobalVariable.Private.TCP.Client = $null;
     }
-    $GlobalVariable.Private.TCP.Client = $null;
 }

@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param (
     [string]$BuildModule           = 'core',
     [switch]$SkipTests             = $false,
@@ -9,7 +9,6 @@ param (
 $ErrorActionPreference  = 'Stop';
 $ProgressPreference     = 'SilentlyContinue';
 [string]$ModuleBasePath = '';
-$NewLine                = [Environment]::NewLine;
 
 if ($BuildModule -eq 'core') {
     [array]$InstalledModules     = Get-Module -ListAvailable -Name 'IcingaForWindows';

@@ -52,9 +52,9 @@ function Open-SSLStream()
         $false,
         $null,
         ([System.Net.Security.LocalCertificateSelectionCallback]{
-            param($CallbackSender, $TargetHost, $LocalCertificates, $RemoteCertificate, $AcceptableIssuers)
-            if ($LocalCertificates.Count -gt 0) {
-                return $LocalCertificates[0];
+            # $args[2] is LocalCertificates (LocalCertificateSelectionCallback: sender, targetHost, localCertificates, remoteCertificate, acceptableIssuers)
+            if ($null -ne $args[2] -and $args[2].Count -gt 0) {
+                return $args[2][0];
             }
             return $null;
         })

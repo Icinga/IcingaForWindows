@@ -118,7 +118,9 @@ function Start-IcingaProtocolSocketWriter()
             if ($Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.$Endpoint -eq $MyQueue) {
                 try {
                     $MyQueue.Dispose();
-                } catch { }
+                } catch {
+                    $MyQueue = $null;
+                }
                 $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue.PSObject.Properties.Remove($Endpoint) | Out-Null;
             }
         }

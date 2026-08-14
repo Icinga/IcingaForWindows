@@ -47,7 +47,7 @@ function Start-ModuleWebSocketReaderWorker()
 
     [string]$WebSocketName   = $GlobalVariable.Private.WebSocket.Name;
     [string]$WebSocketType   = $GlobalVariable.Public.WebSocket.Config.$WebSocketName.Type;
-    [string]$WebSocketConfig = $GlobalVariable.Public.WebSocket.Config.$WebSocketName.Config;
+    # [string]$WebSocketConfig = $GlobalVariable.Public.WebSocket.Config.$WebSocketName.Config;
 
      # If the WebSocket is not open, we don't need to proceed and close the thread
     while (Test-ThreadRunning -CheckWebSocket) {
