@@ -56,7 +56,6 @@ function Start-IcingaProtocolWorker()
 
             # Ensure we set the thread processing context for proper logging and state management
             Set-ThreadProcessing;
-            # $RPCMessage       = ConvertFrom-Json -InputObject $RPCMsg.Message.Replace('"macros":{"":"$",', '"macros":{');
             $RPCMessage = $RPCObject.Message;
             # Set our internal TCP client and stream to ensure we can send messages to the same connection
             Set-TCPClientAndStream -TcpClient $RPCObject.Client -SslStream $RPCObject.Stream;
@@ -64,9 +63,6 @@ function Start-IcingaProtocolWorker()
             switch ($RPCMessage.method) {
                 'icinga::Hello' {
                     Write-LoggingEntry -Message '  ✓ Received Hello method' -Level 'Debug';
-                    #Write-Host "  → Sending: $testMessage" -ForegroundColor Yellow
-                    #Send-IcingaApiMessage -Message (New-IcingaApiMessage -Method 'icinga::Hello') -Stream $sslStream;
-                    #Write-Host "  ✓ Response sent" -ForegroundColor Green
                     break;
                 };
                 'event::ExecuteCommand' {
@@ -146,6 +142,8 @@ function Start-IcingaProtocolWorker()
                         'ExecutionTime' = ($CheckFinished - $CheckStarted);
                     };
 
+                    $CheckFinished = (Get-IcingaUnixTime -Milliseconds);
+
                     $CheckResultData = @{
                         'host'    = $RPCMessage.params.host;
                         'service' = $RPCMessage.params.service;
@@ -178,10 +176,13 @@ function Start-IcingaProtocolWorker()
                     break;
                 };
             }
-            $RPCMsg     = $null;
-            $RPCMessage = $null;
         } catch {
             Write-LoggingEntry -Message 'An error occurred in Icinga Protocol Worker' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; };
+        } finally {
+            $RPCMessage     = $null;
+            $RPCObject      = $null;
+            $CheckStarted   = $null;
+            $ExecuteCommand = $null;
         }
     }
 }

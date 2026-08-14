@@ -59,7 +59,6 @@ function Start-IcingaProtocolConnector()
                 $ConnectTask = $TcpClient.ConnectAsync($EndpointConfig.Address, $EndpointConfig.Port);
                 if (-not $ConnectTask.Wait(10000)) {
                     $TcpClient.Dispose();
-                    $TcpClient = $null;
                     Write-LoggingEntry -Message 'Failed to connect to Icinga endpoint' -Level 'Warning' -Data @{ 'Timeout' = 'Socket connection timeout after 10 seconds'; 'Endpoint' = $EndpointConfig.Address; 'Endpoints' = $Global:IcingaForWindows.Public.IcingaProtocol.Config.Endpoints; };
                     continue;
                 }
@@ -73,9 +72,15 @@ function Start-IcingaProtocolConnector()
             } catch {
                 if ($null -ne $TcpClient) {
                     $TcpClient.Dispose();
-                    $TcpClient = $null;
                 }
                 Write-LoggingEntry -Message 'Failed to connect to Icinga endpoint' -Level 'Warning' -Data @{ 'ExceptionMessage' = $_.Exception.Message; 'Endpoint' = $EndpointConfig.Address; 'Endpoints' = $Global:IcingaForWindows.Public.IcingaProtocol.Config.Endpoints; };
+            } finally {
+                $TcpClient       = $null;
+                $EndpointName    = $null;
+                $EndpointConfig  = $null;
+                $ResolvedAddress = $null;
+                $TestStatus      = $null;
+                $ConnectTask     = $null;
             }
         }
 

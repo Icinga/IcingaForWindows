@@ -118,7 +118,11 @@ function Start-ThreadHouseKeeper()
         } catch {
             # Log any exceptions that occur during the housekeeping process
             Write-LoggingEntry -Message 'Housekeeper: Caught exception during housekeeping: {0}' -Level 'Error' -Data @{ 'Exception' = $_.Exception };
+        } finally {
+            $GlobalVariable = $null;
+            $ThreadIdList   = $null;
         }
+
         # Call this function every 10 seconds to minimize performance impact
         Start-Sleep -Seconds 10;
     }

@@ -50,6 +50,8 @@ function Start-RestApiListener()
             Add-RestApiClientToWorker -TcpClient $TcpClient | Out-Null;
         } catch {
             Write-LoggingEntry -Message 'Error accepting TCP connection' -Level 'Error' -Data @{ 'Exception' = $_.Exception };
+        } finally {
+            $TcpClient = $null;
         }
     }
 }
