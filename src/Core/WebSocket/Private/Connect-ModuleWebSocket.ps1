@@ -58,7 +58,9 @@ function Connect-ModuleWebSocket()
     Disconnect-ModuleWebSocket | Out-Null;
 
     $GlobalVariable    = Get-GlobalRuntimeVariable;
+    # [IcingaIgnoreDisposeCheck]
     $WebSocketClient   = New-Object System.Net.WebSockets.ClientWebSocket;
+    # [IcingaIgnoreDisposeCheck]
     $CancelTokenSource = New-Object System.Threading.CancellationTokenSource;
     $RequestProgress   = $WebSocketClient.ConnectAsync($Address, $CancelTokenSource.Token);
 

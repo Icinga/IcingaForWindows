@@ -83,9 +83,6 @@ function Read-ModuleWebSocket()
                 [bool]$EndOfMessage = $RequestProgress.Result.EndOfMessage;
             } while (-not $EndOfMessage -and (Test-ModuleWebSocket));
 
-            # Clear our request progress which would otherwise cause a memory leak as in case we
-            # cannot establish a connection to the remote server, this function is called frequently
-            # and will then cause endless request progress states to be created
             $RequestProgress.Dispose();
             $RequestProgress = $null;
 
@@ -96,9 +93,17 @@ function Read-ModuleWebSocket()
             $GlobalVariable.Public.WebSocket.$WebSocketName.ReaderWorker.Add([string]($ResponseMsg)) | Out-Null;
         } catch {
             Write-FunctionReturnValue -ReturnValue 'WebSocketReadError' -Data @{ 'Name' = $WebSocketName; 'Exception' = $_.Exception } | Out-Null;
-        }
+        } finally {
+            $WebSocketBuffer = $null;
+            $ResponseMsg     = $null;
 
-        $ResponseMsgBuilder = $null;
-        $ResponseMsg        = $null;
+            # Clear our request progress which would otherwise cause a memory leak as in case we
+            # cannot establish a connection to the remote server, this function is called frequently
+            # and will then cause endless request progress states to be created
+            if ($null -ne $RequestProgress) {
+                $RequestProgress.Dispose();
+                $RequestProgress = $null;
+            }
+        }
     }
 }

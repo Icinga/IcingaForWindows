@@ -43,6 +43,7 @@ function Open-SSLStream()
         return (Write-FunctionReturnValue -ReturnValue 'SslStreamAlreadyOpened' -Data @{ 'Endpoint' = $Endpoint; 'IsClient' = $IsClient });
     }
 
+    # [IcingaIgnoreDisposeCheck]
     $sslStream              = New-Object System.Net.Security.SslStream($GlobalVariable.Private.TCP.Client.GetStream(), $false);
     Write-LoggingEntry -Message 'Successfully created TLS stream for endpoint' -Data @{
         'Endpoint' = $Endpoint;
