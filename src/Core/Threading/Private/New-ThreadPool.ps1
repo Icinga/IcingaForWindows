@@ -55,12 +55,17 @@ function New-ThreadPool()
     #>
     $SessionConfiguration = [System.Management.Automation.RunSpaces.InitialSessionState]::CreateDefault2();
 
-    $RunSpaces = [RunSpaceFactory]::CreateRunSpacePool(
+    [string]$ManifestPath = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath 'IcingaForWindows.psd1';
+    if (Test-Path -Path $ManifestPath) {
+        $SessionConfiguration.ImportPSModule(@($ManifestPath));
+    }
+
+    $RunSpaces = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspacePool(
         $MinInstances,
         $MaxInstances,
         $SessionConfiguration,
         $host
-    )
+    );
 
     $RunSpaces.Open();
 

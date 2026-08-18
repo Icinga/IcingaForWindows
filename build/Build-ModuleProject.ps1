@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param (
     [string]$BuildModule           = 'core',
     [switch]$SkipTests             = $false,
@@ -225,7 +225,7 @@ Write-Host "  * Using static manifest (IcingaForWindows.psd1)" -ForegroundColor 
 
 $ManifestFile = Get-ChildItem -Path $ModuleBasePath -Filter '*.psd1' -File | Select-Object -First 1;
 if ($null -ne $ManifestFile) {
-    Import-Module -Name $ManifestFile.FullName -Force;
+    Get-Module -Name 'IcingaForWindows' | Remove-Module -Force -ErrorAction SilentlyContinue;
     Import-Module -Name $ManifestFile.FullName -Force -Global;
     Write-Host "  * Module loaded successfully into session" -ForegroundColor Green;
 }
@@ -271,14 +271,7 @@ if ($GenerateDocs) {
 
 # Optional: AST-based Memory Leak tests for Daemons
 if ($TestDaemonMemoryLeaks) {
-    Write-Host "`n[+] Running Daemon Memory Leak tests..." -ForegroundColor Yellow;
-    . (Join-Path -Path $PSScriptRoot -ChildPath 'Test-ModuleDaemonMemoryLeak.ps1');
-
-    $SourcePath = Join-Path -Path $ModuleBasePath -ChildPath 'src';
-    if (-not (Test-ModuleDaemonMemoryLeak -SourceFolder $SourcePath)) {
-        throw 'Daemon Memory Leak test failed! Un-nulled variables were found in endless loops.';
-    }
-    Write-Host "  * No Daemon memory leaks detected" -ForegroundColor Green;
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Test-ModuleDaemonMemoryLeak.ps1') -ModuleBasePath $ModuleBasePath;
 }
 
 # Build process is complete

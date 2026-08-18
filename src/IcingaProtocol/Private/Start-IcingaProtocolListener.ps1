@@ -71,4 +71,6 @@ function Start-IcingaProtocolListener()
             Write-LoggingEntry -Message 'Exception caught in Icinga Protocol Listener: {0}' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; };
         }
     }
+
+    Close-TCPSocket;
 }

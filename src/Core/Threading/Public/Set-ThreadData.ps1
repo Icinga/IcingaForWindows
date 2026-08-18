@@ -87,12 +87,23 @@ function Set-ThreadData()
     $GlobalVariable.Protected.AccessControl    = $AccessControl;
     # TODO: We need to properly set colorized output setting here
 
-    # Validate if our provided command exist and stop this thread if it doesn't
-    if ($null -eq (Get-Command -Name $Command -ErrorAction SilentlyContinue)) {
+    # Check if the command is directly available in the session or in the script module
+    $CommandExists = ($null -ne (Get-Command -Name $Command -ErrorAction SilentlyContinue));
+    $ScriptModule  = $null;
+
+    if (-not $CommandExists) {
+        $ScriptModule = Get-Module -Name 'IcingaForWindows' -All | Where-Object { $_.ModuleType -eq 'Script' } | Select-Object -First 1;
+    }
+
+    if (-not $CommandExists -and $null -eq $ScriptModule) {
         Stop-Thread -ThreadId $ThreadId;
         return (Write-FunctionReturnValue -ReturnValue 'ThreadCommandNotFound' -Data @{ 'Command' = $Command } -OverrideReturn $null);
     }
 
     # Once everything is initialized, call the command with the arguments
-    & $Command @Parameters;
+    if ($null -ne $ScriptModule) {
+        & $ScriptModule $Command @Parameters;
+    } else {
+        & $Command @Parameters;
+    }
 }

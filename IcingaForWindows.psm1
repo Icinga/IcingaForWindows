@@ -70,7 +70,8 @@ function New-ModuleBaseEnvironment()
         'Public'    = [hashtable]::Synchronized(
             @{
                 'Config'         = [PSCustomObject]@{
-                    'Root'     = (Join-Path -Path $env:ProgramData -ChildPath (Get-ModuleProjectName));
+                    'ModuleRoot'   = $PSScriptRoot;
+                    'Root'         = (Join-Path -Path $env:ProgramData -ChildPath (Get-ModuleProjectName));
                     'Theme'    = 'DefaultDark';
                     'Colors'   = [PSCustomObject]@{
                         'Debug'   = 'Magenta';
@@ -192,6 +193,10 @@ function New-ModuleBaseEnvironment()
 
 function Get-ModuleRootDirectory()
 {
+    if ($null -ne $Global:IcingaForWindows -and $null -ne $Global:IcingaForWindows.Public -and $null -ne $Global:IcingaForWindows.Public.Config -and -not [string]::IsNullOrEmpty($Global:IcingaForWindows.Public.Config.ModuleRoot)) {
+        return $Global:IcingaForWindows.Public.Config.ModuleRoot;
+    }
+
     return $PSScriptRoot;
 }
 
@@ -210,6 +215,42 @@ function Get-ModuleCertificateDirectory()
     return (Join-Path -Path $env:ProgramData -ChildPath (Join-Path -Path (Get-ModuleProjectName) -ChildPath 'Certificates'));
 }
 
+<#
+.SYNOPSIS
+Build and compile the Icinga for Windows module project
+
+.DESCRIPTION
+`Build-ModuleProject` is the public entry point to compile the Icinga for
+Windows module. It consolidates all source files into the kernel artifact
+under `lib/`, updates the module manifest, and optionally generates documentation
+or executes memory leak tests.
+
+.PARAMETER SkipTests
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| SkipTests | System.Management.Automation.SwitchParameter | When set, skip running automated tests during the build. | $false |
+
+.PARAMETER GenerateDocs
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| GenerateDocs | System.Management.Automation.SwitchParameter | When set, regenerate API Markdown documentation from comment help. | $false |
+
+.PARAMETER TestDaemonMemoryLeaks
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| TestDaemonMemoryLeaks | System.Management.Automation.SwitchParameter | When set, run daemon memory leak stress tests. | $false |
+
+.OUTPUTS
+None — Side effects only: generates module artifacts under lib/ and docs/.
+
+.EXAMPLE
+PS> Build-ModuleProject -GenerateDocs
+
+Compiles the module and generates API documentation.
+
+.NOTES
+Invokes build/Build-ModuleProject.ps1 in the module directory.
+#>
 function Build-ModuleProject()
 {
     param (
@@ -219,6 +260,45 @@ function Build-ModuleProject()
     );
 
     & (Join-Path -Path $PSScriptRoot -ChildPath 'build\Build-ModuleProject.ps1') -SkipTests:$SkipTests -GenerateDocs:$GenerateDocs -TestDaemonMemoryLeaks:$TestDaemonMemoryLeaks;
+}
+
+<#
+.SYNOPSIS
+Execute Pester tests for the Icinga for Windows module
+
+.DESCRIPTION
+`Invoke-IcingaModuleTests` runs the Pester test suite against the local module.
+It executes all test suites under the specified path or the default `Tests/`
+directory using `build/Invoke-ModuleTests.ps1`.
+
+.PARAMETER Path
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| Path | System.String | Path to a specific test file or directory containing Pester test suites to execute. | $null |
+
+.OUTPUTS
+System.Object — Pester test result summary object and test execution output.
+
+.EXAMPLE
+PS> Invoke-IcingaModuleTests
+
+Executes all test suites in the default Tests/ directory.
+
+.EXAMPLE
+PS> Invoke-IcingaModuleTests -Path 'Tests/MemoryLeak.Tests.ps1'
+
+Executes only the memory leak test suite.
+
+.NOTES
+Requires the Pester module (5.0 or newer) to be installed and available in the session.
+#>
+function Invoke-IcingaModuleTests()
+{
+    param (
+        [string]$Path = $null
+    );
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'build\Invoke-ModuleTests.ps1') -Path $Path;
 }
 
 function Get-GlobalRuntimeVariable()
@@ -359,4 +439,4 @@ if (Test-Path -Path $KernelPath) {
 }
 
 # Export alias and all public functions
-Export-ModuleMember -Alias @( 'ifw' ) -Function @( 'Use-IcingaForWindows' );
+Export-ModuleMember -Alias @( 'ifw' ) -Function @( 'Use-IcingaForWindows', 'Invoke-IcingaModuleTests' );

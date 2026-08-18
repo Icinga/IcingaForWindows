@@ -61,10 +61,10 @@ function Open-TCPSocket()
 
     if ([string]::IsNullOrEmpty($Address) -eq $false) {
         # Use the specified address
-        $ListenAddress = New-Object System.Net.IPEndPoint([IPAddress]::Parse($Address), $Port);
+        $ListenAddress = New-Object System.Net.IPEndPoint([System.Net.IPAddress]::Parse($Address), $Port);
     } else {
         # Default to loopback if no address is specified
-        $ListenAddress = New-Object System.Net.IPEndPoint([IPAddress]::Loopback, $Port);
+        $ListenAddress = New-Object System.Net.IPEndPoint([System.Net.IPAddress]::Loopback, $Port);
     }
 
     $TCPSocket = New-Object 'System.Net.Sockets.TcpListener' $ListenAddress;
