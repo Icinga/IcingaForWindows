@@ -22,7 +22,15 @@
 
 `Exit-Icinga` stops the current PowerShell process immediately to avoid the
 shell freezing due to background threads that do not terminate on a normal
-exit. It forcibly kills the process identified by $PID.
+exit.
+
+#### Parameters
+
+**`$ExitCode`**
+
+| Name | Type | Description | Default |
+|------|------|-------------|---------|
+| ExitCode | System.Int32 | Process exit code to return | 0 |
 
 #### Outputs
 
@@ -36,9 +44,7 @@ PS> Exit-Icinga
 
 #### Notes
 
-Implementation uses Stop-Process -Force -Id $PID. Intended for scenarios where
-a graceful shutdown cannot be achieved. Use with caution: cleanup routines and
-background jobs will not complete and state may be lost or inconsistent.
+Uses `[System.Environment]::Exit($ExitCode)` to ensure the process exits cleanly with the desired exit code.
 
 *Source: [src/Core/Runtime/Public/Exit-Icinga.ps1](../../src/Core/Runtime/Public/Exit-Icinga.ps1)*
 

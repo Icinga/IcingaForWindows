@@ -54,4 +54,6 @@ function Start-RestApiListener()
             $TcpClient = $null;
         }
     }
+
+    Close-TCPSocket;
 }
