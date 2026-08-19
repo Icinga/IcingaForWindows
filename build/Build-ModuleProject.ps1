@@ -88,6 +88,7 @@ function Get-IcingaModuleStructure()
     }
 
     [hashtable]$ModuleStructure = @{
+        'Classes' = @();
         'Public'  = @();
         'Private' = @();
     };
@@ -103,7 +104,11 @@ function Get-IcingaModuleStructure()
         $relativePath                                = $UniversalPath.Substring($PowerShellSourcePath.Length).TrimStart('\');
         [System.Collections.ArrayList]$CodeStructure = $relativePath.Split('\');
 
-        if ($CodeStructure -contains 'Public') {
+        # Classes must be checked first so they are compiled into the kernel
+        # ahead of every function that may reference them at parse time.
+        if ($CodeStructure -contains 'Classes') {
+            $ModuleStructure['Classes'] += $sourceFile.FullName;
+        } elseif ($CodeStructure -contains 'Public') {
             $ModuleStructure['Public'] += $sourceFile.FullName;
         } elseif ($CodeStructure -contains 'Private') {
             $ModuleStructure['Private'] += $sourceFile.FullName;
@@ -130,7 +135,7 @@ if ($Components.Public.Count -eq 0) {
     throw "No components found in $SourcePath"
 }
 
-Write-Host "  * Found $($Components.Public.Count) public function file(s) and $($Components.Private.Count) private function file(s)" -ForegroundColor Green;
+Write-Host "  * Found $($Components.Public.Count) public function file(s), $($Components.Private.Count) private function file(s) and $($Components.Classes.Count) class file(s)" -ForegroundColor Green;
 
 # Make sure we always start with a clean output directory
 Write-Host "`n[2/4] Preparing output directory..." -ForegroundColor Yellow;
@@ -167,6 +172,15 @@ $ModuleContent.AppendLine('.NOTES') | Out-Null;
 $ModuleContent.AppendLine("    Source: $ModuleBasePath\src") | Out-Null;
 $ModuleContent.AppendLine('#>') | Out-Null;
 $ModuleContent.AppendLine() | Out-Null;
+
+# Append all classes first so their type definitions are parsed before any
+# function that references them within the single dot-sourced kernel file.
+Write-Host "  * Appending $($Components['Classes'].Count) class file(s)..." -ForegroundColor White;
+foreach ($classFile in ($Components['Classes'] | Sort-Object)) {
+    $FileContent = Read-IcingaSourceFile -Path $classFile;
+    $ModuleContent.AppendLine($FileContent) | Out-Null;
+    $ModuleContent.AppendLine() | Out-Null;
+}
 
 # Append all private functions once
 Write-Host "  * Appending $($Components['Private'].Count) private function file(s)..." -ForegroundColor White;
