@@ -1051,6 +1051,36 @@ function Set-InternalExitCodes()
             'Severity' = 'Error';
             'Area'     = 'Tools';
         };
+        'IcingaUnitInvalidInputValue' = @{
+            'Code'     = 4100;
+            'Message'  = 'The provided input value is not a valid "<number><unit>" value and could not be converted';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'IcingaUnitMissingInputUnit' = @{
+            'Code'     = 4101;
+            'Message'  = 'No input unit could be determined for the conversion. Provide a unit suffix on the value or use -InputUnit';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'IcingaUnitUnknownUnit' = @{
+            'Code'     = 4102;
+            'Message'  = 'The provided input or target unit is not a known unit for the conversion';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'IcingaUnitFamilyMismatch' = @{
+            'Code'     = 4103;
+            'Message'  = 'The target unit belongs to a different unit family than the input unit and cannot be converted';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'IcingaUnitConverted' = @{
+            'Code'     = 4150;
+            'Message'  = 'The unit conversion completed successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Tools';
+        };
         'WebUIAssetPathEmpty' = @{
             'Code'     = 13000;
             'Message'  = 'No Web UI asset path was provided for retrieving the Web UI asset';

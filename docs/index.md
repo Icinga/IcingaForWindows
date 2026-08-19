@@ -1,6 +1,6 @@
 # Icinga API Reference
 
-*Auto-generated on 2026-08-18 10:50:25.*
+*Auto-generated on 2026-08-18 17:35:01.*
 
 | Component | Public functions | Private helpers |
 |-----------|------------------|-----------------|
@@ -15,12 +15,12 @@
 | [Icinga.Core.WebSocket](Icinga.Core.WebSocket.md) | 3 | 16 |
 | [Icinga.IcingaProtocol](Icinga.IcingaProtocol.md) | 5 | 19 |
 | [Icinga.Security](Icinga.Security.md) | 0 | 7 |
-| [Icinga.Tools](Icinga.Tools.md) | 4 | 5 |
+| [Icinga.Tools](Icinga.Tools.md) | 5 | 5 |
 
 ## Totals
 
 - Components: 12
-- Documented functions: 146
-- Public: 23
+- Documented functions: 147
+- Public: 24
 - Private: 123
 
