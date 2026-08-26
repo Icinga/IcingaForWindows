@@ -91,6 +91,11 @@ target unit, it parses the value, resolves the units into their family (data siz
 or time duration), converts the value and renders a compact or human-readable
 OutputString.
 
+Beyond the formatted output it also exposes the value normalized to the family
+base unit (bytes for data, seconds for time) as BaseValue without any rounding,
+together with the resolved Family, so callers that need the exact magnitude (for
+example threshold parsing) can reuse it directly.
+
 Two unit families are supported. Data sizes (binary bytes KiB/MiB/GiB, decimal
 bytes KB/MB/GB, and bits Kbit/Mbit/Gbit) are matched case-insensitively and are
 always emitted as a single scaled value. Time durations use the Icinga single-
@@ -134,6 +139,8 @@ class IcingaUnit
     [double]$OutputValue       = 0;
     [string]$OutputUnit        = '';
     [string]$OutputString      = '';
+    [double]$BaseValue         = 0;
+    [string]$Family            = '';
 
     hidden [bool]$Success      = $false;
     hidden [string]$ReturnCode = '';
@@ -335,15 +342,17 @@ class IcingaUnit
 
         $this.InputValue = [double]$Number;
         $this.InputUnit  = $InputEntry.Short;
+        $this.Family     = $InputFamily;
 
         # Convert the input into the family base unit (bytes for data, seconds for
         # time) so every following calculation shares a common scale.
-        [decimal]$BaseValue = $Number * $InputEntry.Factor;
-        [int]$Sign          = 1;
+        [decimal]$BaseUnitValue = $Number * $InputEntry.Factor;
+        $this.BaseValue         = [double]$BaseUnitValue;
+        [int]$Sign              = 1;
 
-        if ($BaseValue -lt 0) {
-            $Sign      = -1;
-            $BaseValue = -$BaseValue;
+        if ($BaseUnitValue -lt 0) {
+            $Sign          = -1;
+            $BaseUnitValue = -$BaseUnitValue;
         }
 
         if (-not [string]::IsNullOrEmpty($TargetUnit)) {
@@ -358,7 +367,7 @@ class IcingaUnit
                 return;
             }
 
-            [decimal]$Converted = $BaseValue / $TargetEntry.Factor;
+            [decimal]$Converted = $BaseUnitValue / $TargetEntry.Factor;
 
             $this.OutputValue  = $Sign * [double][System.Math]::Round($Converted, 2);
             $this.OutputUnit   = $TargetEntry.Short;
@@ -371,9 +380,9 @@ class IcingaUnit
         # No explicit target unit: auto-select. Time is decomposed into its
         # non-zero parts; data picks the largest unit that keeps the value >= 1.
         if ($InputFamily -eq 'Time') {
-            $this.BuildTimeDecomposition($BaseValue, $Sign, $AsHumanReadable);
+            $this.BuildTimeDecomposition($BaseUnitValue, $Sign, $AsHumanReadable);
         } else {
-            $this.BuildDataBestFit($BaseValue, $Sign, $InputEntry, $AsHumanReadable);
+            $this.BuildDataBestFit($BaseUnitValue, $Sign, $InputEntry, $AsHumanReadable);
         }
 
         $this.Success    = $true;

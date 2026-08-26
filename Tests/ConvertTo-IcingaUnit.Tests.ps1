@@ -110,6 +110,24 @@ Describe 'ConvertTo-IcingaUnit' {
         }
     }
 
+    Context 'Exposes the normalized base value and family' {
+        It 'Reports the unrounded base value in bytes for data units' {
+            $result = ConvertTo-IcingaUnit -InputValue '10GB';
+            $result.BaseValue | Should -Be 10000000000;
+            $result.Family    | Should -Be 'Data';
+        }
+
+        It 'Reports the base value in seconds for time units' {
+            $result = ConvertTo-IcingaUnit -InputValue '500' -InputUnit 'ms';
+            $result.BaseValue | Should -Be 0.5;
+            $result.Family    | Should -Be 'Time';
+        }
+
+        It 'Keeps sub-10ms precision in the base value (no 2-decimal rounding)' {
+            (ConvertTo-IcingaUnit -InputValue '1' -InputUnit 'ms').BaseValue | Should -Be 0.001;
+        }
+    }
+
     Context 'Failure paths return $null' {
         # icinga-powershell-framework #503: a label containing a unit substring
         # must never be parsed as a unit value (e.g. 'Serverms-001' -> -1ms).
