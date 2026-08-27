@@ -144,6 +144,21 @@ function New-ModuleBaseEnvironment()
                     'Queue' = (New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject]));
                     'Level' = 'Info';
                 };
+                'PerformanceCounter' = [PSCustomObject]@{
+                    # Thread-safe transport only. The counter manager class is created lazily
+                    # by the daemon once the kernel (and thus the class type) is dot-sourced.
+                    'RequestQueue'    = (New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject]));
+                    'PendingRequests' = (New-Object 'System.Collections.Concurrent.ConcurrentDictionary[string, System.Collections.Concurrent.BlockingCollection[PSObject]]');
+                    'Registered'      = (New-Object 'System.Collections.Concurrent.ConcurrentDictionary[string, datetime]');
+                    'Manager'         = $null;
+                    'Heartbeat'       = $null;
+                    'LastRefresh'     = $null;
+                    'Config'          = [PSCustomObject]@{
+                        'WarmupMilliseconds' = 250;
+                        'RefreshIntervalMs'  = 1000;
+                        'EvictionMinutes'    = 60;
+                    };
+                };
                 'External'       = $null;
                 'ReturnCodes'    = $null;
             }
@@ -388,6 +403,7 @@ function Use-IcingaForWindows()
             New-Thread -Command 'Start-LoggingDaemon' -KeepAlive -WaitForJobs -Start;
             New-Thread -Command 'Start-ModuleGarbageCollector' -KeepAlive -Start;
             New-Thread -Command 'Start-ThreadHouseKeeper' -Start;
+            New-Thread -Command 'Start-IcingaPerformanceCounterDaemon' -KeepAlive -WaitForJobs -Start;
             New-Thread -Command 'Start-RestApiDaemon' -Start;
             New-Thread -Command 'Start-ModuleWebSocketDaemon' -Start;
             New-Thread -Command 'Start-IcingaAgent' -Start;
