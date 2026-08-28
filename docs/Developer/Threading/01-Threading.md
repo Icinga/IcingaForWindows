@@ -195,6 +195,58 @@ If you are missing `IcingaThreadProcessing`, Icinga for Windows will flag the th
 The thread (dedb8fbb-5309-4173-bee8-847db488cf62, Start-IcingaProtocolListener) is marked as WaitForJobs, but you did not use "Set-ThreadProcessing" after a job was taken to update the thread state accordingly.;
 ```
 
+## Classes and Threads
+
+Icinga for Windows loads its PowerShell classes (`lib/IcingaForWindows.Classes.ps1`) separately into every runspace, while all runspaces dot-source the same compiled kernel (`lib/IcingaForWindows.Kernel.ps1`). PowerShell resolves a class literal such as `[IcingaPlugin]` inside the kernel only once, so inside every thread the literal still points to the class type of the **main** runspace.
+
+On Windows PowerShell 5.1 this has two effects:
+
+* **Stalls:** the script code of a class belongs to the runspace that loaded its type. A thread that calls a constructor, method or static method of the main runspace's type waits until the main runspace is idle. The main runspace of the service is always busy, so the thread hangs.
+* **Type mismatch:** an object created with the thread's own type is not `-is` the main runspace's type, and handing it to a typed parameter fails with `Cannot convert the "IcingaError" value of type "IcingaError" to type "IcingaError"`.
+
+Functions therefore never use class literals. They resolve the class at runtime, which returns the type the current runspace loaded itself:
+
+```powershell
+# Wrong: inside a thread these resolve to the main runspace's classes
+$CheckPackage = [IcingaPlugin]::new('Services');
+$Services     = Get-IcingaWindowsInformation -ClassName 'Win32_Service';
+
+if ($Services -is [IcingaError]) {
+    return $CheckPackage.SetError($Services).Compile();
+}
+
+# Right
+$CheckPackage = New-IcingaPlugin 'Services';
+$Services     = Get-IcingaWindowsInformation -ClassName 'Win32_Service';
+
+if (Test-IcingaError -InputObject $Services) {
+    return $CheckPackage.SetError($Services).Compile();
+}
+
+# Other classes: look the type up once, before the loop
+$UnitType = 'IcingaUnit' -as [type];
+
+foreach ($File in (Get-ChildItem -Path 'C:\Windows\Logs' -File)) {
+    $Size = $UnitType::new([string]$File.Length, 'B', '', $false).OutputString;
+}
+```
+
+Class instances also never leave the thread that created them. Pass only primitive values, hashtables and arrays to other threads or into the `Public` space. For a plugin that is the rendered output, the exit code and the performance data, as `Start-IcingaProtocolWorker` does:
+
+```powershell
+$ExitCode          = & $ExecuteCommand;
+$CheckResultOutput = $Global:IcingaForWindows.Private.Icinga.CheckResult.ToString();
+[array]$PerfData   = $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData;
+
+$CheckResultData = @{
+    'output'           = $CheckResultOutput;
+    'exit_status'      = $ExitCode;
+    'performance_data' = $PerfData;
+};
+```
+
+The rule applies to all code outside `src/Classes` (see `CLAUDE.md`, section 2.9) and is checked by `Tests/ClassLiteral.Tests.ps1`. Enums are exempt, as they contain no script code and convert by value.
+
 ## Current Thread Status
 
 You can display the current status of your Icinga for Windows threads by using the command `Show-IcingaThreads`. This command will print the current active threads for the local PowerShell session, but also query the Icinga for Windows API at the same time, to receive the status of all active threads within the daemon.

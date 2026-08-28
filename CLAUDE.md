@@ -136,6 +136,26 @@ Levels: `Debug`, `Output`, `Audit`, `Info`, `Success`, `Warning`, `Error`, `Fata
 - ❌ Backticks for line continuation. Use natural pipeline breaks or splatting.
 - ❌ `-ErrorAction SilentlyContinue` as a "make the warning go away" tool. If you don't want to handle the error, that's a bug.
 - ❌ Editing files under `lib/` or `docs/api/` by hand.
+- ❌ Class literals in functions (`[IcingaPlugin]::new()`, `[IcingaSortKey]::FromObject()`, `-is [IcingaError]`). See §2.9.
+
+### 2.9 Classes and threads
+
+Every runspace dot-sources the same compiled kernel, while the classes from `src/Classes` are loaded separately into each runspace. A class literal inside a function is resolved once and then points to the class type of the **main** runspace — also when the function runs in a daemon or worker thread. On Windows PowerShell 5.1 a constructor, method or static call on that type from a thread waits until the main runspace is idle, so the thread stalls. Objects of the thread's own type also no longer match the literal: `-is` returns `$false` and typed parameters fail with *Cannot convert the "IcingaError" value of type "IcingaError" to type "IcingaError"*.
+
+1. **Never use a class literal in a function** — not to create an object, not for a static member, not for `-is`, casts or typed variables and parameters. Resolve the class of the current runspace instead:
+
+   | Instead of                           | Use |
+   |--------------------------------------|-----|
+   | `[IcingaPlugin]::new('C:', 55, '%')` | `New-IcingaPlugin 'C:' 55 '%'` |
+   | `$Data -is [IcingaError]`            | `Test-IcingaError -InputObject $Data` |
+   | `[IcingaError]::new(...)`            | `('IcingaError' -as [type])::new(...)` |
+   | `[IcingaSortKey]::FromObject(...)` in a loop | `$SortKeyType = 'IcingaSortKey' -as [type];` once before the loop, then `$SortKeyType::FromObject(...)` |
+
+2. Exceptions: code inside `src/Classes` (the class files are loaded per runspace, so literals there resolve correctly), Pester tests, and enums such as `[IcingaServiceStatus]::Running` — enums carry no script code and convert by value.
+3. **Never pass class instances between threads.** Hand over only primitive values, hashtables and arrays. A plugin result travels as its rendered output, exit code and performance data array, never as the `IcingaCheckResult` object (see `Start-IcingaProtocolWorker`).
+4. `Tests/ClassLiteral.Tests.ps1` enforces rule 1 and names the file and line of every literal it finds.
+
+Background and examples: [docs/Developer/Threading/01-Threading.md](docs/Developer/Threading/01-Threading.md#classes-and-threads).
 
 ---
 
@@ -271,4 +291,4 @@ When you (Claude, Copilot, etc.) edit this repo:
 
 ---
 
-*Last updated: 2026-05-26*
+*Last updated: 2026-10-02*
