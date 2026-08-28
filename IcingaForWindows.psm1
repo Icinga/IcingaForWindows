@@ -177,6 +177,9 @@ function New-ModuleBaseEnvironment()
             'Logging' = [PSCustomObject]@{
                 'CurrentLoggingId' = (New-Guid);
             };
+            'Icinga' = [PSCustomObject]@{
+                'CheckResult' = $null;
+            };
         };
         'Protected' = [PSCustomObject]@{
             'Initialized'        = $false;
