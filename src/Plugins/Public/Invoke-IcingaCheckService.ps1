@@ -16,9 +16,11 @@ optionally narrowed down by their startup type. Every given name without a
 wildcard that matches no service on the system is reported with the state chosen
 with OverrideNotFound (UNKNOWN by default).
 
-Performance data contains the numeric state of each explicitly selected service
-('<service>::ifw_service::state', 1 Stopped to 7 Paused) and per-state counters
-of all checked services ('summary::ifw_service::<state>' and '::count').
+Service states and startup types are resolved through the IcingaServiceStatus
+and IcingaServiceStartupType data types. Performance data contains the numeric
+state of each explicitly selected service ('<service>::ifw_service::state', 0
+Unknown, 1 Stopped to 7 Paused) and per-state counters of all checked services
+('summary::ifw_service::<state>' and '::count').
 
 This plugin is Windows-only because it relies on the Win32_Service CIM class.
 
@@ -33,14 +35,14 @@ This plugin is Windows-only because it relies on the Win32_Service CIM class.
 | Exclude | System.Array | Service names or display names to skip, wildcards allowed.    | @()     |
 
 .PARAMETER Status
-| Name   | Type          | Description                                                                                       | Default |
-|--------|---------------|---------------------------------------------------------------------------------------------------|---------|
-| Status | System.String | Expected status of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending or Paused. | Running |
+| Name   | Type                | Description                                                                                       | Default |
+|--------|---------------------|---------------------------------------------------------------------------------------------------|---------|
+| Status | IcingaServiceStatus | Expected status of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused or Unknown. | Running |
 
 .PARAMETER FilterStartupType
-| Name              | Type         | Description                                                                                         | Default |
-|-------------------|--------------|-----------------------------------------------------------------------------------------------------|---------|
-| FilterStartupType | System.Array | Only check given services with one of these startup types: Boot, System, Automatic, Manual, Disabled, Unknown. | @() |
+| Name              | Type                       | Description                                                                                         | Default |
+|-------------------|----------------------------|-----------------------------------------------------------------------------------------------------|---------|
+| FilterStartupType | IcingaServiceStartupType[] | Only check given services with one of these startup types: Boot, System, Automatic, Manual, Disabled, Unknown. | @() |
 
 .PARAMETER MitigateUnknown
 | Name            | Type                                         | Description                                                  | Default |
@@ -93,39 +95,27 @@ return value; an Icinga command wrapper is expected to exit with it.
 function Invoke-IcingaCheckService()
 {
     param (
-        [array]$Service           = @(),
-        [array]$Exclude           = @(),
-        [ValidateSet('Stopped', 'StartPending', 'StopPending', 'Running', 'ContinuePending', 'PausePending', 'Paused')]
-        [string]$Status           = 'Running',
-        [ValidateSet('Boot', 'System', 'Automatic', 'Manual', 'Disabled', 'Unknown')]
-        [array]$FilterStartupType = @(),
-        [switch]$MitigateUnknown  = $false,
+        [array]$Service                                = @(),
+        [array]$Exclude                                = @(),
+        [IcingaServiceStatus]$Status                   = 'Running',
+        [IcingaServiceStartupType[]]$FilterStartupType = @(),
+        [switch]$MitigateUnknown                       = $false,
         [ValidateSet('Ok', 'Warning', 'Critical', 'Unknown')]
-        [string]$OverrideNotOk    = 'Critical',
+        [string]$OverrideNotOk                         = 'Critical',
         [ValidateSet('Ok', 'Warning', 'Critical', 'Unknown')]
-        [string]$OverrideNotFound = 'Unknown',
-        [int]$Verbosity           = 0,
-        [switch]$NoPerfData       = $false
+        [string]$OverrideNotFound                      = 'Unknown',
+        [int]$Verbosity                                = 0,
+        [switch]$NoPerfData                            = $false
     );
 
-    # Codes match the System.ServiceProcess.ServiceControllerStatus values used by
-    # the previous plugin generation, so existing state graphs stay comparable.
-    [hashtable]$ServiceStates = @{
-        'Stopped'         = @{ 'Code' = 1; 'Summary' = 'stopped'; };
-        'StartPending'    = @{ 'Code' = 2; 'Summary' = 'pendingstarted'; };
-        'StopPending'     = @{ 'Code' = 3; 'Summary' = 'pendingstopped'; };
-        'Running'         = @{ 'Code' = 4; 'Summary' = 'running'; };
-        'ContinuePending' = @{ 'Code' = 5; 'Summary' = 'pendingcontinued'; };
-        'PausePending'    = @{ 'Code' = 6; 'Summary' = 'pendingpaused'; };
-        'Paused'          = @{ 'Code' = 7; 'Summary' = 'paused'; };
-    };
-
-    [hashtable]$StartupTypes = @{
-        'Boot'     = 'Boot';
-        'System'   = 'System';
-        'Auto'     = 'Automatic';
-        'Manual'   = 'Manual';
-        'Disabled' = 'Disabled';
+    [hashtable]$SummaryLabels = @{
+        ([IcingaServiceStatus]::Stopped)         = 'stopped';
+        ([IcingaServiceStatus]::StartPending)    = 'pendingstarted';
+        ([IcingaServiceStatus]::StopPending)     = 'pendingstopped';
+        ([IcingaServiceStatus]::Running)         = 'running';
+        ([IcingaServiceStatus]::ContinuePending) = 'pendingcontinued';
+        ([IcingaServiceStatus]::PausePending)    = 'pendingpaused';
+        ([IcingaServiceStatus]::Paused)          = 'paused';
     };
 
     $CheckPackage         = [IcingaPlugin]::new('Services');
@@ -155,30 +145,27 @@ function Invoke-IcingaCheckService()
     [int]$CheckCount        = 0;
 
     foreach ($ServiceEntry in ($AllServices | Sort-Object -Property 'Name')) {
-        [string]$ServiceName = $ServiceEntry.Name;
-        [string]$DisplayName = $ServiceEntry.DisplayName;
-        [string]$StateName   = ([string]$ServiceEntry.State).Replace(' ', '');
-        [string]$StartupType = 'Unknown';
-
-        if ($StartupTypes.ContainsKey([string]$ServiceEntry.StartMode)) {
-            $StartupType = $StartupTypes[[string]$ServiceEntry.StartMode];
-        }
+        [string]$ServiceName                   = $ServiceEntry.Name;
+        [string]$DisplayName                   = $ServiceEntry.DisplayName;
+        [IcingaServiceStatus]$State            = [IcingaServiceStatusMap]::Resolve($ServiceEntry.State);
+        [IcingaServiceStartupType]$StartupType = [IcingaServiceStartupTypeMap]::Resolve($ServiceEntry.StartMode);
+        [IcingaServiceStatus]$Expected         = $Status;
 
         if (@($Exclude | Where-Object { $ServiceName -like $_ -or $DisplayName -like $_ }).Count -ne 0) {
             continue;
         }
 
         if ($AutoMode) {
-            if ($StartupType -ne 'Automatic') {
+            if ($StartupType -ne [IcingaServiceStartupType]::Automatic) {
                 continue;
             }
 
-            [string]$Expected = 'Running';
+            $Expected = [IcingaServiceStatus]::Running;
 
             # A stopped automatic service with exit code 0 ended on purpose (for
             # example a trigger-start service) and is not a failure.
-            if ($StateName -ne 'Running' -and $ServiceEntry.ExitCode -eq 0) {
-                $Expected = $StateName;
+            if ($State -ne [IcingaServiceStatus]::Running -and $ServiceEntry.ExitCode -eq 0) {
+                $Expected = $State;
             }
         } else {
             if (@($Service | Where-Object { $ServiceName -like $_ -or $DisplayName -like $_ }).Count -eq 0) {
@@ -188,21 +175,19 @@ function Invoke-IcingaCheckService()
             if ($FilterStartupType.Count -ne 0 -and $FilterStartupType -notcontains $StartupType) {
                 continue;
             }
-
-            [string]$Expected = $Status;
         }
 
-        $ServiceCheck = [IcingaPlugin]::new([string]::Format('Service "{0} ({1})"', $DisplayName, $ServiceName), $StateName);
+        $ServiceCheck = [IcingaPlugin]::new([string]::Format('Service "{0} ({1})"', $DisplayName, $ServiceName), [string]$State);
 
         if ($OverrideNotOk -eq 'Warning') {
-            $ServiceCheck.Warning($Expected).CheckNotEqual().Commit();
+            $ServiceCheck.Warning([string]$Expected).CheckNotEqual().Commit();
         } else {
-            $ServiceCheck.Critical($Expected).CheckNotEqual().Commit();
+            $ServiceCheck.Critical([string]$Expected).CheckNotEqual().Commit();
         }
 
         # An empty message keeps the comparison text; the lock stops the critical
         # comparison result from escalating the overridden state again.
-        if ($StateName -ne $Expected) {
+        if ($State -ne $Expected) {
             if ($OverrideNotOk -eq 'Ok') {
                 $ServiceCheck.SetOk('', $true).Commit();
             } elseif ($OverrideNotOk -eq 'Unknown') {
@@ -214,18 +199,16 @@ function Invoke-IcingaCheckService()
         $CheckCount++;
         $ServiceCount++;
 
-        if (-not $ServiceStates.ContainsKey($StateName)) {
-            continue;
+        if ($SummaryLabels.ContainsKey($State)) {
+            $SummaryCount[$SummaryLabels[$State]] += 1;
         }
-
-        $SummaryCount[$ServiceStates[$StateName].Summary] += 1;
 
         if ($AutoMode -or $NoPerfData) {
             continue;
         }
 
         $MetricPackage.AddCheck(
-            [IcingaPlugin]::new($ServiceName, $ServiceStates[$StateName].Code).MetricIndex($ServiceName).MetricLabel('state').CheckRange()
+            [IcingaPlugin]::new($ServiceName, [int]$State).MetricIndex($ServiceName).MetricLabel('state').CheckRange()
         ).Commit();
     }
 

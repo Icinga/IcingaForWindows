@@ -116,6 +116,18 @@ Describe 'Invoke-IcingaCheckService' {
             $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData | Should -Contain 'summary::ifw_service::pendingstarted=1;;;;';
         }
 
+        It 'reports a service in the Unknown state with state code 0' {
+            $Unknown = New-TestService -Name 'Spooler' -DisplayName 'Print Spooler' -State 'Unknown';
+
+            Invoke-TestServiceCheck -StubData @($Unknown) -Arguments @{ 'Service' = 'Spooler'; } | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData | Should -Contain 'spooler::ifw_service::state=0;;;;';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData | Should -Contain 'summary::ifw_service::count=1;;;;';
+        }
+
+        It 'rejects a Status that is no IcingaServiceStatus' {
+            { Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Spooler'; 'Status' = 'Sleeping'; } } | Should -Throw;
+        }
+
         It 'selects services by wildcard and honours Exclude' {
             $Services = @(
                 (New-TestService -Name 'WinRM' -DisplayName 'Windows Remote Management'),
