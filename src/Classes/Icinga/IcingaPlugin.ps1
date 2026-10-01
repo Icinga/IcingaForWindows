@@ -85,6 +85,8 @@ class IcingaPlugin
     hidden [int]$OperatorMax          = -1;
     hidden [string]$WarningThreshold  = '';
     hidden [string]$CriticalThreshold = '';
+    hidden [string]$ResolvedWarning   = '';
+    hidden [string]$ResolvedCritical  = '';
     hidden [string]$MinimumValue      = '';
     hidden [string]$MaximumValue      = '';
     hidden [object]$BaseValueSetting  = $null;
@@ -488,7 +490,7 @@ class IcingaPlugin
     #>
     [IcingaPlugin] CheckRange()
     {
-        $this.ApplyThresholdResult($this.NewThresholds().CheckRange($this.Value));
+        $this.ApplyThresholdResult($this.NewThresholds().CheckRange($this.AttachByteUnit($this.Value)));
         return $this;
     }
 
@@ -511,7 +513,7 @@ class IcingaPlugin
     #>
     [IcingaPlugin] CheckGreater()
     {
-        $this.ApplyThresholdResult($this.NewThresholds().CheckGreater($this.Value));
+        $this.ApplyThresholdResult($this.NewThresholds().CheckGreater($this.AttachByteUnit($this.Value)));
         return $this;
     }
 
@@ -534,7 +536,7 @@ class IcingaPlugin
     #>
     [IcingaPlugin] CheckGreaterEqual()
     {
-        $this.ApplyThresholdResult($this.NewThresholds().CheckGreaterEqual($this.Value));
+        $this.ApplyThresholdResult($this.NewThresholds().CheckGreaterEqual($this.AttachByteUnit($this.Value)));
         return $this;
     }
 
@@ -557,7 +559,7 @@ class IcingaPlugin
     #>
     [IcingaPlugin] CheckLower()
     {
-        $this.ApplyThresholdResult($this.NewThresholds().CheckLower($this.Value));
+        $this.ApplyThresholdResult($this.NewThresholds().CheckLower($this.AttachByteUnit($this.Value)));
         return $this;
     }
 
@@ -580,7 +582,7 @@ class IcingaPlugin
     #>
     [IcingaPlugin] CheckLowerEqual()
     {
-        $this.ApplyThresholdResult($this.NewThresholds().CheckLowerEqual($this.Value));
+        $this.ApplyThresholdResult($this.NewThresholds().CheckLowerEqual($this.AttachByteUnit($this.Value)));
         return $this;
     }
 
@@ -604,7 +606,7 @@ class IcingaPlugin
     #>
     [IcingaPlugin] CheckMax()
     {
-        $this.ApplyThresholdResult($this.NewThresholds().CheckMax($this.Value));
+        $this.ApplyThresholdResult($this.NewThresholds().CheckMax($this.AttachByteUnit($this.Value)));
         return $this;
     }
 
@@ -755,9 +757,11 @@ class IcingaPlugin
 
     .DESCRIPTION
     Creates an IcingaThresholds object from the stored warning and critical strings,
-    passing the base value as well when one was set. The return type is object
-    because IcingaThresholds is parsed after IcingaPlugin during the build and may
-    therefore only be referenced from method bodies.
+    passing the base value as well when one was set. A plain numeric base value of a
+    byte node carries the 'B' unit, so percent thresholds resolve and render in
+    bytes. The return type is object because IcingaThresholds is parsed after
+    IcingaPlugin during the build and may therefore only be referenced from method
+    bodies.
 
     .OUTPUTS
     System.Object — An IcingaThresholds instance.
@@ -771,10 +775,78 @@ class IcingaPlugin
     hidden [object] NewThresholds()
     {
         if ($null -ne $this.BaseValueSetting -and '' -ne [string]$this.BaseValueSetting) {
-            return [IcingaThresholds]::new($this.WarningThreshold, $this.CriticalThreshold, [string]$this.BaseValueSetting);
+            return [IcingaThresholds]::new($this.WarningThreshold, $this.CriticalThreshold, [string]$this.AttachByteUnit($this.BaseValueSetting));
         }
 
         return [IcingaThresholds]::new($this.WarningThreshold, $this.CriticalThreshold);
+    }
+
+    <#
+    .SYNOPSIS
+    Test whether the node measures plain bytes
+
+    .DESCRIPTION
+    Returns true when the node's unit is the byte base unit 'B'. Such a node hands
+    its value to the threshold engine as a byte quantity, so it compares exactly
+    against size thresholds ('400GB') and percent thresholds of a base value, and its
+    output message shows human-readable sizes. Plain-number thresholds keep meaning
+    bytes, which matches both the threshold engine and the Icinga perfdata unit.
+    Every other unit ('%', 'GiB', time units, none) returns false and keeps the
+    plain display-unit behaviour.
+
+    .OUTPUTS
+    System.Boolean — True when the unit is 'B'.
+
+    .EXAMPLE
+    PS> $this.HasByteUnit()
+
+    .NOTES
+    Internal helper. Larger data units are excluded on purpose: a plain threshold
+    such as '80' would resolve to 80 bytes instead of 80 of the node's unit.
+    #>
+    hidden [bool] HasByteUnit()
+    {
+        return ($this.Unit -eq 'B');
+    }
+
+    <#
+    .SYNOPSIS
+    Append the byte unit to a plain numeric value
+
+    .DESCRIPTION
+    Turns a plain number into a '<number>B' string (for example 442692000000
+    becomes '442692000000B') when the node measures bytes, so the threshold engine
+    resolves the value as a byte quantity. The number is written in fixed-point
+    notation under the invariant culture so large byte counts never use an
+    exponent. Any other value, and every value of a node that does not measure
+    bytes, is returned unchanged.
+
+    .PARAMETER Value
+    | Name  | Type          | Description                              | Default |
+    |-------|---------------|------------------------------------------|---------|
+    | Value | System.Object | Measured value or base value to adjust.  |         |
+
+    .OUTPUTS
+    System.Object — The value with the unit attached, or the unchanged value.
+
+    .EXAMPLE
+    PS> $this.AttachByteUnit(442692000000)
+
+    .NOTES
+    Internal helper used by the numeric comparison methods and NewThresholds.
+    #>
+    hidden [object] AttachByteUnit([object]$Value)
+    {
+        if ($null -eq $Value -or -not $this.HasByteUnit()) {
+            return $Value;
+        }
+
+        [double]$Parsed = 0;
+        if (-not [double]::TryParse([string]$Value, [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$Parsed)) {
+            return $Value;
+        }
+
+        return ($Parsed.ToString('0.##########', [System.Globalization.CultureInfo]::InvariantCulture) + $this.Unit);
     }
 
     <#
@@ -784,6 +856,9 @@ class IcingaPlugin
     .DESCRIPTION
     Marks the node as evaluated, stores the human-readable output message, escalates
     the node state to the result's status code and rebuilds the performance data.
+    The thresholds as resolved by the comparison (base units, percentages already
+    applied) are kept for the performance data, because Icinga requires perfdata
+    thresholds in the same unit as the value.
 
     .PARAMETER Result
     | Name   | Type          | Description                                | Default |
@@ -806,11 +881,72 @@ class IcingaPlugin
         # A locked node froze its state and message via an override; later threshold
         # evaluation must not overwrite either. EscalateState honours the lock too.
         if (-not $this.Locked) {
-            $this.OutputMessage = $this.ApplyDisplayUnit([string]$Result.Output);
+            if ($this.HasByteUnit()) {
+                $this.OutputMessage = $this.HumanizeByteValues([string]$Result.Output);
+            } else {
+                $this.OutputMessage = $this.ApplyDisplayUnit([string]$Result.Output);
+            }
+        }
+
+        $this.ResolvedWarning  = '';
+        $this.ResolvedCritical = '';
+
+        if ($null -ne $Result.WarningValue) {
+            $this.ResolvedWarning = $this.FormatNumber($Result.WarningValue);
+        }
+
+        if ($null -ne $Result.CriticalValue) {
+            $this.ResolvedCritical = $this.FormatNumber($Result.CriticalValue);
         }
 
         $this.EscalateState([int]$Result.StatusCode);
         $this.BuildPerfData();
+    }
+
+    <#
+    .SYNOPSIS
+    Render plain byte figures of an output message as human-readable sizes
+
+    .DESCRIPTION
+    Replaces every '<number>B' figure in a threshold output message with its
+    best-fitting binary size (for example '442692000000B' becomes '412.29GiB'). The
+    threshold engine renders the value and the percent thresholds of a byte node in
+    plain bytes; figures in any other unit (such as a '400GB' threshold) and
+    percentages are left untouched.
+
+    .PARAMETER Message
+    | Name    | Type          | Description                    | Default |
+    |---------|---------------|--------------------------------|---------|
+    | Message | System.String | The threshold output message.  |         |
+
+    .OUTPUTS
+    System.String — The message with byte figures converted to their best-fit unit.
+
+    .EXAMPLE
+    PS> $this.HumanizeByteValues('442692000000B (86.46%) is greater than threshold 409600000000B (80%)')
+
+    .NOTES
+    Internal helper used by ApplyThresholdResult for byte nodes. A figure that
+    IcingaUnit cannot convert is kept as it is. IcingaUnit is parsed after
+    IcingaPlugin during the build, so it is referenced only inside this method body.
+    #>
+    hidden [string] HumanizeByteValues([string]$Message)
+    {
+        [string]$Output = '';
+        [int]$Position  = 0;
+
+        foreach ($Match in [regex]::Matches($Message, '(?<![\w.])(\d+(?:\.\d+)?)B\b')) {
+            $Converted = [IcingaUnit]::new($Match.Groups[1].Value, 'B', '', $false);
+
+            if (-not $Converted.Success) {
+                continue;
+            }
+
+            $Output  += $Message.Substring($Position, $Match.Index - $Position) + $Converted.OutputString;
+            $Position = $Match.Index + $Match.Length;
+        }
+
+        return ($Output + $Message.Substring($Position));
     }
 
     <#
@@ -2003,8 +2139,11 @@ class IcingaPlugin
     Formats a single performance-data metric of the form
     index::ifw_template::label=value<unit>;warn;crit;min;max (the check_multi format)
     from the current value, unit and thresholds, and stores it as this node's
-    performance data. The structured label is built by BuildPerfDataLabel. No metric
-    is produced when performance data is disabled or the value is not numeric.
+    performance data. The thresholds are written as resolved by the last comparison
+    (percent and unit thresholds in base units, for example '80%' of 500GB becomes
+    '400000000000'), falling back to the configured strings when no resolved value
+    exists. The structured label is built by BuildPerfDataLabel. No metric is produced
+    when performance data is disabled or the value is not numeric.
 
     .OUTPUTS
     None — Updates this node's performance data.
@@ -2027,13 +2166,24 @@ class IcingaPlugin
             return;
         }
 
+        [string]$Warning  = $this.WarningThreshold;
+        [string]$Critical = $this.CriticalThreshold;
+
+        if ('' -ne $this.ResolvedWarning) {
+            $Warning = $this.ResolvedWarning;
+        }
+
+        if ('' -ne $this.ResolvedCritical) {
+            $Critical = $this.ResolvedCritical;
+        }
+
         [string]$Metric = [string]::Format(
             '{0}={1}{2};{3};{4};{5};{6}',
             $this.BuildPerfDataLabel(),
             $this.FormatNumber($this.Value),
             $this.Unit,
-            $this.WarningThreshold,
-            $this.CriticalThreshold,
+            $Warning,
+            $Critical,
             $this.MinimumValue,
             $this.MaximumValue
         );

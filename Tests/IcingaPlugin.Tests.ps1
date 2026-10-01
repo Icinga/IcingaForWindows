@@ -314,6 +314,51 @@ Describe 'IcingaPlugin' {
         }
     }
 
+    Context 'Byte values' {
+        It 'compares bytes against percent thresholds of the base value and renders human-readable sizes' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('C', 442692000000, 'B').Warning('80%').Critical('90%').BaseValue(512000000000).CheckRange().Compile()
+            };
+            $ExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[WARNING] C: 412.29GiB (86.46%) is greater than threshold 381.47GiB (80%)';
+        }
+
+        It 'writes the resolved percent thresholds in bytes into the perfdata' {
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('C', 442692000000, 'B').MetricIndex('c').MetricLabel('used').Warning('80%').Critical('90%').BaseValue(512000000000).Minimum('0').Maximum('512000000000').CheckRange().Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'c::ifw_check::used=442692000000B;409600000000;460800000000;0;512000000000';
+        }
+
+        It 'keeps absolute size thresholds in their own unit in the message' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('C', 442692000000, 'B').MetricLabel('used').Warning('400GB').Critical('450GB').CheckRange().Compile()
+            };
+            $ExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[WARNING] C: 412.29GiB is greater than threshold 400GB';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::used=442692000000B;400000000000;450000000000;;';
+        }
+
+        It 'resolves percent range thresholds into byte ranges for the perfdata' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('C', 30000000000, 'B').MetricLabel('free').Warning('10%:').Critical('5%:').BaseValue(512000000000).CheckRange().Compile()
+            };
+            $ExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[WARNING] C: 27.94GiB (5.86%) is lower than threshold 47.68GiB (10%)';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::free=30000000000B;51200000000:;25600000000:;;';
+        }
+
+        It 'treats plain-number thresholds of a byte node as bytes' {
+            (& $script:IcingaModule { [IcingaPlugin]::new('X', 2048, 'B').Critical('1024').CheckRange().Compile() }) | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[CRITICAL] X: 2KiB is greater than threshold 1024';
+        }
+
+        It 'leaves larger data units on the plain display-unit behaviour' {
+            (& $script:IcingaModule { [IcingaPlugin]::new('X', 41.28, 'GiB').Warning('80').Critical('90').CheckRange().Compile() }) | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] X: 41.28GiB is ok';
+        }
+    }
+
     Context 'Fluent surface' {
         It 'Commit terminates a chain without leaking the node to the pipeline' {
             $Leak = & $script:IcingaModule {
