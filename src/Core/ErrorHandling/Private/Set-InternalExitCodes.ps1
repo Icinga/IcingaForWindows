@@ -1081,6 +1081,117 @@ function Set-InternalExitCodes()
             'Severity' = 'Debug';
             'Area'     = 'Tools';
         };
+        'WindowsInformationClassUnknown' = @{
+            'Code'        = 4200;
+            'Message'     = 'The requested CIM class does not exist on this system';
+            'Severity'    = 'Debug';
+            'Area'        = 'Tools';
+            'Description' = 'Optional classes such as MPIO_DISK_INFO are probed on purpose, so this is only logged at Debug level; plugins surface the error in their output';
+        };
+        'WindowsInformationNamespaceInvalid' = @{
+            'Code'        = 4201;
+            'Message'     = 'The requested CIM namespace does not exist on this system';
+            'Severity'    = 'Debug';
+            'Area'        = 'Tools';
+            'Description' = 'Optional namespaces are probed on purpose, so this is only logged at Debug level; plugins surface the error in their output';
+        };
+        'WindowsInformationAccessDenied' = @{
+            'Code'        = 4202;
+            'Message'     = 'Access to the requested CIM class was denied';
+            'Severity'    = 'Error';
+            'Area'        = 'Tools';
+            'Description' = 'The user running the check needs the "Enable Account" and "Remote Enable" WMI permissions on the namespace, for example through the "Remote Management Users" group';
+        };
+        'WindowsInformationInvalidQuery' = @{
+            'Code'     = 4203;
+            'Message'  = 'The CIM query is invalid, check the filter and the requested properties';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'WindowsInformationQueryFailed' = @{
+            'Code'     = 4204;
+            'Message'  = 'The CIM query failed with an unhandled error';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'WindowsInformationClassNameMissing' = @{
+            'Code'     = 4205;
+            'Message'  = 'No CIM class name was provided for the query';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'WindowsInformationQueried' = @{
+            'Code'     = 4210;
+            'Message'  = 'The CIM query completed successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Tools';
+        };
+        'ArrayFilterInvalidPattern' = @{
+            'Code'     = 4250;
+            'Message'  = 'A filter pattern is no valid wildcard expression, the value is treated as not matching';
+            'Severity' = 'Warning';
+            'Area'     = 'Tools';
+        };
+        'DiskInformationVolumeQueryFailed' = @{
+            'Code'     = 4300;
+            'Message'  = 'The volume data for the disk information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DiskInformationPartitionQueryFailed' = @{
+            'Code'     = 4301;
+            'Message'  = 'The partition data for the disk information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DiskInformationDiskQueryFailed' = @{
+            'Code'     = 4302;
+            'Message'  = 'The physical disk data for the disk information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DiskInformationCollected' = @{
+            'Code'     = 4350;
+            'Message'  = 'The disk information was collected successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Provider';
+        };
+        'DirectoryPathMissing' = @{
+            'Code'     = 4400;
+            'Message'  = 'No directory path was provided';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryPathNotFound' = @{
+            'Code'     = 4401;
+            'Message'  = 'The directory does not exist on this system';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryAccessDenied' = @{
+            'Code'     = 4402;
+            'Message'  = 'Access to the directory was denied';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryFilterInvalid' = @{
+            'Code'     = 4403;
+            'Message'  = 'A directory filter value is invalid';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryReadFailed' = @{
+            'Code'     = 4404;
+            'Message'  = 'The directory could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryInformationCollected' = @{
+            'Code'     = 4450;
+            'Message'  = 'The directory information was collected successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Provider';
+        };
         'WebUIAssetPathEmpty' = @{
             'Code'     = 13000;
             'Message'  = 'No Web UI asset path was provided for retrieving the Web UI asset';
