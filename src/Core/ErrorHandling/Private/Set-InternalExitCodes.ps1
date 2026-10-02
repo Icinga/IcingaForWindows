@@ -1192,6 +1192,18 @@ function Set-InternalExitCodes()
             'Severity' = 'Debug';
             'Area'     = 'Provider';
         };
+        'ProcessCounterReadFailed' = @{
+            'Code'     = 4500;
+            'Message'  = 'The performance counters for the process information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'ProcessInformationCollected' = @{
+            'Code'     = 4550;
+            'Message'  = 'The process information was collected successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Provider';
+        };
         'WebUIAssetPathEmpty' = @{
             'Code'     = 13000;
             'Message'  = 'No Web UI asset path was provided for retrieving the Web UI asset';
