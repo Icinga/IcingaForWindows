@@ -8,8 +8,10 @@ $Global:IcingaForWindows.Public.IcingaProtocol.WriterQueue keyed by the remote
 endpoint IP address and then enters a blocking loop that takes messages from that
 queue and forwards them via Send-TCPMessage. The function validates TcpClient and
 SslStream on entry and stops the current thread if either is null or the TCP
-connection is no longer valid. On dequeue errors the exception is logged and the
-loop exits. The function is intended to run in a dedicated background thread spawned
+connection is no longer valid. On a disposed writer queue the current thread is
+stopped and the function exits cleanly after the loop. On any other dequeue error
+the exception is logged and the loop continues. The function is intended to run in
+a dedicated background thread spawned
 by Start-IcingaProtocolSocketReader.
 
 .PARAMETER TcpClient
@@ -104,6 +106,17 @@ function Start-IcingaProtocolSocketWriter()
 
             Send-TCPMessage -MsgObj $TcpMessage;
         } catch {
+            # A disposed writer queue (replaced by a new writer instance for the same endpoint or
+            # disposed during shutdown) makes TryTake throw an ObjectDisposedException, which
+            # PowerShell wraps in a RuntimeException. The queue is gone permanently in that case,
+            # so stop this thread and let the function run to its natural end instead of looping.
+            if ($null -ne $_.Exception.InnerException -and $_.Exception.InnerException -is [System.ObjectDisposedException] -and $_.Exception.Message -like '*TryTake*') {
+                Write-LoggingEntry -Message 'Writer queue disposed, stopping writer thread' -Level 'Info' -Data @{ 'Endpoint' = $Endpoint; };
+                # Stop the current thread
+                Stop-Thread -ThreadId (Get-ThreadId);
+                break;
+            }
+
             Write-LoggingEntry -Message 'Caught exception in Icinga Protocol Socket Writer' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; 'Endpoint' = $Endpoint; };
         } finally {
             $TcpMessage     = $null;
