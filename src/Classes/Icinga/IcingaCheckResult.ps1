@@ -14,7 +14,7 @@ the REST API can read the result of a check that was executed in a worker thread
 instead of the output being written to the console.
 
 .OUTPUTS
-IcingaCheckResult — Result container exposing ExitCode, Output and PerformanceData.
+IcingaCheckResult -- Result container exposing ExitCode, Output and PerformanceData.
 
 .EXAMPLE
 PS> [IcingaCheckResult]::new(2, '[CRITICAL] Load: 95%', @("load=95%;80;90;0;100"))
@@ -38,7 +38,7 @@ class IcingaCheckResult
     Used as the initial, not-yet-compiled placeholder.
 
     .OUTPUTS
-    IcingaCheckResult — Empty result instance.
+    IcingaCheckResult -- Empty result instance.
 
     .EXAMPLE
     PS> [IcingaCheckResult]::new()
@@ -59,9 +59,9 @@ class IcingaCheckResult
     collected performance-data metrics.
 
     .PARAMETER ExitCode
-    | Name     | Type         | Description                                          | Default |
-    |----------|--------------|------------------------------------------------------|---------|
-    | ExitCode | System.Int32 | Icinga plugin state: 0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN. |   |
+    | Name     | Type         | Description                                                  | Default |
+    |----------|--------------|--------------------------------------------------------------|---------|
+    | ExitCode | System.Int32 | Icinga plugin state: 0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN. |         |
 
     .PARAMETER Output
     | Name   | Type          | Description                                     | Default |
@@ -74,7 +74,7 @@ class IcingaCheckResult
     | PerformanceData | System.Array   | Performance-data metrics, one string per metric. |         |
 
     .OUTPUTS
-    IcingaCheckResult — Configured result instance.
+    IcingaCheckResult -- Configured result instance.
 
     .EXAMPLE
     PS> [IcingaCheckResult]::new(0, '[OK] Load: 5%', @("load=5%;80;90;0;100"))
@@ -98,7 +98,7 @@ class IcingaCheckResult
     in string context.
 
     .OUTPUTS
-    System.String — The Output message.
+    System.String -- The Output message.
 
     .EXAMPLE
     PS> $result.ToString()

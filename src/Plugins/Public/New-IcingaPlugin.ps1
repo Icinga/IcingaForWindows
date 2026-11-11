@@ -20,9 +20,9 @@ positional in the order Name, Value, Unit.
 | Name | System.String | Display name of the plugin node.     | $null   |
 
 .PARAMETER Value
-| Name  | Type          | Description                                                        | Default |
-|-------|---------------|--------------------------------------------------------------------|---------|
-| Value | System.Object | Measured value, a number or '<number><unit>'. Makes the node a check. | $null |
+| Name  | Type          | Description                                                           | Default |
+|-------|---------------|-----------------------------------------------------------------------|---------|
+| Value | System.Object | Measured value, a number or '<number><unit>'. Makes the node a check. | $null   |
 
 .PARAMETER Unit
 | Name | Type          | Description                                                  | Default |
@@ -30,7 +30,7 @@ positional in the order Name, Value, Unit.
 | Unit | System.String | Icinga unit of the value and thresholds, e.g. '%', 'B', 's'. |         |
 
 .OUTPUTS
-IcingaPlugin — The new plugin node, an instance of the IcingaPlugin type loaded by
+IcingaPlugin -- The new plugin node, an instance of the IcingaPlugin type loaded by
 the current runspace.
 
 .EXAMPLE

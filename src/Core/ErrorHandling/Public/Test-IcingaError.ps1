@@ -15,7 +15,7 @@ for $null, for collections and for every other value.
 | InputObject | System.Object | Result of a data collection function to test.  | $null   |
 
 .OUTPUTS
-System.Boolean — $true when InputObject is an IcingaError, otherwise $false.
+System.Boolean -- $true when InputObject is an IcingaError, otherwise $false.
 
 .EXAMPLE
 PS> $Services = Get-IcingaWindowsInformation -ClassName 'Win32_Service';

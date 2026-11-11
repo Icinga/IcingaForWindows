@@ -16,7 +16,7 @@ string and arguments in the style of [string]::Format ('Failed to query {0}',
 and Data holds the context values of the failure.
 
 .OUTPUTS
-IcingaError — Error object with message, return code and context data.
+IcingaError -- Error object with message, return code and context data.
 
 .EXAMPLE
 PS> ('IcingaError' -as [type])::new('Failed to query the class {0}: {1}', @('Win32_Service', 'Access denied'))
@@ -49,12 +49,12 @@ class IcingaError
     so braces such as those of volume GUIDs are kept as they are.
 
     .PARAMETER Message
-    | Name    | Type          | Description                  | Default |
-    |---------|---------------|------------------------------|---------|
-    | Message | System.String | Human-readable error message. |        |
+    | Name    | Type          | Description                   | Default |
+    |---------|---------------|-------------------------------|---------|
+    | Message | System.String | Human-readable error message. |         |
 
     .OUTPUTS
-    IcingaError — The error object.
+    IcingaError -- The error object.
 
     .EXAMPLE
     PS> ('IcingaError' -as [type])::new('The performance counter category is missing')
@@ -76,17 +76,17 @@ class IcingaError
     ('{0}', '{1}', ...) replaced by the arguments, like [string]::Format.
 
     .PARAMETER Message
-    | Name    | Type          | Description                                 | Default |
-    |---------|---------------|---------------------------------------------|---------|
-    | Message | System.String | Format string with '{0}'-style placeholders. |        |
+    | Name    | Type          | Description                                  | Default |
+    |---------|---------------|----------------------------------------------|---------|
+    | Message | System.String | Format string with '{0}'-style placeholders. |         |
 
     .PARAMETER Arguments
-    | Name      | Type            | Description                          | Default |
-    |-----------|-----------------|--------------------------------------|---------|
-    | Arguments | System.Object[] | Values inserted into the placeholders. |       |
+    | Name      | Type            | Description                            | Default |
+    |-----------|-----------------|----------------------------------------|---------|
+    | Arguments | System.Object[] | Values inserted into the placeholders. |         |
 
     .OUTPUTS
-    IcingaError — The error object.
+    IcingaError -- The error object.
 
     .EXAMPLE
     PS> ('IcingaError' -as [type])::new('Failed to query {0}', @('Win32_Volume'))
@@ -124,7 +124,7 @@ class IcingaError
     | Data | System.Collections.Hashtable | Context values of the failure.  |         |
 
     .OUTPUTS
-    IcingaError — The error object.
+    IcingaError -- The error object.
 
     .EXAMPLE
     PS> ('IcingaError' -as [type])::new('WindowsInformationClassUnknown', 'The class Foo is unknown', @{ 'ClassName' = 'Foo'; })
@@ -163,7 +163,7 @@ class IcingaError
     | Arguments | System.Object[] | Values inserted into the placeholders. |         |
 
     .OUTPUTS
-    System.String — The formatted message.
+    System.String -- The formatted message.
 
     .EXAMPLE
     PS> ('IcingaError' -as [type])::FormatMessage('Failed to query {0}', @('Win32_Volume'))
@@ -194,7 +194,7 @@ class IcingaError
     Returns the message, so the error renders as its text in strings and logs.
 
     .OUTPUTS
-    System.String — The error message.
+    System.String -- The error message.
 
     .EXAMPLE
     PS> [string]$IcingaError

@@ -133,7 +133,7 @@ Levels: `Debug`, `Output`, `Audit`, `Info`, `Success`, `Warning`, `Error`, `Fata
 - ❌ `Write-Output` for logging — use it only when you genuinely return a value to the pipeline.
 - ❌ Stream redirects like `2>$null` or `*>&1`. Handle errors explicitly.
 - ❌ Aliases in source code (`%`, `?`, `select`, `where`). Use full cmdlet names (`ForEach-Object`, `Where-Object`).
-- ❌ Backticks for line continuation. Use natural pipeline breaks or splatting.
+- ❌ Em-dashes (`—`, U+2014) or en-dashes (`–`, U+2013) in PowerShell files — Windows PowerShell 5.1 reads BOM-less UTF-8 files as Windows-1252 and turns them into `â€”` Mojibake. Use plain ASCII `-` or `--` instead.
 - ❌ `-ErrorAction SilentlyContinue` as a "make the warning go away" tool. If you don't want to handle the error, that's a bug.
 - ❌ Editing files under `lib/` or `docs/api/` by hand.
 - ❌ Class literals in functions (`[IcingaPlugin]::new()`, `[IcingaSortKey]::FromObject()`, `-is [IcingaError]`). See §2.9.
@@ -187,7 +187,7 @@ external dependencies).
 | Count | System.Int32 | Number of iterations to perform.  | 1       |
 
 .OUTPUTS
-System.Object — Description of the returned value or object shape.
+System.Object -- Description of the returned value or object shape.
 Use `None` if the function returns nothing.
 
 .EXAMPLE
@@ -212,7 +212,7 @@ function Verb-IcingaNoun()
 3. **Every `.PARAMETER` block uses the Markdown table form** shown above. The table has exactly four columns: `Name | Type | Description | Default`. This is what the doc generator extracts.
 4. `.SYNOPSIS` is **one line, no period at the end** unless it is a full sentence.
 5. `.DESCRIPTION` wraps at ~80 columns. Use plain prose, not bullet lists.
-6. `.OUTPUTS` starts with the .NET type name (`System.Int32`, `System.Collections.Hashtable`, `System.Object`, `None`), followed by `— Description`.
+6. `.OUTPUTS` starts with the .NET type name (`System.Int32`, `System.Collections.Hashtable`, `System.Object`, `None`), followed by `-- Description`.
 7. `.EXAMPLE` begins with `PS> ` and shows a realistic invocation.
 8. `.NOTES` mentions: external services touched, config files read, required permissions, threading caveats.
 9. **All documentation is written in English.** No German (or any other language) in any help block section.

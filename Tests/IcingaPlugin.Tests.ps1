@@ -8,7 +8,7 @@ Describe 'IcingaPlugin' {
         # Class types defined in the dot-sourced kernel are not visible in the test
         # scope, so grab the script module and construct plugins in its scope. This
         # must live in BeforeAll (run phase) so it survives Pester's discovery phase.
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -99,7 +99,10 @@ Describe 'IcingaPlugin' {
 
         It 'derives the template from the calling Invoke-IcingaCheck* command' {
             & $script:IcingaModule {
-                function Invoke-IcingaCheckFoo { [IcingaPlugin]::new('bar', 5, '%').MetricLabel('load').CheckRange().Compile() | Out-Null; }
+                function Invoke-IcingaCheckFoo()
+                {
+                    [IcingaPlugin]::new('bar', 5, '%').MetricLabel('load').CheckRange().Compile() | Out-Null;
+                }
                 Invoke-IcingaCheckFoo
             };
             $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_foo::load=5%;;;;';
@@ -229,7 +232,7 @@ Describe 'IcingaPlugin' {
 
         It 'writes the result to Private without console output in daemon mode' {
             $Global:IcingaForWindows.Protected.IsBackgroundDaemon = $true;
-            $ExitCode = & $script:IcingaModule {
+            $ExitCode                                             = & $script:IcingaModule {
                 [IcingaPlugin]::new('Load', 95, '%').Warning('80').Critical('90').CheckRange().Compile()
             };
             $ExitCode | Should -Be 2;
@@ -284,8 +287,8 @@ Describe 'IcingaPlugin' {
 
         It 'does not count the entries of a notice package in the header' {
             & $script:IcingaModule {
-                $List          = [IcingaPlugin]::new('File List');
-                $List.IsNotice = $true;
+                $List            = [IcingaPlugin]::new('File List');
+                $List.IsNotice   = $true;
                 [void]$List.AddCheck([IcingaPlugin]::new('a.log').SetNotice('1KiB'));
                 [void]$List.AddCheck([IcingaPlugin]::new('b.log').SetNotice('2KiB'));
 
@@ -302,7 +305,7 @@ Describe 'IcingaPlugin' {
 
         It 'appends the operator configuration at verbosity 3, even when set after building' {
             & $script:IcingaModule {
-                $Package = [IcingaPlugin]::new('Disks').
+                $Package         = [IcingaPlugin]::new('Disks').
                     AddCheck([IcingaPlugin]::new('C:', 95, '%').Warning('80').Critical('90').CheckRange());
                 $Package.Verbose = 3;
                 $Package.Compile()
@@ -311,8 +314,8 @@ Describe 'IcingaPlugin' {
         }
 
         It 'shows no operator configuration for None or notice packages at verbosity 3' {
-            $None = & $script:IcingaModule {
-                $Package = [IcingaPlugin]::new('Grp').AddCheck([IcingaPlugin]::new('a', 5, '%').Critical('90').CheckRange());
+            $None   = & $script:IcingaModule {
+                $Package         = [IcingaPlugin]::new('Grp').AddCheck([IcingaPlugin]::new('a', 5, '%').Critical('90').CheckRange());
                 $Package.CheckNone();
                 $Package.Verbose = 3;
                 $Package.Compile() | Out-Null;
@@ -321,10 +324,10 @@ Describe 'IcingaPlugin' {
             $None | Should -Not -Match 'must be';
 
             $Notice = & $script:IcingaModule {
-                $Package = [IcingaPlugin]::new('Grp');
+                $Package          = [IcingaPlugin]::new('Grp');
                 $Package.IsNotice = $true;
                 [void]$Package.AddCheck([IcingaPlugin]::new('a', 5, '%').Critical('90').CheckRange());
-                $Package.Verbose = 3;
+                $Package.Verbose  = 3;
                 $Package.Compile() | Out-Null;
                 return $Global:IcingaForWindows.Private.Icinga.CheckResult.Output;
             };
@@ -457,7 +460,7 @@ Describe 'IcingaPlugin' {
 
         It 'shows the error on a container with children instead of the summary header' {
             & $script:IcingaModule {
-                $Package = [IcingaPlugin]::new('Disks');
+                $Package         = [IcingaPlugin]::new('Disks');
                 $Package.Verbose = 2;
                 $Package.AddCheck([IcingaPlugin]::new('C', 5, '%').Critical('90').CheckRange()).SetError('Volume data is incomplete').Compile() | Out-Null;
             };
@@ -475,8 +478,8 @@ Describe 'IcingaPlugin' {
 
     Context 'Missing required entries' {
         It 'adds a locked check in the given state for every missing entry' {
-            $ExitCode = & $script:IcingaModule {
-                $Package = [IcingaPlugin]::new('Services');
+            $ExitCode     = & $script:IcingaModule {
+                $Package         = [IcingaPlugin]::new('Services');
                 $Package.Verbose = 2;
                 $Package.AddMissingChecks(@('Spooler', 'DoesNotExist', 'Other'), @('Spooler', 'WinRM'), '{0}', 'Service not found', 3).Compile();
             };
@@ -535,6 +538,415 @@ Describe 'IcingaPlugin' {
                 [IcingaPlugin]::new('X', 5, '%').Warning('80').Critical('90').CheckRange().Commit()
             };
             $Leak | Should -BeNullOrEmpty;
+        }
+    }
+
+    Context 'IgnoreEmptyPackage and empty package handling' {
+        It 'returns UNKNOWN with "No checks added to this object" for an empty package by default' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Empty Package').Compile()
+            };
+            $ExitCode | Should -Be 3;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[UNKNOWN] Empty Package: No checks added to this object';
+        }
+
+        It 'returns OK for an empty package when IgnoreEmptyPackage is true' {
+            $ExitCode = & $script:IcingaModule {
+                $Package                    = [IcingaPlugin]::new('Empty Package');
+                $Package.IgnoreEmptyPackage = $true;
+                $Package.Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] Empty Package';
+        }
+
+        It 'returns OK for an empty package when SetIgnoreEmptyPackage() is chained' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Empty Package').SetIgnoreEmptyPackage().Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] Empty Package';
+        }
+
+        It 'returns OK when only hidden metric checks exist and IgnoreEmptyPackage is enabled' {
+            $ExitCode = & $script:IcingaModule {
+                $Metric = [IcingaPlugin]::new('HiddenMetrics').SetHidden();
+                $Metric.AddCheck([IcingaPlugin]::new('count', 0).MetricIndex('summary').MetricLabel('count')).Commit();
+
+                [IcingaPlugin]::new('Services').
+                    SetIgnoreEmptyPackage().
+                    AddCheck($Metric).
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] Services';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'summary::ifw_check::count=0;;;;';
+        }
+
+        It 'does not treat an ignored empty child package as a failure in the parent container' {
+            $ExitCode = & $script:IcingaModule {
+                $EmptySub = [IcingaPlugin]::new('Optional Sub').SetIgnoreEmptyPackage();
+                [IcingaPlugin]::new('Root').
+                    AddCheck([IcingaPlugin]::new('C:', 50, '%').Warning('80').Critical('90').CheckRange()).
+                    AddCheck($EmptySub).
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] Root: 1 Ok';
+        }
+
+        It 'renders an empty notice package as [INFO] with "Nothing to report"' {
+            $ExitCode = & $script:IcingaModule {
+                $Notice          = [IcingaPlugin]::new('File List');
+                $Notice.IsNotice = $true;
+                $Notice.Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[INFO] File List: Nothing to report';
+        }
+    }
+
+    Context 'Translate (.Translate)' {
+        It 'translates a numeric value and threshold with a hashtable while keeping numeric perfdata' {
+            $ExitCode = & $script:IcingaModule {
+                $Map = @{
+                    1 = 'Stopped';
+                    4 = 'Running';
+                };
+                [IcingaPlugin]::new('Spooler', 1).
+                    Translate($Map).
+                    MetricIndex('spooler').
+                    MetricName('service').
+                    MetricLabel('status').
+                    Critical('Running').
+                    CheckNotEqual().
+                    Compile()
+            };
+            $ExitCode | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[CRITICAL] Spooler: 'Stopped' does not equal pattern 'Running'";
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'spooler::ifw_service::status=1;;4;;';
+        }
+
+        It 'translates a numeric value with an explicit display text string' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Spooler', 4).
+                    Translate('Running').
+                    MetricIndex('spooler').
+                    MetricName('service').
+                    MetricLabel('status').
+                    Critical('Running').
+                    CheckNotEqual().
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[OK] Spooler: 'Running' is ok";
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'spooler::ifw_service::status=4;;4;;';
+        }
+
+        It 'translates an enum value automatically via parameterless .Translate() and emits integer perfdata' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('WinRM', [System.DayOfWeek]::Monday).
+                    Translate().
+                    MetricIndex('winrm').
+                    MetricName('day').
+                    MetricLabel('state').
+                    Critical('Monday').
+                    CheckNotEqual().
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[OK] WinRM: 'Monday' is ok";
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'winrm::ifw_day::state=1;;;;';
+        }
+
+        It 'translates 0s on a time node to a custom label like "Never" when configured' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Last Backup', 0, 's').
+                    Translate(@{ 0 = 'Never' }).
+                    CheckRange().
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] Last Backup: Never is ok';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::lastbackup=0s;;;;';
+        }
+    }
+
+    Context 'Multi-value array thresholds and TimeSpan values' {
+        It 'evaluates CheckNotIn / CheckNotEqual with an array of allowed values as OK when matched' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Scheduled Task', 'Running').
+                    Critical(@('Ready', 'Running')).
+                    CheckNotIn().
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[OK] Scheduled Task: 'Running' is ok";
+        }
+
+        It 'raises CRITICAL when CheckNotIn / CheckNotEqual value is not in the allowed array' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Scheduled Task', 'Disabled').
+                    Critical(@('Ready', 'Running')).
+                    CheckNotEqual().
+                    Compile()
+            };
+            $ExitCode | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[CRITICAL] Scheduled Task: 'Disabled' does not equal pattern 'Ready, Running'";
+        }
+
+        It 'evaluates CheckIn / CheckEqual with warning and critical arrays' {
+            $WarnCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Service State', 'Paused').
+                    Warning(@('Paused', 'Pending')).
+                    Critical(@('Stopped', 'Offline')).
+                    CheckIn().
+                    Compile()
+            };
+            $WarnCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[WARNING] Service State: 'Paused' equals pattern 'Paused'";
+
+            $CritCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Service State', 'Offline').
+                    Warning(@('Paused', 'Pending')).
+                    Critical(@('Stopped', 'Offline')).
+                    CheckIn().
+                    Compile()
+            };
+            $CritCode | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[CRITICAL] Service State: 'Offline' equals pattern 'Offline'";
+        }
+
+        It 'evaluates CheckLike and CheckNotLike with wildcard pattern arrays' {
+            $ExitCode    = & $script:IcingaModule {
+                [IcingaPlugin]::new('Status', 'degraded-disk').
+                    Warning(@('*warn*', '*degraded*')).
+                    Critical(@('*err*', '*fail*')).
+                    CheckLike().
+                    Compile()
+            };
+            $ExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[WARNING] Status: 'degraded-disk' is like pattern '*degraded*'";
+
+            $NotLikeCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Status', 'failed').
+                    Critical(@('*ok*', '*healthy*')).
+                    CheckNotLike().
+                    Compile()
+            };
+            $NotLikeCode | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[CRITICAL] Status: 'failed' is not like pattern '*ok*, *healthy*'";
+        }
+
+        It 'treats an empty threshold array as unset (OK)' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Task', 'Disabled').
+                    Warning(@()).
+                    Critical(@()).
+                    CheckNotIn().
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[OK] Task: 'Disabled' is ok";
+        }
+
+        It 'supports translated values and thresholds with multi-value arrays' {
+            $ExitCode = & $script:IcingaModule {
+                $Map = @{
+                    1 = 'Stopped';
+                    3 = 'Ready';
+                    4 = 'Running';
+                };
+                [IcingaPlugin]::new('Task', 4).
+                    Translate($Map).
+                    Critical(@(3, 4)).
+                    CheckNotIn().
+                    Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be "[OK] Task: 'Running' is ok";
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::task=4;;;;';
+        }
+
+        It 'auto-converts a [TimeSpan] value and base value to seconds with unit "s"' {
+            $ExitCode     = & $script:IcingaModule {
+                [IcingaPlugin]::new('Uptime', [TimeSpan]::FromHours(2)).
+                    MetricLabel('uptime').
+                    Warning('1h').
+                    Critical('3h').
+                    CheckRange().
+                    Compile()
+            };
+            $ExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[WARNING] Uptime: 2h is greater than threshold 1h';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::uptime=7200s;3600;10800;;';
+
+            $BaseExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Elapsed', [TimeSpan]::FromMinutes(45)).
+                    BaseValue([TimeSpan]::FromHours(1)).
+                    Warning('50%').
+                    Critical('80%').
+                    CheckRange().
+                    Compile()
+            };
+            $BaseExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[WARNING] Elapsed: 45m (75%) is greater than threshold 30m (50%)';
+        }
+    }
+
+    Context 'Extended container aggregation and formatting' {
+        It 'escalates to CRITICAL when CheckMaximum is violated even if all children are OK' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Cluster').
+                    AddCheck([IcingaPlugin]::new('Node1', 10, '%').CheckRange()).
+                    AddCheck([IcingaPlugin]::new('Node2', 10, '%').CheckRange()).
+                    CheckMaximum(1).
+                    Compile()
+            };
+            $ExitCode | Should -Be 2;
+        }
+
+        It 'escalates to CRITICAL when CheckNone has an OK child' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Forbidden').
+                    AddCheck([IcingaPlugin]::new('Node1', 10, '%').CheckRange()).
+                    CheckNone().
+                    Compile()
+            };
+            $ExitCode | Should -Be 2;
+        }
+
+        It 'excludes [INFO] notice leaves from OkCount in CheckOr and CheckMinimum' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Group').
+                    AddCheck([IcingaPlugin]::new('Note').SetNotice('info only')).
+                    AddCheck([IcingaPlugin]::new('Disk', 95, '%').Critical('90').CheckRange()).
+                    CheckOr().
+                    Compile()
+            };
+            $ExitCode | Should -Be 2;
+        }
+
+        It 'renders combined CheckMinimum and CheckMaximum configuration at verbosity 3' {
+            & $script:IcingaModule {
+                $Package = [IcingaPlugin]::new('Nodes').
+                    AddCheck([IcingaPlugin]::new('Node1', 10, '%').CheckRange()).
+                    CheckMinimum(1).
+                    CheckMaximum(2).
+                    SetVerbose(3);
+                $Package.Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Match '\(Between 1 and 2 must be \[OK\]\)';
+        }
+
+        It 'omits a SkipSummary leaf from the header counts while still aggregating its state' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Certs').
+                    AddCheck([IcingaPlugin]::new('Cert A', 10).Critical('5').CheckRange().SetSkipSummary()).
+                    AddCheck([IcingaPlugin]::new('Cert B', 1).Critical('5').CheckRange()).
+                    Compile()
+            };
+            $ExitCode | Should -Be 2;
+            $Header   = ($Global:IcingaForWindows.Private.Icinga.CheckResult.Output -split "`n")[0];
+            $Header | Should -Be '[CRITICAL] Certs: 1 Ok';
+        }
+
+        It 'suppresses subtree performance data when NoPerfData is set on the container' {
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('Disks').
+                    SetNoPerfData().
+                    AddCheck([IcingaPlugin]::new('C:', 50, '%').CheckRange()).
+                    Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData.Count | Should -Be 0;
+        }
+
+        It 'deduplicates identical performance data metric labels' {
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('Disks').
+                    AddCheck([IcingaPlugin]::new('C', 50, '%').MetricIndex('c').MetricLabel('used').CheckRange()).
+                    AddCheck([IcingaPlugin]::new('C duplicate', 60, '%').MetricIndex('c').MetricLabel('used').CheckRange()).
+                    Compile()
+            } | Out-Null;
+            $Perf = $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData;
+            $Perf.Count | Should -Be 1;
+            $Perf[0]    | Should -Be 'c::ifw_check::used=50%;;;;';
+        }
+
+        It 'falls back to "value" when a metric label consists only of special characters' {
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('---', 42).CheckRange().Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::value=42;;;;';
+        }
+
+        It 'formats very small floating-point numbers without scientific notation in perfdata' {
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('Latency', 0.00005).CheckRange().Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::latency=0.00005;;;;';
+        }
+
+        It 'humanizes negative byte and time values and omits the continuous counter "c" unit from display text' {
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('Offset', -3600, 's').CheckRange().Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] Offset: -1h is ok';
+
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('Delta', -2048, 'B').CheckRange().Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[OK] Delta: -2KiB is ok';
+
+            & $script:IcingaModule {
+                [IcingaPlugin]::new('Packets', 100, 'c').Warning('50').CheckRange().Compile()
+            } | Out-Null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[WARNING] Packets: 100 is greater than threshold 50';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::packets=100c;50;;;';
+        }
+
+        It 'accepts percentage thresholds like "10%" on a "%" unit node without requiring BaseValue' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('CPU Load', 16.25, '%').Warning('10%').Critical('90%').CheckRange().Compile()
+            };
+            $ExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[WARNING] CPU Load: 16.25% is greater than threshold 10%';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::cpuload=16.25%;10;90;;';
+        }
+
+        It 'accepts string state names in SetState and AddMissingChecks' {
+            $ExitCode = & $script:IcingaModule {
+                $Package = [IcingaPlugin]::new('Services');
+                $Package.AddCheck([IcingaPlugin]::new('Spooler').SetState('Warning', 'Manual warning', $true)).Commit();
+                $Package.AddMissingChecks(@('MissingSvc'), @('Spooler'), '{0}', 'Service not found', 'Critical').Commit();
+                $Package.Compile()
+            };
+            $ExitCode | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Match '\[CRITICAL\] Services: 1 Critical 1 Warning';
+        }
+
+        It 'supports parameterless SetOk, SetWarning, SetCritical, SetUnknown, SetNotice and numeric Minimum/Maximum' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Last Task Result', 1).Minimum(0).Maximum(255).SetCritical().Compile()
+            };
+            $ExitCode | Should -Be 2;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[CRITICAL] Last Task Result: 1';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::lasttaskresult=1;;;0;255';
+
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('NoticePkg').SetNotice().Compile()
+            };
+            $ExitCode | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[INFO] NoticePkg: Nothing to report';
+        }
+
+        It 'accepts TimeSpan and numeric objects directly in Warning() and Critical()' {
+            $ExitCode = & $script:IcingaModule {
+                [IcingaPlugin]::new('Duration', [TimeSpan]::FromMinutes(45)).Warning([TimeSpan]::FromMinutes(30)).Critical([TimeSpan]::FromHours(1)).CheckRange().Compile()
+            };
+            $ExitCode | Should -Be 1;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Match '^\[WARNING\] Duration: 45m is greater than threshold 30m';
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::duration=2700s;1800;3600;;';
         }
     }
 }
