@@ -17,7 +17,7 @@ and logged without stopping the loop.
 | WorkerId | System.Object | Zero-based index of the worker queue to pull from.       | $null   |
 
 .OUTPUTS
-None — Processes queued messages and sends replies; no pipeline output.
+None -- Processes queued messages and sends replies; no pipeline output.
 
 .EXAMPLE
 PS> New-Thread -Command 'Start-IcingaProtocolWorker' -Parameters @{ 'WorkerId' = 0 } -KeepAlive -WaitForJobs -Start

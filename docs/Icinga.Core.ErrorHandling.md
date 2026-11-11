@@ -2,10 +2,59 @@
 
 *Auto-generated from `src/Core/ErrorHandling/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
 
+## Public functions
+
+- [Test-IcingaError](#test-icingaerror)
+
 ## Private helpers
 
 - [Set-InternalExitCodes](#set-internalexitcodes)
 - [Write-FunctionReturnValue](#write-functionreturnvalue)
+
+---
+
+### Test-IcingaError
+
+*Public function*
+
+**Synopsis:** Test whether a value is an IcingaError returned by a data collection function
+
+#### Description
+
+Data collection functions such as Get-IcingaWindowsInformation return an
+IcingaError in place of their data when they fail. Test-IcingaError checks a
+result against the IcingaError type of the current runspace, so a plugin or
+provider can stop with a single check before it uses the data. It returns $false
+for $null, for collections and for every other value.
+
+#### Parameters
+
+**`$InputObject`**
+
+| Name        | Type          | Description                                    | Default |
+|-------------|---------------|------------------------------------------------|---------|
+| InputObject | System.Object | Result of a data collection function to test.  | $null   |
+
+#### Outputs
+
+System.Boolean -- $true when InputObject is an IcingaError, otherwise $false.
+
+#### Examples
+
+```powershell
+PS> $Services = Get-IcingaWindowsInformation -ClassName 'Win32_Service';
+PS> if (Test-IcingaError -InputObject $Services) { return $CheckPackage.SetError($Services).Compile(); }
+
+Stops the plugin with the error message when the query failed.
+```
+
+#### Notes
+
+Use it instead of '-is [IcingaError]'. Every runspace shares the compiled kernel,
+so the literal resolves to the type of the main runspace and does not match an
+error created inside a background thread. No external dependencies.
+
+*Source: [src/Core/ErrorHandling/Public/Test-IcingaError.ps1](../../src/Core/ErrorHandling/Public/Test-IcingaError.ps1)*
 
 ---
 
@@ -104,5 +153,4 @@ current logging configuration and is not 'Audit'. Must be called from the main t
 Get-GlobalRuntimeVariable in daemon context.
 
 *Source: [src/Core/ErrorHandling/Private/Write-FunctionReturnValue.ps1](../../src/Core/ErrorHandling/Private/Write-FunctionReturnValue.ps1)*
-
 

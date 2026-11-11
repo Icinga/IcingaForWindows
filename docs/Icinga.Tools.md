@@ -137,31 +137,31 @@ $null.
 
 **`$InputValue`**
 
-| Name       | Type          | Description                                                                                  | Default |
-|------------|---------------|----------------------------------------------------------------------------------------------|---------|
-| InputValue | System.String | Value to convert, either as a plain number ('1000') or with a unit suffix ('1000B', '1.5MiB').| $null   |
+| Name       | Type          | Description                                                                                    | Default |
+|------------|---------------|------------------------------------------------------------------------------------------------|---------|
+| InputValue | System.String | Value to convert, either as a plain number ('1000') or with a unit suffix ('1000B', '1.5MiB'). | $null   |
 
 **`$InputUnit`**
 
-| Name      | Type          | Description                                                                                     | Default |
-|-----------|---------------|-------------------------------------------------------------------------------------------------|---------|
-| InputUnit | System.String | Unit of the input when InputValue has no suffix. A suffix on InputValue takes precedence.       | $null   |
+| Name      | Type          | Description                                                                               | Default |
+|-----------|---------------|-------------------------------------------------------------------------------------------|---------|
+| InputUnit | System.String | Unit of the input when InputValue has no suffix. A suffix on InputValue takes precedence. | $null   |
 
 **`$TargetUnit`**
 
-| Name       | Type          | Description                                                                                          | Default |
-|------------|---------------|------------------------------------------------------------------------------------------------------|---------|
-| TargetUnit | System.String | Unit to convert to. Must be in the same family as the input. When omitted the best-fitting unit wins.| $null   |
+| Name       | Type          | Description                                                                                           | Default |
+|------------|---------------|-------------------------------------------------------------------------------------------------------|---------|
+| TargetUnit | System.String | Unit to convert to. Must be in the same family as the input. When omitted the best-fitting unit wins. | $null   |
 
 **`$AsHumanReadable`**
 
-| Name            | Type                                         | Description                                                                                 | Default |
-|-----------------|----------------------------------------------|---------------------------------------------------------------------------------------------|---------|
-| AsHumanReadable | System.Management.Automation.SwitchParameter | Render OutputString with full, pluralized unit names ('2 Hours 23 Minutes 20 Seconds').     | $false  |
+| Name            | Type                                         | Description                                                                             | Default |
+|-----------------|----------------------------------------------|-----------------------------------------------------------------------------------------|---------|
+| AsHumanReadable | System.Management.Automation.SwitchParameter | Render OutputString with full, pluralized unit names ('2 Hours 23 Minutes 20 Seconds'). | $false  |
 
 #### Outputs
 
-IcingaUnit — Object with InputValue, InputUnit, OutputValue, OutputUnit and
+IcingaUnit -- Object with InputValue, InputUnit, OutputValue, OutputUnit and
 OutputString describing the conversion. Returns $null via Write-FunctionReturnValue
 on failure with return codes IcingaUnitInvalidInputValue, IcingaUnitMissingInputUnit,
 IcingaUnitUnknownUnit or IcingaUnitFamilyMismatch.
@@ -579,5 +579,4 @@ Only removes a restricted set of characters; callers may perform additional
 normalization (lowercasing, trimming) if needed.
 
 *Source: [src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1](../../src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1)*
-
 

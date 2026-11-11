@@ -43,9 +43,9 @@ function Read-IcingaSourceFile()
         [System.IO.FileShare]::Read
     );
 
-    $ReadArray     = New-Object Byte[] $FileStream.Length;
-    $UTF8Encoding  = New-Object System.Text.UTF8Encoding $false;
-    $FileContent   = '';
+    $ReadArray                        = New-Object Byte[] $FileStream.Length;
+    $UTF8Encoding                     = New-Object System.Text.UTF8Encoding $false;
+    $FileContent                      = '';
 
     while ($FileStream.Read($ReadArray, 0, $ReadArray.Length)) {
         $FileContent = [System.String]::Concat($FileContent, $UTF8Encoding.GetString($ReadArray));
@@ -111,7 +111,7 @@ function Write-IcingaSourceFile()
         [System.IO.FileShare]::Read
     );
 
-    $ContentBytes = [System.Text.Encoding]::UTF8.GetBytes($Value);
+    $ContentBytes                     = [System.Text.Encoding]::UTF8.GetBytes($Value);
     $FileStream.Write($ContentBytes, 0, $ContentBytes.Length);
     $FileStream.Dispose();
 }
@@ -134,8 +134,8 @@ function Get-IcingaModuleStructure()
     };
     [int]$FileCount             = 0;
 
-    $PowerShellSourcePath = Join-Path -Path $ModuleBasePath -ChildPath 'src\';
-    [array]$SourceFiles   = Get-ChildItem -Path $PowerShellSourcePath -Recurse -Filter '*.ps1';
+    $PowerShellSourcePath       = Join-Path -Path $ModuleBasePath -ChildPath 'src\';
+    [array]$SourceFiles         = Get-ChildItem -Path $PowerShellSourcePath -Recurse -Filter '*.ps1';
 
     foreach ($sourceFile in $SourceFiles) {
         $FileCount                                  += 1;
@@ -164,7 +164,7 @@ Write-Host "|                Icinga for Windows - Module Compiler               
 Write-Host "|                                                                     |" -ForegroundColor Cyan;
 Write-Host "+---------------------------------------------------------------------+`n" -ForegroundColor Cyan;
 
-$BuildStartTime = Get-Date
+$BuildStartTime        = Get-Date
 
 # First we need to analyze the module structure and gather all components
 Write-Host "[1/4] Analyzing module structure..." -ForegroundColor Yellow;
@@ -258,7 +258,7 @@ foreach ($privateFile in $Components['Private']) {
 # Append all public functions once
 Write-Host "  * Appending $($Components['Public'].Count) public function file(s)..." -ForegroundColor White;
 foreach ($publicFile in $Components['Public']) {
-    $FileContent = Read-IcingaSourceFile -Path $publicFile;
+    $FileContent     = Read-IcingaSourceFile -Path $publicFile;
 
     $FunctionMatches = [regex]::Matches($FileContent, '(?m)^\s*function\s+([a-zA-Z0-9_-]+)');
 
