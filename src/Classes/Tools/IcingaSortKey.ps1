@@ -18,7 +18,7 @@ and sorts first. Several properties are joined with a separator that sorts below
 every other character, so the next property only breaks ties of the previous one.
 
 .OUTPUTS
-IcingaSortKey — Static helper class, not meant to be instantiated.
+IcingaSortKey -- Static helper class, not meant to be instantiated.
 
 .EXAMPLE
 PS> [IcingaSortKey]::FromObject($Volume, [string[]]@('Name'))
@@ -43,17 +43,17 @@ class IcingaSortKey
     by key, every other object (including CIM instances) by member name.
 
     .PARAMETER InputObject
-    | Name        | Type          | Description               | Default |
-    |-------------|---------------|---------------------------|---------|
-    | InputObject | System.Object | The object to build for.  |         |
+    | Name        | Type          | Description              | Default |
+    |-------------|---------------|--------------------------|---------|
+    | InputObject | System.Object | The object to build for. |         |
 
     .PARAMETER Property
-    | Name     | Type            | Description                                       | Default |
-    |----------|-----------------|---------------------------------------------------|---------|
-    | Property | System.String[] | Properties in order of precedence; empty uses the object. |  |
+    | Name     | Type            | Description                                              | Default |
+    |----------|-----------------|----------------------------------------------------------|---------|
+    | Property | System.String[] | Properties in order of precedence; empty uses the object.|         |
 
     .OUTPUTS
-    System.String — The sort key.
+    System.String -- The sort key.
 
     .EXAMPLE
     PS> [IcingaSortKey]::FromObject($Partition, [string[]]@('DiskNumber', 'PartitionNumber'))
@@ -90,7 +90,7 @@ class IcingaSortKey
     | Value | System.Object | The value to build for. |         |
 
     .OUTPUTS
-    System.String — The sort key.
+    System.String -- The sort key.
 
     .EXAMPLE
     PS> [IcingaSortKey]::FromValue('0,10')
@@ -118,7 +118,7 @@ class IcingaSortKey
 
             if ([char]::IsDigit($Chunk[0])) {
                 [string]$Digits = $Chunk.TrimStart('0');
-                $Key += $Digits.Length.ToString('000') + $Digits;
+                $Key            = $Key + $Digits.Length.ToString('000') + $Digits;
             } else {
                 $Key += $Chunk;
             }
@@ -146,7 +146,7 @@ class IcingaSortKey
     | Name | System.String | Key or member name. |         |
 
     .OUTPUTS
-    System.Object — The property value or $null.
+    System.Object -- The property value or $null.
 
     .EXAMPLE
     PS> [IcingaSortKey]::GetMemberValue($Volume, 'Name')

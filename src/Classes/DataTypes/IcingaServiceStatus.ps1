@@ -15,7 +15,7 @@ anything else with the list of valid names. A value converts to its code with
 [int] and to its name with [string].
 
 .OUTPUTS
-IcingaServiceStatus — Enum value of the service status.
+IcingaServiceStatus -- Enum value of the service status.
 
 .EXAMPLE
 PS> [int][IcingaServiceStatus]::Running
@@ -52,7 +52,7 @@ cannot be mapped resolves to Unknown instead of throwing, so a plugin can always
 report a state.
 
 .OUTPUTS
-IcingaServiceStatusMap — Static helper class, not meant to be instantiated.
+IcingaServiceStatusMap -- Static helper class, not meant to be instantiated.
 
 .EXAMPLE
 PS> [IcingaServiceStatusMap]::Resolve('Start Pending')
@@ -74,12 +74,12 @@ class IcingaServiceStatusMap
     unknown names and undefined codes.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                                    | Default |
-    |-------|---------------|----------------------------------------------------------------|---------|
-    | Value | System.Object | Status name, Win32_Service state, ServiceControllerStatus or code. |     |
+    | Name  | Type          | Description                                                         | Default |
+    |-------|---------------|---------------------------------------------------------------------|---------|
+    | Value | System.Object | Status name, Win32_Service state, ServiceControllerStatus or code.  |         |
 
     .OUTPUTS
-    IcingaServiceStatus — The resolved status, Unknown when it cannot be mapped.
+    IcingaServiceStatus -- The resolved status, Unknown when it cannot be mapped.
 
     .EXAMPLE
     PS> [IcingaServiceStatusMap]::Resolve('Running')

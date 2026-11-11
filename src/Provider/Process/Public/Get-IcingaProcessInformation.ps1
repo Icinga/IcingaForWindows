@@ -39,7 +39,7 @@ PowerShell 5.1.
 | Exclude | System.Array | Skip processes matching these names (wildcards).    | @()     |
 
 .OUTPUTS
-System.Collections.Hashtable — Keys Processes, MemoryTotal, CommitLimit and
+System.Collections.Hashtable -- Keys Processes, MemoryTotal, CommitLimit and
 LogicalProcessors, or an IcingaError when the data could not be read. Processes is
 keyed by process name; every entry holds Name, Instances (keyed by process id, each
 with Id, Cpu, Memory, PageFile and Threads) and Total (Cpu, Memory, PageFile,
@@ -127,7 +127,7 @@ function Get-IcingaProcessInformation()
         [uint64]$PageFile = 0;
         [int]$Threads     = 0;
 
-        $Value = Get-IcingaPerformanceCounterValue -InputObject $Values['% Processor Time'];
+        $Value            = Get-IcingaPerformanceCounterValue -InputObject $Values['% Processor Time'];
         if ($null -ne $Value -and $Value -isnot [string]) {
             $Cpu = [double]$Value / $Processors;
         }

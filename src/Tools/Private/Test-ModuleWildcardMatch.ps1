@@ -19,7 +19,7 @@ a broken filter argument never aborts a plugin.
 | Pattern | System.String | Wildcard pattern to match. |         |
 
 .OUTPUTS
-System.Boolean — True when the value matches the pattern.
+System.Boolean -- True when the value matches the pattern.
 
 .EXAMPLE
 PS> Test-ModuleWildcardMatch -Value 'Spooler' -Pattern 'spo*'

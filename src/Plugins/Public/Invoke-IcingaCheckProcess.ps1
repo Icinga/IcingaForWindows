@@ -69,44 +69,44 @@ Performance data is written for the summary only, with the labels
 | ThreadCountCritical | System.String | Critical threshold for the thread count of each process.   |         |
 
 .PARAMETER TotalPageFileWarning
-| Name                 | Type          | Description                                                        | Default |
-|----------------------|---------------|--------------------------------------------------------------------|---------|
-| TotalPageFileWarning | System.String | Warning threshold for the page file usage of all processes of a name. |      |
+| Name                 | Type          | Description                                                           | Default |
+|----------------------|---------------|-----------------------------------------------------------------------|---------|
+| TotalPageFileWarning | System.String | Warning threshold for the page file usage of all processes of a name. |         |
 
 .PARAMETER TotalPageFileCritical
-| Name                  | Type          | Description                                                        | Default |
-|-----------------------|---------------|--------------------------------------------------------------------|---------|
-| TotalPageFileCritical | System.String | Critical threshold for the page file usage of all processes of a name. |     |
+| Name                  | Type          | Description                                                            | Default |
+|-----------------------|---------------|------------------------------------------------------------------------|---------|
+| TotalPageFileCritical | System.String | Critical threshold for the page file usage of all processes of a name. |         |
 
 .PARAMETER TotalMemoryWarning
-| Name               | Type          | Description                                                     | Default |
-|--------------------|---------------|-----------------------------------------------------------------|---------|
-| TotalMemoryWarning | System.String | Warning threshold for the memory usage of all processes of a name. |      |
+| Name               | Type          | Description                                                        | Default |
+|--------------------|---------------|--------------------------------------------------------------------|---------|
+| TotalMemoryWarning | System.String | Warning threshold for the memory usage of all processes of a name. |         |
 
 .PARAMETER TotalMemoryCritical
-| Name                | Type          | Description                                                     | Default |
-|---------------------|---------------|-----------------------------------------------------------------|---------|
-| TotalMemoryCritical | System.String | Critical threshold for the memory usage of all processes of a name. |     |
+| Name                | Type          | Description                                                         | Default |
+|---------------------|---------------|---------------------------------------------------------------------|---------|
+| TotalMemoryCritical | System.String | Critical threshold for the memory usage of all processes of a name. |         |
 
 .PARAMETER TotalCPUWarning
-| Name            | Type          | Description                                                  | Default |
-|-----------------|---------------|--------------------------------------------------------------|---------|
-| TotalCPUWarning | System.String | Warning threshold for the CPU usage of all processes of a name. |      |
+| Name            | Type          | Description                                                     | Default |
+|-----------------|---------------|-----------------------------------------------------------------|---------|
+| TotalCPUWarning | System.String | Warning threshold for the CPU usage of all processes of a name. |         |
 
 .PARAMETER TotalCPUCritical
-| Name             | Type          | Description                                                  | Default |
-|------------------|---------------|--------------------------------------------------------------|---------|
-| TotalCPUCritical | System.String | Critical threshold for the CPU usage of all processes of a name. |     |
+| Name             | Type          | Description                                                      | Default |
+|------------------|---------------|------------------------------------------------------------------|---------|
+| TotalCPUCritical | System.String | Critical threshold for the CPU usage of all processes of a name. |         |
 
 .PARAMETER TotalThreadCountWarning
-| Name                    | Type          | Description                                                    | Default |
-|-------------------------|---------------|----------------------------------------------------------------|---------|
-| TotalThreadCountWarning | System.String | Warning threshold for the thread count of all processes of a name. |     |
+| Name                    | Type          | Description                                                       | Default |
+|-------------------------|---------------|-------------------------------------------------------------------|---------|
+| TotalThreadCountWarning | System.String | Warning threshold for the thread count of all processes of a name.|         |
 
 .PARAMETER TotalThreadCountCritical
-| Name                     | Type          | Description                                                    | Default |
-|--------------------------|---------------|----------------------------------------------------------------|---------|
-| TotalThreadCountCritical | System.String | Critical threshold for the thread count of all processes of a name. |    |
+| Name                     | Type          | Description                                                        | Default |
+|--------------------------|---------------|--------------------------------------------------------------------|---------|
+| TotalThreadCountCritical | System.String | Critical threshold for the thread count of all processes of a name.|         |
 
 .PARAMETER TotalProcessCountWarning
 | Name                     | Type          | Description                                              | Default |
@@ -119,24 +119,24 @@ Performance data is written for the summary only, with the labels
 | TotalProcessCountCritical | System.String | Critical threshold for the number of processes of a name. |         |
 
 .PARAMETER Process
-| Name    | Type         | Description                                                           | Default |
-|---------|--------------|-----------------------------------------------------------------------|---------|
-| Process | System.Array | Process names without '.exe' to check, wildcards allowed. Empty checks all. | @() |
+| Name    | Type         | Description                                                                 | Default |
+|---------|--------------|-----------------------------------------------------------------------------|---------|
+| Process | System.Array | Process names without '.exe' to check, wildcards allowed. Empty checks all. | @()     |
 
 .PARAMETER ExcludeProcess
-| Name           | Type         | Description                                              | Default |
-|----------------|--------------|----------------------------------------------------------|---------|
-| ExcludeProcess | System.Array | Process names to skip, wildcards allowed.                | @()     |
+| Name           | Type         | Description                               | Default |
+|----------------|--------------|-------------------------------------------|---------|
+| ExcludeProcess | System.Array | Process names to skip, wildcards allowed. | @()     |
 
 .PARAMETER OverrideNotFound
-| Name             | Type          | Description                                                            | Default |
-|------------------|---------------|------------------------------------------------------------------------|---------|
-| OverrideNotFound | System.String | State for a Process entry without a match: Ok, Warning, Critical or Unknown. | Unknown |
+| Name             | Type          | Description                                                                   | Default |
+|------------------|---------------|-------------------------------------------------------------------------------|---------|
+| OverrideNotFound | System.String | State for a Process entry without a match: Ok, Warning, Critical or Unknown.  | Unknown |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                 | Default |
-|-----------|--------------|-----------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0 |
+| Name      | Type         | Description                                                                        | Default |
+|-----------|--------------|------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -144,7 +144,7 @@ Performance data is written for the summary only, with the labels
 | NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
 
 .OUTPUTS
-System.Int32 — The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
 
 .EXAMPLE
 PS> Invoke-IcingaCheckProcess -Process 'powershell' -Verbosity 2
@@ -192,10 +192,11 @@ function Invoke-IcingaCheckProcess()
         [switch]$NoPerfData                = $false
     );
 
-    $CheckPackage         = New-IcingaPlugin 'Process Overview';
-    $CheckPackage.Verbose = $Verbosity;
+    $CheckPackage            = New-IcingaPlugin 'Process Overview';
+    $CheckPackage.Verbose    = $Verbosity;
+    $CheckPackage.NoPerfData = $NoPerfData;
 
-    $Data = Get-IcingaProcessInformation -Include $Process -Exclude $ExcludeProcess;
+    $Data                    = Get-IcingaProcessInformation -Include $Process -Exclude $ExcludeProcess;
 
     if (Test-IcingaError -InputObject $Data) {
         return $CheckPackage.SetError($Data).Compile();
@@ -235,8 +236,12 @@ function Invoke-IcingaCheckProcess()
 
         foreach ($Package in $Packages) {
             foreach ($Metric in $Package[1]) {
-                $Check            = New-IcingaPlugin $Metric[0] $Metric[1] $Metric[2];
-                $Check.NoPerfData = ($NoPerfData -or [string]::IsNullOrEmpty($Metric[6]));
+                $Check = (New-IcingaPlugin $Metric[0] $Metric[1] $Metric[2]).
+                    SetNoPerfData([string]::IsNullOrEmpty($Metric[6])).
+                    MetricIndex($Name).
+                    MetricLabel($Metric[6]).
+                    Warning($Metric[4]).
+                    Critical($Metric[5]);
 
                 # Counts have no size to calculate percentages from.
                 if ([double]$Metric[3] -gt 0) {
@@ -244,14 +249,7 @@ function Invoke-IcingaCheckProcess()
                 }
 
                 # Perfdata label: <name>::ifw_process::<metric> (template auto-derived from the command).
-                $Package[0].AddCheck(
-                    $Check.
-                        MetricIndex($Name).
-                        MetricLabel($Metric[6]).
-                        Warning($Metric[4]).
-                        Critical($Metric[5]).
-                        CheckRange()
-                ).Commit();
+                $Package[0].AddCheck($Check.CheckRange()).Commit();
             }
 
             $ProcessPackage.AddCheck($Package[0]).Commit();
@@ -260,16 +258,9 @@ function Invoke-IcingaCheckProcess()
         $CheckPackage.AddCheck($ProcessPackage).Commit();
     }
 
-    [hashtable]$NotFoundStates = @{
-        'Ok'       = 0;
-        'Warning'  = 1;
-        'Critical' = 2;
-        'Unknown'  = 3;
-    };
-
     # Wildcard entries are reported as well: a pattern without any match means the
     # expected process is not running.
-    $CheckPackage.AddMissingChecks($Process, @($Data.Processes.Keys), '{0}', 'Process not found', $NotFoundStates[$OverrideNotFound]).Commit();
+    $CheckPackage.AddMissingChecks($Process, @($Data.Processes.Keys), '{0}', 'Process not found', $OverrideNotFound).Commit();
 
     if ($CheckPackage.HasChecks() -eq $false) {
         return $CheckPackage.SetError('No process matches the given filter').Compile();

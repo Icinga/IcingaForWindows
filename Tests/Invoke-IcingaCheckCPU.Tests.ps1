@@ -5,7 +5,7 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
 
 Describe 'Invoke-IcingaCheckCPU' {
     BeforeAll {
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -118,7 +118,7 @@ Describe 'Invoke-IcingaCheckCPU' {
     }
 
     It 'reports the same node total and overall load on a single NUMA node' {
-        $Counters = New-TestCpuCounter -Instances @{ '0,0' = 13.18; '0,1' = 9.67; '0,2' = 6.52; '0,3' = 1.13; '0,_Total' = 7.44; '_Total' = 7.57; };
+        $Counters    = New-TestCpuCounter -Instances @{ '0,0' = 13.18; '0,1' = 9.67; '0,2' = 6.52; '0,3' = 1.13; '0,_Total' = 7.44; '_Total' = 7.57; };
 
         Invoke-TestCpuCheck -StubData $Counters | Should -Be 0;
 

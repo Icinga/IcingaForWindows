@@ -5,7 +5,7 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
 
 Describe 'Invoke-IcingaCheckPerfCounter' {
     BeforeAll {
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -64,10 +64,10 @@ Describe 'Invoke-IcingaCheckPerfCounter' {
                 '\Processor(0)\% Processor Time'      = (New-TestLeaf -Value 10 -Type 'Timer100NsInverse');
                 '\Processor(_Total)\% Processor Time' = (New-TestLeaf -Value 52.5 -Type 'Timer100NsInverse');
             };
-            '\Memory\Available Bytes'        = (New-TestLeaf -Value 50 -Type 'NumberOfItems64');
-            '\Nope\Nothing'                  = (New-TestLeaf -Value "Category 'Nope' does not exist.");
-            '\Disk(*)\Reads'                 = @{ };
-            '\Broken(*)\Value'               = @{
+            '\Memory\Available Bytes' = (New-TestLeaf -Value 50 -Type 'NumberOfItems64');
+            '\Nope\Nothing'           = (New-TestLeaf -Value "Category 'Nope' does not exist.");
+            '\Disk(*)\Reads'          = @{ };
+            '\Broken(*)\Value'        = @{
                 '\Broken(a)\Value' = (New-TestLeaf -Value 'Counter not initialized');
                 '\Broken(b)\Value' = (New-TestLeaf -Value 'Instance vanished');
             };
@@ -167,7 +167,7 @@ Describe 'Invoke-IcingaCheckPerfCounter' {
     }
 
     It 'reports an empty result as UNKNOWN, or OK with IgnoreEmptyChecks' {
-        [hashtable]$Arguments = @{ 'PerfCounter' = @('\Processor(*)\% Processor Time'); 'IncludeCounter' = @('*(9)*'); };
+        [hashtable]$Arguments           = @{ 'PerfCounter' = @('\Processor(*)\% Processor Time'); 'IncludeCounter' = @('*(9)*'); };
 
         Invoke-TestPerfCounterCheck -StubData $script:Counters -Arguments $Arguments | Should -Be 3;
         $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[UNKNOWN] Performance Counter: No performance counter matches the given filter';

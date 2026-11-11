@@ -32,7 +32,7 @@ DiskInformationDiskQueryFailed), so the log shows where the collection stopped.
 | Entrypoint | System.String | View to return: 'PhysicalDisk', 'Partition' or 'Volume'. | PhysicalDisk |
 
 .OUTPUTS
-System.Collections.Hashtable — The entries of the requested view, or an
+System.Collections.Hashtable -- The entries of the requested view, or an
 IcingaError when its main class could not be read. Entry fields per view:
 
 Volume: DeviceId, Name, DriveLetter ('C:' or ''), Label, FileSystem, Size,
@@ -77,7 +77,7 @@ function Get-IcingaDiskInformation()
 
     [string]$StorageNamespace = 'root/Microsoft/Windows/Storage';
 
-    $Volumes = Get-IcingaWindowsInformation -ClassName 'Win32_Volume' -Filter 'DriveType = 3' -Property 'DeviceID', 'Name', 'DriveLetter', 'Label', 'FileSystem', 'Capacity', 'FreeSpace';
+    $Volumes                  = Get-IcingaWindowsInformation -ClassName 'Win32_Volume' -Filter 'DriveType = 3' -Property 'DeviceID', 'Name', 'DriveLetter', 'Label', 'FileSystem', 'Capacity', 'FreeSpace';
 
     if (Test-IcingaError -InputObject $Volumes) {
         if ($Entrypoint -eq 'Volume') {
@@ -166,7 +166,7 @@ function Get-IcingaDiskInformation()
                 continue;
             }
 
-            $LinkedVolume = $VolumeData[[string]$AccessPath];
+            $LinkedVolume   = $VolumeData[[string]$AccessPath];
 
             $Entry.VolumeId = $LinkedVolume.DeviceId;
             $Entry.Volume   = $LinkedVolume;

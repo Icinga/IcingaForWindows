@@ -10,7 +10,7 @@ longer description, severity and area metadata. The function is
 idempotent and will return immediately if the table is already set.
 
 .OUTPUTS
-None — Populates (Get-GlobalRuntimeVariable).Public.ReturnCodes as a side effect.
+None -- Populates (Get-GlobalRuntimeVariable).Public.ReturnCodes as a side effect.
 
 .EXAMPLE
 PS> Set-InternalExitCodes
@@ -1132,75 +1132,15 @@ function Set-InternalExitCodes()
             'Severity' = 'Warning';
             'Area'     = 'Tools';
         };
-        'DiskInformationVolumeQueryFailed' = @{
-            'Code'     = 4300;
-            'Message'  = 'The volume data for the disk information could not be read';
+        'ScheduledTaskQueryFailed' = @{
+            'Code'     = 4600;
+            'Message'  = 'The scheduled tasks could not be queried';
             'Severity' = 'Error';
             'Area'     = 'Provider';
         };
-        'DiskInformationPartitionQueryFailed' = @{
-            'Code'     = 4301;
-            'Message'  = 'The partition data for the disk information could not be read';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'DiskInformationDiskQueryFailed' = @{
-            'Code'     = 4302;
-            'Message'  = 'The physical disk data for the disk information could not be read';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'DiskInformationCollected' = @{
-            'Code'     = 4350;
-            'Message'  = 'The disk information was collected successfully';
-            'Severity' = 'Debug';
-            'Area'     = 'Provider';
-        };
-        'DirectoryPathMissing' = @{
-            'Code'     = 4400;
-            'Message'  = 'No directory path was provided';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'DirectoryPathNotFound' = @{
-            'Code'     = 4401;
-            'Message'  = 'The directory does not exist on this system';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'DirectoryAccessDenied' = @{
-            'Code'     = 4402;
-            'Message'  = 'Access to the directory was denied';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'DirectoryFilterInvalid' = @{
-            'Code'     = 4403;
-            'Message'  = 'A directory filter value is invalid';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'DirectoryReadFailed' = @{
-            'Code'     = 4404;
-            'Message'  = 'The directory could not be read';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'DirectoryInformationCollected' = @{
-            'Code'     = 4450;
-            'Message'  = 'The directory information was collected successfully';
-            'Severity' = 'Debug';
-            'Area'     = 'Provider';
-        };
-        'ProcessCounterReadFailed' = @{
-            'Code'     = 4500;
-            'Message'  = 'The performance counters for the process information could not be read';
-            'Severity' = 'Error';
-            'Area'     = 'Provider';
-        };
-        'ProcessInformationCollected' = @{
-            'Code'     = 4550;
-            'Message'  = 'The process information was collected successfully';
+        'ScheduledTaskInformationCollected' = @{
+            'Code'     = 4650;
+            'Message'  = 'The scheduled task information was collected successfully';
             'Severity' = 'Debug';
             'Area'     = 'Provider';
         };

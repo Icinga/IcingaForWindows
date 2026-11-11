@@ -33,9 +33,9 @@ the ReturnCode of the IcingaError.
 | Namespace | System.String | CIM namespace of the class.    | root/cimv2 |
 
 .PARAMETER Filter
-| Name   | Type          | Description                                  | Default |
-|--------|---------------|----------------------------------------------|---------|
-| Filter | System.String | WQL filter, e.g. 'DriveType = 3'; '' for all. |        |
+| Name   | Type          | Description                                   | Default |
+|--------|---------------|-----------------------------------------------|---------|
+| Filter | System.String | WQL filter, e.g. 'DriveType = 3'; '' for all. |         |
 
 .PARAMETER Property
 | Name     | Type         | Description                                     | Default |
@@ -43,7 +43,7 @@ the ReturnCode of the IcingaError.
 | Property | System.Array | Properties to fetch; empty fetches all of them. | @()     |
 
 .OUTPUTS
-System.Object[] — The CIM instances on success (an empty array when nothing
+System.Object[] -- The CIM instances on success (an empty array when nothing
 matches), or an IcingaError when the query failed.
 
 .EXAMPLE
@@ -102,8 +102,8 @@ function Get-IcingaWindowsInformation()
             'InvalidParameter' = 'WindowsInformationInvalidQuery';
         };
 
-        [string]$NativeErrorCode = [string]$_.Exception.NativeErrorCode;
-        [string]$ReturnCode      = 'WindowsInformationQueryFailed';
+        [string]$NativeErrorCode     = [string]$_.Exception.NativeErrorCode;
+        [string]$ReturnCode          = 'WindowsInformationQueryFailed';
 
         if ($NativeErrorCodes.ContainsKey($NativeErrorCode)) {
             $ReturnCode = $NativeErrorCodes[$NativeErrorCode];

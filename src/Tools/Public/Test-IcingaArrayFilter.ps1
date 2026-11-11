@@ -32,8 +32,8 @@ pattern.
 | Exclude | System.Array | Wildcard patterns of which none may match.    | @()     |
 
 .OUTPUTS
-System.Boolean — For a single value, whether it passes the filters.
-System.Object[] — For an array, the elements that pass the filters.
+System.Boolean -- For a single value, whether it passes the filters.
+System.Object[] -- For an array, the elements that pass the filters.
 
 .EXAMPLE
 PS> Test-IcingaArrayFilter -InputObject 'Spooler' -Include 'Spo*' -Exclude 'WinRM'
@@ -53,9 +53,9 @@ plugins stay usable in JEA sessions.
 function Test-IcingaArrayFilter()
 {
     param (
-        $InputObject    = $null,
-        [array]$Include = @(),
-        [array]$Exclude = @()
+        [object]$InputObject = $null,
+        [array]$Include      = @(),
+        [array]$Exclude      = @()
     );
 
     if ($InputObject -is [array]) {

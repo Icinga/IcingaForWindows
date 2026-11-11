@@ -5,7 +5,7 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
 
 Describe 'Invoke-IcingaCheckService' {
     BeforeAll {
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -188,7 +188,7 @@ Describe 'Invoke-IcingaCheckService' {
 
             Invoke-TestServiceCheck -StubData $Services | Should -Be 2;
 
-            $Result = $Global:IcingaForWindows.Private.Icinga.CheckResult;
+            $Result   = $Global:IcingaForWindows.Private.Icinga.CheckResult;
             $Result.Output          | Should -Match '^\[CRITICAL\] Services: 1 Critical 2 Ok';
             $Result.Output          | Should -Match ([regex]::Escape('Service "Auto Failed (AutoFailed)"'));
             $Result.Output          | Should -Not -Match 'ManualStopped';

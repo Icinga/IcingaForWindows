@@ -5,7 +5,7 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
 
 Describe 'Invoke-IcingaCheckMemory' {
     BeforeAll {
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -46,8 +46,8 @@ Describe 'Invoke-IcingaCheckMemory' {
             );
 
             return @{
-                'Win32_ComputerSystem'  = @([PSCustomObject]@{ 'TotalPhysicalMemory' = [uint64]17179869184; 'AutomaticManagedPagefile' = $AutomaticManagedPagefile; });
-                'Win32_PageFileUsage'   = @(
+                'Win32_ComputerSystem' = @([PSCustomObject]@{ 'TotalPhysicalMemory' = [uint64]17179869184; 'AutomaticManagedPagefile' = $AutomaticManagedPagefile; });
+                'Win32_PageFileUsage'  = @(
                     [PSCustomObject]@{ 'Name' = 'D:\pagefile.sys'; 'AllocatedBaseSize' = [uint32]1024; 'CurrentUsage' = [uint32]1000; },
                     [PSCustomObject]@{ 'Name' = 'C:\pagefile.sys'; 'AllocatedBaseSize' = [uint32]2048; 'CurrentUsage' = [uint32]512; }
                 );

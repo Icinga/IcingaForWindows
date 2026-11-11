@@ -26,14 +26,14 @@ A failed volume query is reported as UNKNOWN with its reason. This plugin is
 Windows-only because it relies on the Win32_Volume CIM class.
 
 .PARAMETER Warning
-| Name    | Type          | Description                                                                 | Default |
-|---------|---------------|-----------------------------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold as percentage, size or Icinga range, e.g. '80%' or '400GB'. |       |
+| Name    | Type          | Description                                                                   | Default |
+|---------|---------------|-------------------------------------------------------------------------------|---------|
+| Warning | System.String | Warning threshold as percentage, size or Icinga range, e.g. '80%' or '400GB'. |         |
 
 .PARAMETER Critical
-| Name     | Type          | Description                                                                 | Default |
-|----------|---------------|-----------------------------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold as percentage, size or Icinga range, e.g. '90%' or '450GB'. |      |
+| Name     | Type          | Description                                                                    | Default |
+|----------|---------------|--------------------------------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold as percentage, size or Icinga range, e.g. '90%' or '450GB'. |         |
 
 .PARAMETER Include
 | Name    | Type         | Description                                                         | Default |
@@ -41,9 +41,9 @@ Windows-only because it relies on the Win32_Volume CIM class.
 | Include | System.Array | Only check partitions matching these letters or labels (wildcards). | @()     |
 
 .PARAMETER Exclude
-| Name    | Type         | Description                                                  | Default |
-|---------|--------------|--------------------------------------------------------------|---------|
-| Exclude | System.Array | Skip partitions matching these letters or labels (wildcards). | @()    |
+| Name    | Type         | Description                                                   | Default |
+|---------|--------------|---------------------------------------------------------------|---------|
+| Exclude | System.Array | Skip partitions matching these letters or labels (wildcards). | @()     |
 
 .PARAMETER RequiredPartition
 | Name              | Type         | Description                                                     | Default |
@@ -51,9 +51,9 @@ Windows-only because it relies on the Win32_Volume CIM class.
 | RequiredPartition | System.Array | Partitions that must exist; a missing one is reported CRITICAL. | @()     |
 
 .PARAMETER CheckFreeSpace
-| Name           | Type                                         | Description                                       | Default |
-|----------------|----------------------------------------------|---------------------------------------------------|---------|
-| CheckFreeSpace | System.Management.Automation.SwitchParameter | Evaluate the free instead of the used space.      | False   |
+| Name           | Type                                         | Description                                  | Default |
+|----------------|----------------------------------------------|----------------------------------------------|---------|
+| CheckFreeSpace | System.Management.Automation.SwitchParameter | Evaluate the free instead of the used space. | False   |
 
 .PARAMETER IgnoreEmptyChecks
 | Name              | Type                                         | Description                                                    | Default |
@@ -66,9 +66,9 @@ Windows-only because it relies on the Win32_Volume CIM class.
 | SkipUnknown | System.Management.Automation.SwitchParameter | Report OK instead of UNKNOWN for a volume without size data. | False   |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                 | Default |
-|-----------|--------------|-----------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0 |
+| Name      | Type         | Description                                                                        | Default |
+|-----------|--------------|------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -76,7 +76,7 @@ Windows-only because it relies on the Win32_Volume CIM class.
 | NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
 
 .OUTPUTS
-System.Int32 — The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
 
 .EXAMPLE
 PS> Invoke-IcingaCheckPartitionSpace -Warning '80%' -Critical '90%'
@@ -121,10 +121,11 @@ function Invoke-IcingaCheckPartitionSpace()
         $MetricLabel = 'free';
     }
 
-    $CheckPackage         = New-IcingaPlugin $PackageName;
-    $CheckPackage.Verbose = $Verbosity;
+    $CheckPackage            = New-IcingaPlugin $PackageName;
+    $CheckPackage.Verbose    = $Verbosity;
+    $CheckPackage.NoPerfData = $NoPerfData;
 
-    $Volumes = Get-IcingaDiskInformation -Entrypoint 'Volume';
+    $Volumes                 = Get-IcingaDiskInformation -Entrypoint 'Volume';
 
     if (Test-IcingaError -InputObject $Volumes) {
         return $CheckPackage.SetError($Volumes).Compile();
@@ -183,12 +184,9 @@ function Invoke-IcingaCheckPartitionSpace()
             $Value = $Volume.FreeSpace;
         }
 
-        $PartitionCheck            = New-IcingaPlugin $CheckName $Value 'B';
-        $PartitionCheck.NoPerfData = $NoPerfData;
-
         # Perfdata label: <partition>::ifw_partitionspace::used|free (template auto-derived from the command).
         $CheckPackage.AddCheck(
-            $PartitionCheck.
+            (New-IcingaPlugin $CheckName $Value 'B').
                 MetricIndex($PartitionName).
                 MetricLabel($MetricLabel).
                 Warning($Warning).
@@ -200,7 +198,7 @@ function Invoke-IcingaCheckPartitionSpace()
         ).Commit();
     }
 
-    $CheckPackage.AddMissingChecks($RequiredPartition, $KnownPartitions, 'Partition {0}', 'Mandatory partition not found on host', 2, '[:\\/]+$').Commit();
+    $CheckPackage.AddMissingChecks($RequiredPartition, $KnownPartitions, 'Partition {0}', 'Mandatory partition not found on host', 'Critical', '[:\\/]+$').Commit();
 
     if ($CheckPackage.HasChecks() -eq $false) {
         if ($IgnoreEmptyChecks) {

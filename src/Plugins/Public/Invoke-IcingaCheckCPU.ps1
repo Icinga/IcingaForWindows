@@ -44,9 +44,9 @@ This plugin is Windows-only because it relies on the Windows performance counter
 | Critical | System.String | Critical threshold in percent, using the Icinga threshold grammar.  |         |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                 | Default |
-|-----------|--------------|-----------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0 |
+| Name      | Type         | Description                                                                        | Default |
+|-----------|--------------|------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -54,7 +54,7 @@ This plugin is Windows-only because it relies on the Windows performance counter
 | NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
 
 .OUTPUTS
-System.Int32 — The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
 
 .EXAMPLE
 PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90
@@ -78,24 +78,25 @@ command wrapper is expected to exit with it.
 function Invoke-IcingaCheckCPU()
 {
     param (
-        [string]$Warning     = '',
-        [string]$Critical    = '',
-        [int]$Verbosity      = 0,
-        [switch]$NoPerfData  = $false
+        [string]$Warning    = '',
+        [string]$Critical   = '',
+        [int]$Verbosity     = 0,
+        [switch]$NoPerfData = $false
     );
 
-    [string]$CounterPath = '\Processor Information(*)\% Processor Time';
+    [string]$CounterPath     = '\Processor Information(*)\% Processor Time';
 
     # Literal declaration, so the counter discovery at module start finds and warms it.
     New-IcingaPerformanceCounter -Counter @('\Processor Information(*)\% Processor Time');
 
-    $CheckPackage         = New-IcingaPlugin 'CPU Load';
-    $CheckPackage.Verbose = $Verbosity;
+    $CheckPackage            = New-IcingaPlugin 'CPU Load';
+    $CheckPackage.Verbose    = $Verbosity;
+    $CheckPackage.NoPerfData = $NoPerfData;
 
-    $Counters = Get-IcingaPerformanceCounter -Counter $CounterPath -StructureByInstance;
+    $Counters                = Get-IcingaPerformanceCounter -Counter $CounterPath -StructureByInstance;
 
-    [array]$Nodes         = @();
-    [hashtable]$NodeCores = @{ };
+    [array]$Nodes            = @();
+    [hashtable]$NodeCores    = @{ };
 
     if ($null -ne $Counters) {
         # Natural order puts the nodes and the cores of every node in numeric order.
@@ -109,7 +110,7 @@ function Invoke-IcingaCheckCPU()
 
             if ($NodeCores.ContainsKey($Parts[0]) -eq $false) {
                 $NodeCores[$Parts[0]] = @();
-                $Nodes               += $Parts[0];
+                $Nodes += $Parts[0];
             }
 
             $NodeCores[$Parts[0]] += $Instance;
@@ -128,15 +129,15 @@ function Invoke-IcingaCheckCPU()
     [int]$OverallCount  = 0;
 
     foreach ($Node in $Nodes) {
-        $NodePackage = New-IcingaPlugin ([string]::Format('NUMA Node #{0}', $Node));
+        $NodePackage     = New-IcingaPlugin ([string]::Format('NUMA Node #{0}', $Node));
         $CheckPackage.AddCheck($NodePackage).Commit();
 
         [double]$NodeSum = 0;
         [int]$NodeCount  = 0;
 
         foreach ($Instance in $NodeCores[$Node]) {
-            $Value = Get-IcingaPerformanceCounterValue -InputObject $Counters[$Instance]['Processor Information']['% Processor Time'];
-            $Entry = @{
+            $Value      = Get-IcingaPerformanceCounterValue -InputObject $Counters[$Instance]['Processor Information']['% Processor Time'];
+            $Entry      = @{
                 'Parent' = $NodePackage;
                 'Name'   = [string]::Format('Core #{0}', $CoreNumber);
                 'Index'  = [string]::Format('{0}_{1}', $Node, $CoreNumber);
@@ -144,7 +145,7 @@ function Invoke-IcingaCheckCPU()
                 'Error'  = $null;
             };
 
-            $CoreNumber += 1;
+            $CoreNumber = $CoreNumber + 1;
 
             if ($null -eq $Value -or $Value -is [string]) {
                 $Entry['Error'] = [string]$Value;
@@ -198,11 +199,8 @@ function Invoke-IcingaCheckCPU()
             continue;
         }
 
-        $Check            = New-IcingaPlugin $Entry['Name'] ([System.Math]::Round([double]$Entry['Value'], 2)) '%';
-        $Check.NoPerfData = $NoPerfData;
-
         $Entry['Parent'].AddCheck(
-            $Check.
+            (New-IcingaPlugin $Entry['Name'] ([System.Math]::Round([double]$Entry['Value'], 2)) '%').
                 MetricIndex($Entry['Index']).
                 MetricLabel('load').
                 Warning($Warning).

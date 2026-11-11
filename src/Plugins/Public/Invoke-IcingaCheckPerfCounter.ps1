@@ -36,39 +36,39 @@ with '%' spelled out as 'percent', for example
 'memory::ifw_perfcounter::availablebytes' for a counter without an instance.
 
 .PARAMETER PerfCounter
-| Name        | Type         | Description                                                            | Default |
-|-------------|--------------|------------------------------------------------------------------------|---------|
-| PerfCounter | System.Array | Counter paths to check, e.g. '\Processor(*)\% Processor Time'.          | @()     |
+| Name        | Type         | Description                                                   | Default |
+|-------------|--------------|---------------------------------------------------------------|---------|
+| PerfCounter | System.Array | Counter paths to check, e.g. '\Processor(*)\% Processor Time'.| @()     |
 
 .PARAMETER Warning
-| Name    | Type          | Description                                              | Default |
-|---------|---------------|----------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold in the counter's unit, e.g. '80', '500MB' or '30m'. |  |
+| Name    | Type          | Description                                                           | Default |
+|---------|---------------|-----------------------------------------------------------------------|---------|
+| Warning | System.String | Warning threshold in the counter's unit, e.g. '80', '500MB' or '30m'. |         |
 
 .PARAMETER Critical
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold in the counter's unit, e.g. '90', '1GB' or '1h'. |  |
+| Name     | Type          | Description                                                         | Default |
+|----------|---------------|---------------------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold in the counter's unit, e.g. '90', '1GB' or '1h'. |         |
 
 .PARAMETER IncludeCounter
-| Name           | Type         | Description                                                  | Default |
-|----------------|--------------|--------------------------------------------------------------|---------|
-| IncludeCounter | System.Array | Only check instance paths matching these patterns.           | @()     |
+| Name           | Type         | Description                                        | Default |
+|----------------|--------------|----------------------------------------------------|---------|
+| IncludeCounter | System.Array | Only check instance paths matching these patterns. | @()     |
 
 .PARAMETER ExcludeCounter
-| Name           | Type         | Description                                                  | Default |
-|----------------|--------------|--------------------------------------------------------------|---------|
-| ExcludeCounter | System.Array | Skip instance paths matching these patterns.                 | @()     |
+| Name           | Type         | Description                                  | Default |
+|----------------|--------------|----------------------------------------------|---------|
+| ExcludeCounter | System.Array | Skip instance paths matching these patterns. | @()     |
 
 .PARAMETER IgnoreEmptyChecks
-| Name              | Type                                         | Description                                                  | Default |
-|-------------------|----------------------------------------------|--------------------------------------------------------------|---------|
-| IgnoreEmptyChecks | System.Management.Automation.SwitchParameter | Return OK instead of UNKNOWN when no counter remains to check. | False |
+| Name              | Type                                         | Description                                                    | Default |
+|-------------------|----------------------------------------------|----------------------------------------------------------------|---------|
+| IgnoreEmptyChecks | System.Management.Automation.SwitchParameter | Return OK instead of UNKNOWN when no counter remains to check. | False   |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                 | Default |
-|-----------|--------------|-----------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0 |
+| Name      | Type         | Description                                                                        | Default |
+|-----------|--------------|------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -76,7 +76,7 @@ with '%' spelled out as 'percent', for example
 | NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
 
 .OUTPUTS
-System.Int32 — The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
 
 .EXAMPLE
 PS> Invoke-IcingaCheckPerfCounter -PerfCounter '\Processor(*)\% Processor Time' -Warning 80 -Critical 90 -ExcludeCounter '*_Total*'
@@ -106,10 +106,11 @@ function Invoke-IcingaCheckPerfCounter()
         [switch]$NoPerfData        = $false
     );
 
-    $CheckPackage         = New-IcingaPlugin 'Performance Counter';
-    $CheckPackage.Verbose = $Verbosity;
+    $CheckPackage            = New-IcingaPlugin 'Performance Counter';
+    $CheckPackage.Verbose    = $Verbosity;
+    $CheckPackage.NoPerfData = $NoPerfData;
 
-    [array]$Requested = @();
+    [array]$Requested        = @();
 
     foreach ($CounterPath in $PerfCounter) {
         if ([string]::IsNullOrEmpty([string]$CounterPath) -eq $false) {
@@ -130,7 +131,7 @@ function Invoke-IcingaCheckPerfCounter()
     );
     [array]$TimeTypes    = @( 'AverageTimer32', 'ElapsedTime' );
 
-    $Counters = Get-IcingaPerformanceCounter -Counter $Requested;
+    $Counters            = Get-IcingaPerformanceCounter -Counter $Requested;
 
     if ($null -eq $Counters) {
         return $CheckPackage.SetError('Failed to read the performance counters {0}', ($Requested -join ', ')).Compile();
@@ -184,7 +185,6 @@ function Invoke-IcingaCheckPerfCounter()
             # because the label sanitizing would drop it.
             $Instance      = $CounterType::ParsePath($InstancePath);
             [string]$Label = $Instance.Counter.Replace('%', 'percent') + $Instance.Instance;
-
             [string]$Type  = [string]$Instances[$InstancePath]['type'];
             [string]$Unit  = '';
             [double]$Scale = 1;
@@ -214,12 +214,9 @@ function Invoke-IcingaCheckPerfCounter()
                 $Measured = [System.Math]::Round($Measured, 2);
             }
 
-            $Check            = New-IcingaPlugin $InstancePath $Measured $Unit;
-            $Check.NoPerfData = $NoPerfData;
-
             # Perfdata label: <category>::ifw_perfcounter::<counter><instance> (template auto-derived from the command).
             $CounterPackage.AddCheck(
-                $Check.
+                (New-IcingaPlugin $InstancePath $Measured $Unit).
                     MetricIndex($Instance.Category).
                     MetricLabel($Label).
                     Warning($Warning).

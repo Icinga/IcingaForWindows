@@ -34,34 +34,34 @@ with one check. A directory that cannot be read, including a subdirectory during
 a recursive scan, ends the scan with DirectoryAccessDenied or DirectoryReadFailed.
 
 .PARAMETER Path
-| Name | Type          | Description                                   | Default |
-|------|---------------|-----------------------------------------------|---------|
-| Path | System.String | Directory to scan, e.g. 'C:\ProgramData\Logs'. |        |
+| Name | Type          | Description                                    | Default |
+|------|---------------|------------------------------------------------|---------|
+| Path | System.String | Directory to scan, e.g. 'C:\ProgramData\Logs'. |         |
 
 .PARAMETER FileNames
-| Name      | Type         | Description                                              | Default |
-|-----------|--------------|----------------------------------------------------------|---------|
-| FileNames | System.Array | Wildcard patterns for the entry names, e.g. '*.log'.     | @('*')  |
+| Name      | Type         | Description                                          | Default |
+|-----------|--------------|------------------------------------------------------|---------|
+| FileNames | System.Array | Wildcard patterns for the entry names, e.g. '*.log'. | @('*')  |
 
 .PARAMETER Recurse
-| Name    | Type                                         | Description                          | Default |
-|---------|----------------------------------------------|--------------------------------------|---------|
-| Recurse | System.Management.Automation.SwitchParameter | Scan every subdirectory as well.     | False   |
+| Name    | Type                                         | Description                      | Default |
+|---------|----------------------------------------------|----------------------------------|---------|
+| Recurse | System.Management.Automation.SwitchParameter | Scan every subdirectory as well. | False   |
 
 .PARAMETER ChangeTimeEqual
-| Name            | Type          | Description                                                   | Default |
-|-----------------|---------------|---------------------------------------------------------------|---------|
-| ChangeTimeEqual | System.String | Keep entries last written on the day this long ago, e.g. '1d'. |        |
-
-.PARAMETER ChangeYoungerThan
-| Name              | Type          | Description                                               | Default |
-|-------------------|---------------|-----------------------------------------------------------|---------|
-| ChangeYoungerThan | System.String | Keep entries last written within this duration, e.g. '5d'. |        |
-
-.PARAMETER ChangeOlderThan
 | Name            | Type          | Description                                                    | Default |
 |-----------------|---------------|----------------------------------------------------------------|---------|
-| ChangeOlderThan | System.String | Keep entries last written longer ago than this, e.g. '10d'.    |         |
+| ChangeTimeEqual | System.String | Keep entries last written on the day this long ago, e.g. '1d'. |         |
+
+.PARAMETER ChangeYoungerThan
+| Name              | Type          | Description                                                | Default |
+|-------------------|---------------|------------------------------------------------------------|---------|
+| ChangeYoungerThan | System.String | Keep entries last written within this duration, e.g. '5d'. |         |
+
+.PARAMETER ChangeOlderThan
+| Name            | Type          | Description                                                 | Default |
+|-----------------|---------------|-------------------------------------------------------------|---------|
+| ChangeOlderThan | System.String | Keep entries last written longer ago than this, e.g. '10d'. |         |
 
 .PARAMETER CreationTimeEqual
 | Name              | Type          | Description                                               | Default |
@@ -69,47 +69,47 @@ a recursive scan, ends the scan with DirectoryAccessDenied or DirectoryReadFaile
 | CreationTimeEqual | System.String | Keep entries created on the day this long ago, e.g. '1d'. |         |
 
 .PARAMETER CreationYoungerThan
-| Name                | Type          | Description                                          | Default |
-|---------------------|---------------|------------------------------------------------------|---------|
-| CreationYoungerThan | System.String | Keep entries created within this duration, e.g. '5d'. |        |
+| Name                | Type          | Description                                           | Default |
+|---------------------|---------------|-------------------------------------------------------|---------|
+| CreationYoungerThan | System.String | Keep entries created within this duration, e.g. '5d'. |         |
 
 .PARAMETER CreationOlderThan
-| Name              | Type          | Description                                              | Default |
-|-------------------|---------------|----------------------------------------------------------|---------|
-| CreationOlderThan | System.String | Keep entries created longer ago than this, e.g. '10d'.   |         |
+| Name              | Type          | Description                                            | Default |
+|-------------------|---------------|--------------------------------------------------------|---------|
+| CreationOlderThan | System.String | Keep entries created longer ago than this, e.g. '10d'. |         |
 
 .PARAMETER AccessYoungerThan
-| Name              | Type          | Description                                                | Default |
-|-------------------|---------------|------------------------------------------------------------|---------|
-| AccessYoungerThan | System.String | Keep entries last accessed within this duration, e.g. '5d'. |        |
+| Name              | Type          | Description                                                 | Default |
+|-------------------|---------------|-------------------------------------------------------------|---------|
+| AccessYoungerThan | System.String | Keep entries last accessed within this duration, e.g. '5d'. |         |
 
 .PARAMETER AccessOlderThan
-| Name            | Type          | Description                                                   | Default |
-|-----------------|---------------|---------------------------------------------------------------|---------|
-| AccessOlderThan | System.String | Keep entries last accessed longer ago than this, e.g. '10d'.  |         |
+| Name            | Type          | Description                                                  | Default |
+|-----------------|---------------|--------------------------------------------------------------|---------|
+| AccessOlderThan | System.String | Keep entries last accessed longer ago than this, e.g. '10d'. |         |
 
 .PARAMETER FileSizeGreaterThan
-| Name                | Type          | Description                                   | Default |
-|---------------------|---------------|-----------------------------------------------|---------|
-| FileSizeGreaterThan | System.String | Keep files larger than this size, e.g. '20MB'. |        |
+| Name                | Type          | Description                                    | Default |
+|---------------------|---------------|------------------------------------------------|---------|
+| FileSizeGreaterThan | System.String | Keep files larger than this size, e.g. '20MB'. |         |
 
 .PARAMETER FileSizeSmallerThan
-| Name                | Type          | Description                                   | Default |
-|---------------------|---------------|-----------------------------------------------|---------|
-| FileSizeSmallerThan | System.String | Keep files smaller than this size, e.g. '5MB'. |        |
+| Name                | Type          | Description                                    | Default |
+|---------------------|---------------|------------------------------------------------|---------|
+| FileSizeSmallerThan | System.String | Keep files smaller than this size, e.g. '5MB'. |         |
 
 .PARAMETER IncludeFileList
-| Name            | Type                                         | Description                                          | Default |
-|-----------------|----------------------------------------------|------------------------------------------------------|---------|
-| IncludeFileList | System.Management.Automation.SwitchParameter | Also return every kept entry in FileList.            | False   |
+| Name            | Type                                         | Description                               | Default |
+|-----------------|----------------------------------------------|-------------------------------------------|---------|
+| IncludeFileList | System.Management.Automation.SwitchParameter | Also return every kept entry in FileList. | False   |
 
 .PARAMETER IgnoreMissingPath
-| Name              | Type                                         | Description                                                | Default |
-|-------------------|----------------------------------------------|------------------------------------------------------------|---------|
-| IgnoreMissingPath | System.Management.Automation.SwitchParameter | Return an empty result instead of an error for a missing path. | False |
+| Name              | Type                                         | Description                                                    | Default |
+|-------------------|----------------------------------------------|----------------------------------------------------------------|---------|
+| IgnoreMissingPath | System.Management.Automation.SwitchParameter | Return an empty result instead of an error for a missing path. | False   |
 
 .OUTPUTS
-System.Collections.Hashtable — Path, Exists, FileCount, FolderCount, TotalCount,
+System.Collections.Hashtable -- Path, Exists, FileCount, FolderCount, TotalCount,
 TotalSize, LargestFile, SmallestFile and AverageSize (sizes in bytes, the smallest
 file is 0 when no file was kept) and FileList (the kept System.IO.FileSystemInfo
 entries, empty unless IncludeFileList is set). Returns an IcingaError on failure.
@@ -243,8 +243,8 @@ function Get-IcingaDirectoryInformation()
     [bool]$HasAccessFilter   = ($null -ne $AccessAfter -or $null -ne $AccessBefore);
     [bool]$HasSizeFilter     = ($null -ne $SizeAbove -or $null -ne $SizeBelow);
 
-    [bool]$MatchAll  = ($FileNames.Count -eq 0);
-    [array]$Patterns = @();
+    [bool]$MatchAll          = ($FileNames.Count -eq 0);
+    [array]$Patterns         = @();
 
     foreach ($Name in $FileNames) {
         if ([string]$Name -eq '*') {
@@ -273,7 +273,7 @@ function Get-IcingaDirectoryInformation()
     };
 
     try {
-        $Root = [System.IO.DirectoryInfo]::new($Path);
+        $Root             = [System.IO.DirectoryInfo]::new($Path);
         [bool]$RootExists = $Root.Exists;
     } catch {
         [hashtable]$ErrorData = @{ 'Path' = $Path; 'Error' = $_.Exception.Message; };
@@ -294,14 +294,14 @@ function Get-IcingaDirectoryInformation()
     [System.IO.FileAttributes]$SkipAttributes = [System.IO.FileAttributes]::Hidden -bor [System.IO.FileAttributes]::System;
     [System.IO.FileAttributes]$ReparsePoint   = [System.IO.FileAttributes]::ReparsePoint;
 
-    $Pending  = New-Object 'System.Collections.Generic.Stack[System.IO.DirectoryInfo]';
-    $FileList = New-Object 'System.Collections.Generic.List[System.IO.FileSystemInfo]';
+    $Pending                                  = New-Object 'System.Collections.Generic.Stack[System.IO.DirectoryInfo]';
+    $FileList                                 = New-Object 'System.Collections.Generic.List[System.IO.FileSystemInfo]';
 
-    [int]$FileCount     = 0;
-    [int]$FolderCount   = 0;
-    [long]$TotalSize    = 0;
-    [long]$LargestFile  = 0;
-    [long]$SmallestFile = -1;
+    [int]$FileCount                           = 0;
+    [int]$FolderCount                         = 0;
+    [long]$TotalSize                          = 0;
+    [long]$LargestFile                        = 0;
+    [long]$SmallestFile                       = -1;
 
     $Pending.Push($Root);
 

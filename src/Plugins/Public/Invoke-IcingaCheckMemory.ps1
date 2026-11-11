@@ -67,9 +67,9 @@ as UNKNOWN with its reason.
 | ExcludePageFile | System.Array | Skip page files matching these names (wildcards).    | @()     |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                 | Default |
-|-----------|--------------|-----------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0 |
+| Name      | Type         | Description                                                                        | Default |
+|-----------|--------------|------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -77,7 +77,7 @@ as UNKNOWN with its reason.
 | NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
 
 .OUTPUTS
-System.Int32 — The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
 
 .EXAMPLE
 PS> Invoke-IcingaCheckMemory -Warning '80%' -Critical '90%'
@@ -113,10 +113,11 @@ function Invoke-IcingaCheckMemory()
     # Literal declaration, so the counter discovery at module start finds and warms them.
     New-IcingaPerformanceCounter -Counter @('\Memory\Available Bytes', '\Memory\Pages/sec');
 
-    $CheckPackage         = New-IcingaPlugin 'Memory Usage';
-    $CheckPackage.Verbose = $Verbosity;
+    $CheckPackage            = New-IcingaPlugin 'Memory Usage';
+    $CheckPackage.Verbose    = $Verbosity;
+    $CheckPackage.NoPerfData = $NoPerfData;
 
-    $ComputerSystem = Get-IcingaWindowsInformation -ClassName 'Win32_ComputerSystem' -Property 'TotalPhysicalMemory', 'AutomaticManagedPagefile';
+    $ComputerSystem          = Get-IcingaWindowsInformation -ClassName 'Win32_ComputerSystem' -Property 'TotalPhysicalMemory', 'AutomaticManagedPagefile';
 
     if (Test-IcingaError -InputObject $ComputerSystem) {
         return $CheckPackage.SetError($ComputerSystem).Compile();
@@ -147,12 +148,10 @@ function Invoke-IcingaCheckMemory()
             (New-IcingaPlugin 'Used Memory').SetError('Failed to read the performance counter \Memory\Available Bytes: {0}', $Available)
         ).Commit();
     } else {
-        [uint64]$UsedMemory     = [System.Math]::Max([double]0, [double]$TotalMemory - [double]$Available);
-        $MemoryCheck            = New-IcingaPlugin 'Used Memory' $UsedMemory 'B';
-        $MemoryCheck.NoPerfData = $NoPerfData;
+        [uint64]$UsedMemory = [System.Math]::Max([double]0, [double]$TotalMemory - [double]$Available);
 
         $CheckPackage.AddCheck(
-            $MemoryCheck.
+            (New-IcingaPlugin 'Used Memory' $UsedMemory 'B').
                 MetricIndex('memory').
                 MetricLabel('used').
                 Warning($Warning).
@@ -171,11 +170,8 @@ function Invoke-IcingaCheckMemory()
             (New-IcingaPlugin 'Memory pages/sec').SetError('Failed to read the performance counter \Memory\Pages/sec: {0}', $PagesSec)
         ).Commit();
     } else {
-        $PagesCheck            = New-IcingaPlugin 'Memory pages/sec' ([System.Math]::Round([double]$PagesSec, 2));
-        $PagesCheck.NoPerfData = $NoPerfData;
-
         $CheckPackage.AddCheck(
-            $PagesCheck.
+            (New-IcingaPlugin 'Memory pages/sec' ([System.Math]::Round([double]$PagesSec, 2))).
                 MetricIndex('memory').
                 MetricLabel('pagessec').
                 Warning($MemoryPagesSecWarning).
@@ -214,14 +210,12 @@ function Invoke-IcingaCheckMemory()
             $SizeMB = $MaximumSizes[$PageFileName];
         }
 
-        [uint64]$Size             = $SizeMB * 1MB;
-        [uint64]$Usage            = [uint64]$PageFile.CurrentUsage * 1MB;
-        $PageFileCheck            = New-IcingaPlugin $PageFileName $Usage 'B';
-        $PageFileCheck.NoPerfData = $NoPerfData;
+        [uint64]$Size  = $SizeMB * 1MB;
+        [uint64]$Usage = [uint64]$PageFile.CurrentUsage * 1MB;
 
         # Perfdata label: <pagefile>::ifw_pagefile::used (own template instead of ifw_memory).
         $PageFilePackage.AddCheck(
-            $PageFileCheck.
+            (New-IcingaPlugin $PageFileName $Usage 'B').
                 MetricIndex($PageFileName).
                 MetricName('pagefile').
                 MetricLabel('used').

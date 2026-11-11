@@ -13,12 +13,12 @@ Describe 'Get-IcingaDirectoryInformation' {
         function New-TestFile()
         {
             param (
-                [string]$Path          = '',
-                [int]$Size             = 0,
-                [datetime]$LastWrite   = [datetime]::Now,
-                [datetime]$Creation    = [datetime]::Now,
-                [datetime]$LastAccess  = [datetime]::Now,
-                [switch]$Hidden        = $false
+                [string]$Path         = '',
+                [int]$Size            = 0,
+                [datetime]$LastWrite  = [datetime]::Now,
+                [datetime]$Creation   = [datetime]::Now,
+                [datetime]$LastAccess = [datetime]::Now,
+                [switch]$Hidden       = $false
             );
 
             [System.IO.File]::WriteAllBytes($Path, [byte[]]::new($Size));
@@ -50,11 +50,11 @@ Describe 'Get-IcingaDirectoryInformation' {
         #   created 40d ago, last access 40d ago), hidden.log 10 (hidden),
         #   sub\ (written 3d ago) with d.log 5000 (2d) and deep\e.log 1 (now),
         #   hidden\ (hidden folder) with f.log 7.
-        [datetime]$Now   = [datetime]::Now;
-        $script:Root     = Join-Path -Path $TestDrive -ChildPath 'scan';
-        [string]$Sub     = Join-Path -Path $script:Root -ChildPath 'sub';
-        [string]$Deep    = Join-Path -Path $Sub -ChildPath 'deep';
-        [string]$Secret  = Join-Path -Path $script:Root -ChildPath 'hidden';
+        [datetime]$Now         = [datetime]::Now;
+        $script:Root           = Join-Path -Path $TestDrive -ChildPath 'scan';
+        [string]$Sub           = Join-Path -Path $script:Root -ChildPath 'sub';
+        [string]$Deep          = Join-Path -Path $Sub -ChildPath 'deep';
+        [string]$Secret        = Join-Path -Path $script:Root -ChildPath 'hidden';
 
         New-Item -Path $Deep -ItemType Directory -Force | Out-Null;
         New-Item -Path $Secret -ItemType Directory -Force | Out-Null;
@@ -146,7 +146,7 @@ Describe 'Get-IcingaDirectoryInformation' {
     }
 
     It 'returns the kept entries with IncludeFileList' {
-        $Result = Invoke-TestDirectory -Arguments @{ 'Path' = $script:Root; 'IncludeFileList' = $true; };
+        $Result       = Invoke-TestDirectory -Arguments @{ 'Path' = $script:Root; 'IncludeFileList' = $true; };
 
         [array]$Names = @($Result.FileList | ForEach-Object { $_.Name } | Sort-Object);
         $Names | Should -Be @('a.log', 'b.log', 'c.txt', 'sub');
@@ -180,7 +180,7 @@ Describe 'Get-IcingaDirectoryInformation' {
     It 'reports a missing path, or an empty result with IgnoreMissingPath' {
         [string]$Missing = Join-Path -Path $TestDrive -ChildPath 'missing';
 
-        $Result = Invoke-TestDirectory -Arguments @{ 'Path' = $Missing; };
+        $Result          = Invoke-TestDirectory -Arguments @{ 'Path' = $Missing; };
         $Result.ReturnCode | Should -Be 'DirectoryPathNotFound';
         $Result.Message    | Should -Be ([string]::Format('The directory "{0}" does not exist on this system', $Missing));
 
@@ -195,12 +195,12 @@ Describe 'Get-IcingaDirectoryInformation' {
         [string]$Locked = Join-Path -Path $TestDrive -ChildPath 'locked';
         New-Item -Path $Locked -ItemType Directory -Force | Out-Null;
 
-        $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+        $Rule           = New-Object System.Security.AccessControl.FileSystemAccessRule(
             [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
             [System.Security.AccessControl.FileSystemRights]::ListDirectory,
             [System.Security.AccessControl.AccessControlType]::Deny
         );
-        $Acl = Get-Acl -Path $Locked;
+        $Acl            = Get-Acl -Path $Locked;
         $Acl.AddAccessRule($Rule);
         Set-Acl -Path $Locked -AclObject $Acl;
 

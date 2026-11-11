@@ -23,17 +23,17 @@ member name.
 | InputObject | System.Array | The elements to sort.  | @()     |
 
 .PARAMETER Property
-| Name     | Type         | Description                                                 | Default |
-|----------|--------------|-------------------------------------------------------------|---------|
-| Property | System.Array | Properties to sort by, in order of precedence; empty sorts the elements. | @() |
+| Name     | Type         | Description                                                              | Default |
+|----------|--------------|--------------------------------------------------------------------------|---------|
+| Property | System.Array | Properties to sort by, in order of precedence; empty sorts the elements. | @()     |
 
 .PARAMETER Descending
-| Name       | Type                                         | Description                   | Default |
-|------------|----------------------------------------------|-------------------------------|---------|
-| Descending | System.Management.Automation.SwitchParameter | Sort in descending order.     | False   |
+| Name       | Type                                         | Description               | Default |
+|------------|----------------------------------------------|---------------------------|---------|
+| Descending | System.Management.Automation.SwitchParameter | Sort in descending order. | False   |
 
 .OUTPUTS
-System.Object[] — A new array with the sorted elements; the input stays unchanged.
+System.Object[] -- A new array with the sorted elements; the input stays unchanged.
 
 .EXAMPLE
 PS> ConvertTo-IcingaSortedArray -InputObject @('0,10', '_Total', '0,2', '0,_Total')

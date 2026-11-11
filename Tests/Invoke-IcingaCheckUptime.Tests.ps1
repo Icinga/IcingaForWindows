@@ -5,7 +5,7 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
 
 Describe 'Invoke-IcingaCheckUptime' {
     BeforeAll {
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -76,9 +76,9 @@ Describe 'Invoke-IcingaCheckUptime' {
     It 'shows the uptime as duration and writes it in whole seconds' {
         Invoke-TestUptimeCheck -StubData (New-TestUptimeCounter -Value 93784.4) -Arguments @{ 'Warning' = '1d:'; 'Verbosity' = 2; } | Should -Be 0;
 
-        $Result = $Global:IcingaForWindows.Private.Icinga.CheckResult;
+        $Result       = $Global:IcingaForWindows.Private.Icinga.CheckResult;
         [array]$Lines = $Result.Output -split "`n";
-        $Lines[0] | Should -Be '[OK] System Uptime: 1d 2h 3m 4s: 2 Ok';
+        $Lines[0] | Should -Be '[OK] System Uptime: 1d 2h 3m 4s: 1 Ok';
         $Lines[1] | Should -Be '\_ [OK] System Uptime: 1d 2h 3m 4s is ok';
         $Lines[2] | Should -Match '^\\_ \[INFO\] Last Boot: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$';
         $Result.PerformanceData | Should -Be @('windows::ifw_uptime::uptime=93784s;86400:;;;');

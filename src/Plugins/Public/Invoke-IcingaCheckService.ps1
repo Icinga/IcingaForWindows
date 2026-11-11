@@ -25,24 +25,24 @@ Unknown, 1 Stopped to 7 Paused) and per-state counters of all checked services
 This plugin is Windows-only because it relies on the Win32_Service CIM class.
 
 .PARAMETER Service
-| Name    | Type           | Description                                                              | Default |
-|---------|----------------|--------------------------------------------------------------------------|---------|
-| Service | System.Array   | Service names or display names to check, wildcards allowed. Empty checks all automatic services. | @() |
+| Name    | Type         | Description                                                                                      | Default |
+|---------|--------------|--------------------------------------------------------------------------------------------------|---------|
+| Service | System.Array | Service names or display names to check, wildcards allowed. Empty checks all automatic services. | @()     |
 
 .PARAMETER Exclude
-| Name    | Type         | Description                                                   | Default |
-|---------|--------------|---------------------------------------------------------------|---------|
-| Exclude | System.Array | Service names or display names to skip, wildcards allowed.    | @()     |
+| Name    | Type         | Description                                                | Default |
+|---------|--------------|------------------------------------------------------------|---------|
+| Exclude | System.Array | Service names or display names to skip, wildcards allowed. | @()     |
 
 .PARAMETER Status
-| Name   | Type                | Description                                                                                       | Default |
-|--------|---------------------|---------------------------------------------------------------------------------------------------|---------|
-| Status | IcingaServiceStatus | Expected status of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused or Unknown. | Running |
+| Name   | Type                | Description                                                                                                                          | Default |
+|--------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Status | IcingaServiceStatus | Expected status of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused or Unknown.| Running |
 
 .PARAMETER FilterStartupType
-| Name              | Type                       | Description                                                                                         | Default |
-|-------------------|----------------------------|-----------------------------------------------------------------------------------------------------|---------|
-| FilterStartupType | IcingaServiceStartupType[] | Only check given services with one of these startup types: Boot, System, Automatic, Manual, Disabled, Unknown. | @() |
+| Name              | Type                       | Description                                                                                                    | Default |
+|-------------------|----------------------------|----------------------------------------------------------------------------------------------------------------|---------|
+| FilterStartupType | IcingaServiceStartupType[] | Only check given services with one of these startup types: Boot, System, Automatic, Manual, Disabled, Unknown. | @()     |
 
 .PARAMETER MitigateUnknown
 | Name            | Type                                         | Description                                                  | Default |
@@ -50,19 +50,19 @@ This plugin is Windows-only because it relies on the Win32_Service CIM class.
 | MitigateUnknown | System.Management.Automation.SwitchParameter | Return OK instead of UNKNOWN when no service matches at all. | False   |
 
 .PARAMETER OverrideNotOk
-| Name          | Type          | Description                                                                   | Default  |
-|---------------|---------------|-------------------------------------------------------------------------------|----------|
+| Name          | Type          | Description                                                                     | Default  |
+|---------------|---------------|---------------------------------------------------------------------------------|----------|
 | OverrideNotOk | System.String | State for a service not in the expected status: Ok, Warning, Critical, Unknown. | Critical |
 
 .PARAMETER OverrideNotFound
-| Name             | Type          | Description                                                        | Default |
-|------------------|---------------|--------------------------------------------------------------------|---------|
+| Name             | Type          | Description                                                                    | Default |
+|------------------|---------------|--------------------------------------------------------------------------------|---------|
 | OverrideNotFound | System.String | State for a given service that does not exist: Ok, Warning, Critical, Unknown. | Unknown |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                 | Default |
-|-----------|--------------|-----------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0 |
+| Name      | Type         | Description                                                                        | Default |
+|-----------|--------------|------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -70,7 +70,7 @@ This plugin is Windows-only because it relies on the Win32_Service CIM class.
 | NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
 
 .OUTPUTS
-System.Int32 — The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
 
 .EXAMPLE
 PS> Invoke-IcingaCheckService
@@ -120,10 +120,11 @@ function Invoke-IcingaCheckService()
         ([IcingaServiceStatus]::Paused)          = 'paused';
     };
 
-    $CheckPackage         = New-IcingaPlugin 'Services';
-    $CheckPackage.Verbose = $Verbosity;
+    $CheckPackage             = New-IcingaPlugin 'Services';
+    $CheckPackage.Verbose     = $Verbosity;
+    $CheckPackage.NoPerfData  = $NoPerfData;
 
-    $AllServices = Get-IcingaWindowsInformation -ClassName 'Win32_Service' -Property 'Name', 'DisplayName', 'State', 'StartMode', 'ExitCode';
+    $AllServices              = Get-IcingaWindowsInformation -ClassName 'Win32_Service' -Property 'Name', 'DisplayName', 'State', 'StartMode', 'ExitCode';
 
     if (Test-IcingaError -InputObject $AllServices) {
         return $CheckPackage.SetError($AllServices).Compile();
@@ -136,7 +137,7 @@ function Invoke-IcingaCheckService()
         $KnownServices[[string]$ServiceEntry.DisplayName] = $true;
     }
 
-    $SummaryCount = [ordered]@{
+    $SummaryCount      = [ordered]@{
         'stopped'          = 0;
         'pendingstarted'   = 0;
         'pendingstopped'   = 0;
@@ -146,12 +147,11 @@ function Invoke-IcingaCheckService()
         'paused'           = 0;
     };
 
-    $MetricPackage          = New-IcingaPlugin 'Service Metrics';
-    $MetricPackage.IsHidden = $true;
-    [bool]$AutoMode         = ($Service.Count -eq 0);
-    [int]$ServiceCount      = 0;
-    $StatusMap              = 'IcingaServiceStatusMap' -as [type];
-    $StartupTypeMap         = 'IcingaServiceStartupTypeMap' -as [type];
+    $MetricPackage     = (New-IcingaPlugin 'Service Metrics').SetHidden();
+    [bool]$AutoMode    = ($Service.Count -eq 0);
+    [int]$ServiceCount = 0;
+    $StatusMap         = 'IcingaServiceStatusMap' -as [type];
+    $StartupTypeMap    = 'IcingaServiceStartupTypeMap' -as [type];
 
     foreach ($ServiceEntry in (ConvertTo-IcingaSortedArray -InputObject $AllServices -Property 'Name')) {
         [string]$ServiceName                   = $ServiceEntry.Name;
@@ -186,22 +186,17 @@ function Invoke-IcingaCheckService()
             }
         }
 
-        $ServiceCheck = New-IcingaPlugin ([string]::Format('Service "{0} ({1})"', $DisplayName, $ServiceName)) ([string]$State);
-
-        if ($OverrideNotOk -eq 'Warning') {
-            $ServiceCheck.Warning([string]$Expected).CheckNotEqual().Commit();
-        } else {
-            $ServiceCheck.Critical([string]$Expected).CheckNotEqual().Commit();
-        }
+        $ServiceCheck = (New-IcingaPlugin ([string]::Format('Service "{0} ({1})"', $DisplayName, $ServiceName)) $State).
+            MetricIndex($ServiceName).
+            MetricLabel('state').
+            SetNoPerfData($AutoMode).
+            Critical([string]$Expected).
+            CheckNotEqual();
 
         # An empty message keeps the comparison text; the lock stops the critical
         # comparison result from escalating the overridden state again.
-        if ($State -ne $Expected) {
-            if ($OverrideNotOk -eq 'Ok') {
-                $ServiceCheck.SetOk('', $true).Commit();
-            } elseif ($OverrideNotOk -eq 'Unknown') {
-                $ServiceCheck.SetUnknown('', $true).Commit();
-            }
+        if ($State -ne $Expected -and $OverrideNotOk -ne 'Critical') {
+            $ServiceCheck.SetState($OverrideNotOk, '', $true).Commit();
         }
 
         $CheckPackage.AddCheck($ServiceCheck).Commit();
@@ -210,22 +205,7 @@ function Invoke-IcingaCheckService()
         if ($SummaryLabels.ContainsKey($State)) {
             $SummaryCount[$SummaryLabels[$State]] += 1;
         }
-
-        if ($AutoMode -or $NoPerfData) {
-            continue;
-        }
-
-        $MetricPackage.AddCheck(
-            (New-IcingaPlugin $ServiceName ([int]$State)).MetricIndex($ServiceName).MetricLabel('state').CheckRange()
-        ).Commit();
     }
-
-    [hashtable]$NotFoundStates = @{
-        'Ok'       = 0;
-        'Warning'  = 1;
-        'Critical' = 2;
-        'Unknown'  = 3;
-    };
 
     # Wildcard arguments select services instead of naming one, so only plain
     # names can be missing.
@@ -237,10 +217,8 @@ function Invoke-IcingaCheckService()
         }
     }
 
-    $CheckPackage.AddMissingChecks($RequiredServices, @($KnownServices.Keys), '{0}', 'Service not found', $NotFoundStates[$OverrideNotFound]).Commit();
+    $CheckPackage.AddMissingChecks($RequiredServices, @($KnownServices.Keys), '{0}', 'Service not found', $OverrideNotFound).Commit();
 
-    # The hidden metric package is attached only after this test, otherwise it would
-    # count as a check of an otherwise empty package.
     if ($CheckPackage.HasChecks() -eq $false) {
         if ($MitigateUnknown) {
             return $CheckPackage.SetOk('No service matches the given filter', $true).Compile();
@@ -249,19 +227,17 @@ function Invoke-IcingaCheckService()
         return $CheckPackage.SetError('No service matches the given filter').Compile();
     }
 
-    if (-not $NoPerfData) {
-        foreach ($SummaryLabel in $SummaryCount.Keys) {
-            $MetricPackage.AddCheck(
-                (New-IcingaPlugin $SummaryLabel $SummaryCount[$SummaryLabel]).MetricIndex('summary').MetricLabel($SummaryLabel).CheckRange()
-            ).Commit();
-        }
-
+    foreach ($SummaryLabel in $SummaryCount.Keys) {
         $MetricPackage.AddCheck(
-            (New-IcingaPlugin 'count' $ServiceCount).MetricIndex('summary').MetricLabel('count').CheckRange()
+            (New-IcingaPlugin $SummaryLabel $SummaryCount[$SummaryLabel]).MetricIndex('summary').MetricLabel($SummaryLabel)
         ).Commit();
-
-        $CheckPackage.AddCheck($MetricPackage).Commit();
     }
+
+    $MetricPackage.AddCheck(
+        (New-IcingaPlugin 'count' $ServiceCount).MetricIndex('summary').MetricLabel('count')
+    ).Commit();
+
+    $CheckPackage.AddCheck($MetricPackage).Commit();
 
     return $CheckPackage.Compile();
 }

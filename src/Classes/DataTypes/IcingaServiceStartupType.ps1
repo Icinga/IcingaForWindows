@@ -13,7 +13,7 @@ The enum is used directly as a parameter type, so a plugin parameter such as
 3 and rejects anything else with the list of valid names.
 
 .OUTPUTS
-IcingaServiceStartupType — Enum value of the service startup type.
+IcingaServiceStartupType -- Enum value of the service startup type.
 
 .EXAMPLE
 PS> [IcingaServiceStartupType]'Manual'
@@ -48,7 +48,7 @@ codes. Every value that cannot be mapped resolves to Unknown instead of
 throwing.
 
 .OUTPUTS
-IcingaServiceStartupTypeMap — Static helper class, not meant to be instantiated.
+IcingaServiceStartupTypeMap -- Static helper class, not meant to be instantiated.
 
 .EXAMPLE
 PS> [IcingaServiceStartupTypeMap]::Resolve('Auto')
@@ -70,12 +70,12 @@ class IcingaServiceStartupTypeMap
     Returns Unknown for $null, empty, unknown names and undefined codes.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                                  | Default |
-    |-------|---------------|--------------------------------------------------------------|---------|
-    | Value | System.Object | Startup type name, Win32_Service start mode, ServiceStartMode or code. | |
+    | Name  | Type          | Description                                                            | Default |
+    |-------|---------------|------------------------------------------------------------------------|---------|
+    | Value | System.Object | Startup type name, Win32_Service start mode, ServiceStartMode or code. |         |
 
     .OUTPUTS
-    IcingaServiceStartupType — The resolved startup type, Unknown when it cannot be mapped.
+    IcingaServiceStartupType -- The resolved startup type, Unknown when it cannot be mapped.
 
     .EXAMPLE
     PS> [IcingaServiceStartupTypeMap]::Resolve('Disabled')

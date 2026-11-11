@@ -92,7 +92,7 @@ Describe 'Get-IcingaWindowsInformation' {
             $Plain.Value[0].Bound     | Should -Not -Contain 'Filter';
             $Plain.Value[0].Bound     | Should -Not -Contain 'Property';
 
-            $Full = Invoke-TestWindowsInformation -Arguments @{ 'ClassName' = 'MSFT_Disk'; 'Namespace' = 'root/Microsoft/Windows/Storage'; 'Filter' = 'Number = 0'; 'Property' = @('Number', 'Size'); } -EchoArguments;
+            $Full  = Invoke-TestWindowsInformation -Arguments @{ 'ClassName' = 'MSFT_Disk'; 'Namespace' = 'root/Microsoft/Windows/Storage'; 'Filter' = 'Number = 0'; 'Property' = @('Number', 'Size'); } -EchoArguments;
             $Full.Value[0].Namespace | Should -Be 'root/Microsoft/Windows/Storage';
             $Full.Value[0].Filter    | Should -Be 'Number = 0';
             $Full.Value[0].Property  | Should -Be @('Number', 'Size');

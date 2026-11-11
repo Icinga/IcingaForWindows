@@ -31,7 +31,7 @@ Describe 'ConvertTo-IcingaSortedArray' {
             $Objects = @([PSCustomObject]@{ 'Name' = 'Spooler'; }, [PSCustomObject]@{ 'Name' = 'AppInfo'; });
             (ConvertTo-IcingaSortedArray -InputObject $Objects -Property 'Name').Name | Should -Be @('AppInfo', 'Spooler');
 
-            $Tables = @(@{ 'Name' = 'D:\'; }, @{ 'Name' = 'C:\'; });
+            $Tables  = @(@{ 'Name' = 'D:\'; }, @{ 'Name' = 'C:\'; });
             (ConvertTo-IcingaSortedArray -InputObject $Tables -Property 'Name') | ForEach-Object { $_['Name'] } | Should -Be @('C:\', 'D:\');
         }
 
@@ -41,7 +41,7 @@ Describe 'ConvertTo-IcingaSortedArray' {
                 @{ 'Disk' = 0; 'Partition' = 2; },
                 @{ 'Disk' = 0; 'Partition' = 1; }
             );
-            $Sorted = ConvertTo-IcingaSortedArray -InputObject $Partitions -Property 'Disk', 'Partition';
+            $Sorted     = ConvertTo-IcingaSortedArray -InputObject $Partitions -Property 'Disk', 'Partition';
             ($Sorted | ForEach-Object { '{0}:{1}' -f $_['Disk'], $_['Partition'] }) | Should -Be @('0:1', '0:2', '1:1');
         }
 
@@ -70,7 +70,7 @@ Describe 'ConvertTo-IcingaSortedArray' {
             ($Single -is [array]) | Should -BeTrue;
             $Single.Count         | Should -Be 1;
 
-            $Empty = ConvertTo-IcingaSortedArray -InputObject @();
+            $Empty  = ConvertTo-IcingaSortedArray -InputObject @();
             ($Empty -is [array]) | Should -BeTrue;
             $Empty.Count         | Should -Be 0;
         }

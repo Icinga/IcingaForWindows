@@ -5,7 +5,7 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
 
 Describe 'Invoke-IcingaCheckProcess' {
     BeforeAll {
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -138,7 +138,7 @@ Describe 'Invoke-IcingaCheckProcess' {
     }
 
     It 'reports UNKNOWN when no process matches' {
-        $Data = New-TestProcessData;
+        $Data              = New-TestProcessData;
         $Data['Processes'] = @{ };
 
         Invoke-TestProcessCheck -Data $Data | Should -Be 3;

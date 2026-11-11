@@ -29,9 +29,9 @@ sizes in bytes. A directory that cannot be read or an invalid filter value is
 reported as UNKNOWN with its reason.
 
 .PARAMETER Path
-| Name | Type          | Description                                   | Default |
-|------|---------------|-----------------------------------------------|---------|
-| Path | System.String | Directory to check, e.g. 'C:\ProgramData\Logs'. |       |
+| Name | Type          | Description                                     | Default |
+|------|---------------|-------------------------------------------------|---------|
+| Path | System.String | Directory to check, e.g. 'C:\ProgramData\Logs'. |         |
 
 .PARAMETER FileNames
 | Name      | Type         | Description                                          | Default |
@@ -39,79 +39,79 @@ reported as UNKNOWN with its reason.
 | FileNames | System.Array | Wildcard patterns for the entry names, e.g. '*.log'. | @('*')  |
 
 .PARAMETER Recurse
-| Name    | Type                                         | Description                      | Default |
-|---------|----------------------------------------------|----------------------------------|---------|
-| Recurse | System.Management.Automation.SwitchParameter | Check every subdirectory as well. | False  |
+| Name    | Type                                         | Description                       | Default |
+|---------|----------------------------------------------|-----------------------------------|---------|
+| Recurse | System.Management.Automation.SwitchParameter | Check every subdirectory as well. | False   |
 
 .PARAMETER Warning
-| Name    | Type          | Description                                              | Default |
-|---------|---------------|----------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold for the number of matching files.      |         |
+| Name    | Type          | Description                                         | Default |
+|---------|---------------|-----------------------------------------------------|---------|
+| Warning | System.String | Warning threshold for the number of matching files. |         |
 
 .PARAMETER Critical
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold for the number of matching files.     |         |
+| Name     | Type          | Description                                          | Default |
+|----------|---------------|------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold for the number of matching files. |         |
 
 .PARAMETER WarningTotalSize
-| Name             | Type          | Description                                          | Default |
-|------------------|---------------|------------------------------------------------------|---------|
-| WarningTotalSize | System.String | Warning threshold for the total size, e.g. '2GiB'.   |         |
+| Name             | Type          | Description                                        | Default |
+|------------------|---------------|----------------------------------------------------|---------|
+| WarningTotalSize | System.String | Warning threshold for the total size, e.g. '2GiB'. |         |
 
 .PARAMETER CriticalTotalSize
-| Name              | Type          | Description                                          | Default |
-|-------------------|---------------|------------------------------------------------------|---------|
-| CriticalTotalSize | System.String | Critical threshold for the total size, e.g. '4GiB'.  |         |
+| Name              | Type          | Description                                         | Default |
+|-------------------|---------------|-----------------------------------------------------|---------|
+| CriticalTotalSize | System.String | Critical threshold for the total size, e.g. '4GiB'. |         |
 
 .PARAMETER WarningSmallestFile
-| Name                | Type          | Description                                     | Default |
-|---------------------|---------------|-------------------------------------------------|---------|
-| WarningSmallestFile | System.String | Warning threshold for the smallest file size.   |         |
+| Name                | Type          | Description                                   | Default |
+|---------------------|---------------|-----------------------------------------------|---------|
+| WarningSmallestFile | System.String | Warning threshold for the smallest file size. |         |
 
 .PARAMETER CriticalSmallestFile
-| Name                 | Type          | Description                                     | Default |
-|----------------------|---------------|-------------------------------------------------|---------|
-| CriticalSmallestFile | System.String | Critical threshold for the smallest file size.  |         |
+| Name                 | Type          | Description                                    | Default |
+|----------------------|---------------|------------------------------------------------|---------|
+| CriticalSmallestFile | System.String | Critical threshold for the smallest file size. |         |
 
 .PARAMETER WarningLargestFile
-| Name               | Type          | Description                                    | Default |
-|--------------------|---------------|------------------------------------------------|---------|
-| WarningLargestFile | System.String | Warning threshold for the largest file size.   |         |
+| Name               | Type          | Description                                  | Default |
+|--------------------|---------------|----------------------------------------------|---------|
+| WarningLargestFile | System.String | Warning threshold for the largest file size. |         |
 
 .PARAMETER CriticalLargestFile
-| Name                | Type          | Description                                    | Default |
-|---------------------|---------------|------------------------------------------------|---------|
-| CriticalLargestFile | System.String | Critical threshold for the largest file size.  |         |
+| Name                | Type          | Description                                   | Default |
+|---------------------|---------------|-----------------------------------------------|---------|
+| CriticalLargestFile | System.String | Critical threshold for the largest file size. |         |
 
 .PARAMETER WarningAverageFile
-| Name               | Type          | Description                                    | Default |
-|--------------------|---------------|------------------------------------------------|---------|
-| WarningAverageFile | System.String | Warning threshold for the average file size.   |         |
+| Name               | Type          | Description                                  | Default |
+|--------------------|---------------|----------------------------------------------|---------|
+| WarningAverageFile | System.String | Warning threshold for the average file size. |         |
 
 .PARAMETER CriticalAverageFile
-| Name                | Type          | Description                                    | Default |
-|---------------------|---------------|------------------------------------------------|---------|
-| CriticalAverageFile | System.String | Critical threshold for the average file size.  |         |
+| Name                | Type          | Description                                   | Default |
+|---------------------|---------------|-----------------------------------------------|---------|
+| CriticalAverageFile | System.String | Critical threshold for the average file size. |         |
 
 .PARAMETER CountFolderAsFile
-| Name              | Type                                         | Description                                    | Default |
-|-------------------|----------------------------------------------|------------------------------------------------|---------|
-| CountFolderAsFile | System.Management.Automation.SwitchParameter | Add the matching folders to the file count.    | False   |
+| Name              | Type                                         | Description                                 | Default |
+|-------------------|----------------------------------------------|---------------------------------------------|---------|
+| CountFolderAsFile | System.Management.Automation.SwitchParameter | Add the matching folders to the file count. | False   |
 
 .PARAMETER ShowFileList
-| Name         | Type                                         | Description                                                  | Default |
-|--------------|----------------------------------------------|--------------------------------------------------------------|---------|
-| ShowFileList | System.Management.Automation.SwitchParameter | List every matching entry; can make the output very large.   | False   |
+| Name         | Type                                         | Description                                                | Default |
+|--------------|----------------------------------------------|------------------------------------------------------------|---------|
+| ShowFileList | System.Management.Automation.SwitchParameter | List every matching entry; can make the output very large. | False   |
 
 .PARAMETER ChangeTimeEqual
-| Name            | Type          | Description                                                   | Default |
-|-----------------|---------------|---------------------------------------------------------------|---------|
-| ChangeTimeEqual | System.String | Only entries last written on the day this long ago, e.g. '1d'. |        |
+| Name            | Type          | Description                                                    | Default |
+|-----------------|---------------|----------------------------------------------------------------|---------|
+| ChangeTimeEqual | System.String | Only entries last written on the day this long ago, e.g. '1d'. |         |
 
 .PARAMETER ChangeYoungerThan
-| Name              | Type          | Description                                               | Default |
-|-------------------|---------------|-----------------------------------------------------------|---------|
-| ChangeYoungerThan | System.String | Only entries last written within this duration, e.g. '5d'. |        |
+| Name              | Type          | Description                                                | Default |
+|-------------------|---------------|------------------------------------------------------------|---------|
+| ChangeYoungerThan | System.String | Only entries last written within this duration, e.g. '5d'. |         |
 
 .PARAMETER ChangeOlderThan
 | Name            | Type          | Description                                                 | Default |
@@ -129,14 +129,14 @@ reported as UNKNOWN with its reason.
 | CreationOlderThan | System.String | Only entries created longer ago than this, e.g. '10d'. |         |
 
 .PARAMETER CreationYoungerThan
-| Name                | Type          | Description                                          | Default |
-|---------------------|---------------|------------------------------------------------------|---------|
-| CreationYoungerThan | System.String | Only entries created within this duration, e.g. '5d'. |        |
+| Name                | Type          | Description                                           | Default |
+|---------------------|---------------|-------------------------------------------------------|---------|
+| CreationYoungerThan | System.String | Only entries created within this duration, e.g. '5d'. |         |
 
 .PARAMETER AccessYoungerThan
-| Name              | Type          | Description                                                | Default |
-|-------------------|---------------|------------------------------------------------------------|---------|
-| AccessYoungerThan | System.String | Only entries last accessed within this duration, e.g. '5d'. |        |
+| Name              | Type          | Description                                                 | Default |
+|-------------------|---------------|-------------------------------------------------------------|---------|
+| AccessYoungerThan | System.String | Only entries last accessed within this duration, e.g. '5d'. |         |
 
 .PARAMETER AccessOlderThan
 | Name            | Type          | Description                                                  | Default |
@@ -144,24 +144,24 @@ reported as UNKNOWN with its reason.
 | AccessOlderThan | System.String | Only entries last accessed longer ago than this, e.g. '10d'. |         |
 
 .PARAMETER FileSizeGreaterThan
-| Name                | Type          | Description                                  | Default |
-|---------------------|---------------|----------------------------------------------|---------|
-| FileSizeGreaterThan | System.String | Only files larger than this size, e.g. '20MB'. |       |
+| Name                | Type          | Description                                    | Default |
+|---------------------|---------------|------------------------------------------------|---------|
+| FileSizeGreaterThan | System.String | Only files larger than this size, e.g. '20MB'. |         |
 
 .PARAMETER FileSizeSmallerThan
-| Name                | Type          | Description                                  | Default |
-|---------------------|---------------|----------------------------------------------|---------|
-| FileSizeSmallerThan | System.String | Only files smaller than this size, e.g. '5MB'. |       |
+| Name                | Type          | Description                                    | Default |
+|---------------------|---------------|------------------------------------------------|---------|
+| FileSizeSmallerThan | System.String | Only files smaller than this size, e.g. '5MB'. |         |
 
 .PARAMETER OverrideNotFound
-| Name             | Type          | Description                                                                 | Default |
-|------------------|---------------|-----------------------------------------------------------------------------|---------|
-| OverrideNotFound | System.String | State when nothing matches: Ok, Warning, Critical, Unknown; a missing path counts as empty. |  |
+| Name             | Type          | Description                                                                                 | Default |
+|------------------|---------------|---------------------------------------------------------------------------------------------|---------|
+| OverrideNotFound | System.String | State when nothing matches: Ok, Warning, Critical, Unknown; a missing path counts as empty. |         |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                 | Default |
-|-----------|--------------|-----------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0 |
+| Name      | Type         | Description                                                                        | Default |
+|-----------|--------------|------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -169,7 +169,7 @@ reported as UNKNOWN with its reason.
 | NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
 
 .OUTPUTS
-System.Int32 — The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
 
 .EXAMPLE
 PS> Invoke-IcingaCheckDirectory -Path 'C:\Users\Icinga\Downloads' -Warning 20 -Critical 30
@@ -230,8 +230,9 @@ function Invoke-IcingaCheckDirectory()
         $Verbosity = 2;
     }
 
-    $CheckPackage         = New-IcingaPlugin ([string]::Format('Directory Check: "{0}"', $Path));
-    $CheckPackage.Verbose = $Verbosity;
+    $CheckPackage                  = New-IcingaPlugin ([string]::Format('Directory Check: "{0}"', $Path));
+    $CheckPackage.Verbose          = $Verbosity;
+    $CheckPackage.NoPerfData       = $NoPerfData;
 
     [hashtable]$DirectoryArguments = @{
         'Path'                = $Path;
@@ -251,7 +252,7 @@ function Invoke-IcingaCheckDirectory()
         'IgnoreMissingPath'   = ([string]::IsNullOrEmpty($OverrideNotFound) -eq $false);
     };
 
-    $Directory = Get-IcingaDirectoryInformation @DirectoryArguments;
+    $Directory                     = Get-IcingaDirectoryInformation @DirectoryArguments;
 
     if (Test-IcingaError -InputObject $Directory) {
         return $CheckPackage.SetError($Directory).Compile();
@@ -274,12 +275,9 @@ function Invoke-IcingaCheckDirectory()
     );
 
     foreach ($Metric in $Metrics) {
-        $Check            = New-IcingaPlugin $Metric[0] $Metric[1] $Metric[2];
-        $Check.NoPerfData = $NoPerfData;
-
         # Perfdata label: <path>::ifw_directory::<metric> (template auto-derived from the command).
         $CheckPackage.AddCheck(
-            $Check.
+            (New-IcingaPlugin $Metric[0] $Metric[1] $Metric[2]).
                 MetricIndex($Path).
                 MetricLabel($Metric[3]).
                 Warning($Metric[4]).
@@ -294,27 +292,21 @@ function Invoke-IcingaCheckDirectory()
         $FileFound = 'Yes';
     }
 
-    $FoundCheck            = New-IcingaPlugin 'File Found' $FileFound;
-    $FoundCheck.NoPerfData = $true;
+    $FoundCheck = (New-IcingaPlugin 'File Found' $FileFound).SetNoPerfData($true);
 
     if ([string]::IsNullOrEmpty($OverrideNotFound)) {
         $FoundCheck.SetNotice($FileFound).Commit();
-    } elseif ($FileCount -ne 0 -or $OverrideNotFound -eq 'Ok') {
+    } elseif ($FileCount -ne 0) {
         $FoundCheck.SetOk($FileFound, $true).Commit();
-    } elseif ($OverrideNotFound -eq 'Warning') {
-        $FoundCheck.SetWarning($FileFound, $true).Commit();
-    } elseif ($OverrideNotFound -eq 'Critical') {
-        $FoundCheck.SetCritical($FileFound, $true).Commit();
     } else {
-        $FoundCheck.SetUnknown($FileFound, $true).Commit();
+        $FoundCheck.SetState($OverrideNotFound, $FileFound, $true).Commit();
     }
 
     $CheckPackage.AddCheck($FoundCheck).Commit();
 
     if ($ShowFileList) {
-        $FileListPackage          = New-IcingaPlugin 'File List';
-        $FileListPackage.IsNotice = $true;
-        $UnitType                 = 'IcingaUnit' -as [type];
+        $FileListPackage = (New-IcingaPlugin 'File List').SetNotice();
+        $UnitType        = 'IcingaUnit' -as [type];
 
         foreach ($Entry in (ConvertTo-IcingaSortedArray -InputObject @($Directory.FileList) -Property 'FullName')) {
             [string]$Details = 'Folder';

@@ -5,7 +5,7 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
 
 Describe 'Invoke-IcingaCheckDirectory' {
     BeforeAll {
-        $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
+        $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
 
@@ -119,7 +119,7 @@ Describe 'Invoke-IcingaCheckDirectory' {
         Invoke-TestDirectoryCheck -StubData $script:Backup -Arguments @{ 'Path' = 'C:\Backup'; 'Verbosity' = 2; } | Should -Be 0;
 
         [array]$Lines = $Global:IcingaForWindows.Private.Icinga.CheckResult.Output -split "`n";
-        $Lines[0] | Should -Be '[OK] Directory Check: "C:\Backup": 7 Ok';
+        $Lines[0] | Should -Be '[OK] Directory Check: "C:\Backup": 6 Ok';
         $Lines[1] | Should -Be '\_ [OK] File Count: 3 is ok';
         $Lines[3] | Should -Be '\_ [OK] Total Size: 6KiB is ok';
         $Lines[6] | Should -Be '\_ [OK] Average File Size: 2KiB is ok';
@@ -130,7 +130,7 @@ Describe 'Invoke-IcingaCheckDirectory' {
         Invoke-TestDirectoryCheck -StubData $script:Backup -Arguments @{ 'Path' = 'C:\Backup'; 'Critical' = '2'; 'WarningTotalSize' = '5KiB'; } | Should -Be 2;
 
         $Output = $Global:IcingaForWindows.Private.Icinga.CheckResult.Output;
-        $Output | Should -Match ([regex]::Escape('[CRITICAL] Directory Check: "C:\Backup": 1 Critical 1 Warning 5 Ok'));
+        $Output | Should -Match ([regex]::Escape('[CRITICAL] Directory Check: "C:\Backup": 1 Critical 1 Warning 4 Ok'));
         $Output | Should -Match ([regex]::Escape('[CRITICAL] File Count: 3 is greater than threshold 2'));
         $Output | Should -Match ([regex]::Escape('[WARNING] Total Size: 6KiB is greater than threshold 5KiB'));
     }
@@ -181,19 +181,19 @@ Describe 'Invoke-IcingaCheckDirectory' {
         [System.IO.File]::WriteAllBytes((Join-Path -Path $ListRoot -ChildPath 'b.bak'), [byte[]]::new(2048));
         [System.IO.File]::WriteAllBytes((Join-Path -Path $ListRoot -ChildPath 'a.bak'), [byte[]]::new(1024));
 
-        [array]$Entries = @(
+        [array]$Entries   = @(
             [System.IO.FileInfo]::new((Join-Path -Path $ListRoot -ChildPath 'b.bak')),
             [System.IO.DirectoryInfo]::new((Join-Path -Path $ListRoot -ChildPath 'folder')),
             [System.IO.FileInfo]::new((Join-Path -Path $ListRoot -ChildPath 'a.bak'))
         );
-        $Data = New-TestDirectoryData -FileCount 2 -FolderCount 1 -TotalSize 3072 -SmallestFile 1024 -LargestFile 2048 -FileList $Entries;
+        $Data             = New-TestDirectoryData -FileCount 2 -FolderCount 1 -TotalSize 3072 -SmallestFile 1024 -LargestFile 2048 -FileList $Entries;
 
         Invoke-TestDirectoryCheck -StubData $Data -Arguments @{ 'Path' = 'C:\Backup'; 'ShowFileList' = $true; } | Should -Be 0;
 
         $Global:IcingaTestDirectoryCall['IncludeFileList'] | Should -BeTrue;
 
         [array]$Lines = $Global:IcingaForWindows.Private.Icinga.CheckResult.Output -split "`n";
-        $Lines[0]  | Should -Be '[OK] Directory Check: "C:\Backup": 7 Ok';
+        $Lines[0]  | Should -Be '[OK] Directory Check: "C:\Backup": 6 Ok';
         $Lines[8]  | Should -Be '\_ [INFO] File List';
         $Lines[9]  | Should -Be ([string]::Format('   \_ [INFO] {0}: 1KiB', (Join-Path -Path $ListRoot -ChildPath 'a.bak')));
         $Lines[10] | Should -Be ([string]::Format('   \_ [INFO] {0}: 2KiB', (Join-Path -Path $ListRoot -ChildPath 'b.bak')));

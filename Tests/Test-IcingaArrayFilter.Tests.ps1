@@ -50,7 +50,7 @@ Describe 'Test-IcingaArrayFilter' {
             ($Single -is [array]) | Should -BeTrue;
             $Single.Count         | Should -Be 1;
 
-            $None = Test-IcingaArrayFilter -InputObject @('C', 'D') -Include 'Q';
+            $None   = Test-IcingaArrayFilter -InputObject @('C', 'D') -Include 'Q';
             ($None -is [array]) | Should -BeTrue;
             $None.Count         | Should -Be 0;
         }
