@@ -144,6 +144,21 @@ function New-ModuleBaseEnvironment()
                     'Queue' = (New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject]));
                     'Level' = 'Info';
                 };
+                'PerformanceCounter' = [PSCustomObject]@{
+                    # Thread-safe transport only. The counter manager class is created lazily
+                    # by the daemon once the kernel (and thus the class type) is dot-sourced.
+                    'RequestQueue'    = (New-Object System.Collections.Concurrent.BlockingCollection[PSObject] -ArgumentList (New-Object System.Collections.Concurrent.ConcurrentQueue[PSObject]));
+                    'PendingRequests' = (New-Object 'System.Collections.Concurrent.ConcurrentDictionary[string, System.Collections.Concurrent.BlockingCollection[PSObject]]');
+                    'Registered'      = (New-Object 'System.Collections.Concurrent.ConcurrentDictionary[string, datetime]');
+                    'Manager'         = $null;
+                    'Heartbeat'       = $null;
+                    'LastRefresh'     = $null;
+                    'Config'          = [PSCustomObject]@{
+                        'WarmupMilliseconds' = 250;
+                        'RefreshIntervalMs'  = 1000;
+                        'EvictionMinutes'    = 60;
+                    };
+                };
                 'External'       = $null;
                 'ReturnCodes'    = $null;
             }
@@ -388,6 +403,7 @@ function Use-IcingaForWindows()
             New-Thread -Command 'Start-LoggingDaemon' -KeepAlive -WaitForJobs -Start;
             New-Thread -Command 'Start-ModuleGarbageCollector' -KeepAlive -Start;
             New-Thread -Command 'Start-ThreadHouseKeeper' -Start;
+            New-Thread -Command 'Start-IcingaPerformanceCounterDaemon' -KeepAlive -WaitForJobs -Start;
             New-Thread -Command 'Start-RestApiDaemon' -Start;
             New-Thread -Command 'Start-ModuleWebSocketDaemon' -Start;
             New-Thread -Command 'Start-IcingaAgent' -Start;
@@ -430,7 +446,24 @@ All custom declarations must be added above this comment block.
 #>
 New-ModuleBaseEnvironment;
 
-[string]$KernelPath = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Kernel.ps1');
+[string]$ClassesPath = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Classes.ps1');
+[string]$KernelPath  = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Kernel.ps1');
+
+if (Test-Path -Path $ClassesPath) {
+    # Windows PowerShell 5.1 reuses the compiled class types when the same class
+    # content is loaded again by a thread runspace and binds their methods to the
+    # runspace that loaded it last. Class methods called on the main thread then run
+    # inside a busy daemon runspace, which hangs or corrupts the call. A unique copy
+    # of the class content per runspace gives every runspace its own class types.
+    # In PowerShell Core (PS 7+), class method dispatch is runspace-independent.
+    if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        . ([ScriptBlock]::Create([System.IO.File]::ReadAllText($ClassesPath) + [System.Environment]::NewLine + '# ' + [System.Guid]::NewGuid().ToString()));
+    } else {
+        . $ClassesPath;
+    }
+} else {
+    Write-Warning "Icinga for Windows classes file not found at '$ClassesPath'. Run Build-ModuleProject first.";
+}
 
 if (Test-Path -Path $KernelPath) {
     . $KernelPath;

@@ -56,6 +56,46 @@ function Read-IcingaSourceFile()
     return $FileContent;
 }
 
+function Remove-IcingaComments()
+{
+    [CmdletBinding()]
+    param (
+        [string]$Content = ''
+    );
+
+    if ([string]::IsNullOrWhiteSpace($Content)) {
+        return '';
+    }
+
+    $Tokens = $null;
+    $Errors = $null;
+    [void][System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$Tokens, [ref]$Errors);
+
+    if ($null -eq $Tokens -or $Tokens.Count -eq 0) {
+        return $Content;
+    }
+
+    $CommentTokens = @($Tokens | Where-Object { [string]$_.Kind -eq 'Comment' } | Sort-Object -Property { $_.Extent.StartOffset } -Descending);
+
+    if ($CommentTokens.Count -eq 0) {
+        return $Content;
+    }
+
+    [System.Text.StringBuilder]$Builder = New-Object System.Text.StringBuilder($Content);
+
+    foreach ($token in $CommentTokens) {
+        $start  = $token.Extent.StartOffset;
+        $length = $token.Extent.EndOffset - $start;
+        $Builder.Remove($start, $length) | Out-Null;
+    }
+
+    [string]$Result = $Builder.ToString();
+    $Result         = [regex]::Replace($Result, '(?m)^\s+$', '');
+    $Result         = [regex]::Replace($Result, '(\r?\n){3,}', "$1$1");
+
+    return $Result.Trim();
+}
+
 function Write-IcingaSourceFile()
 {
     [CmdletBinding()]
@@ -152,12 +192,43 @@ if (Test-Path $OutputPath) {
 
 Write-Host "  * Output directory ready: $OutputPath" -ForegroundColor Green;
 
-# Build single consolidated module file
-Write-Host "`n[3/4] Building single consolidated module..." -ForegroundColor Yellow;
+# Build consolidated classes and kernel files
+Write-Host "`n[3/4] Building consolidated classes and kernel modules..." -ForegroundColor Yellow;
 
-[string]$SingleModuleName = 'IcingaForWindows.Kernel.ps1';
-[string]$ModuleOutput     = Join-Path -Path $OutputPath -ChildPath $SingleModuleName;
-[hashtable]$FncCache      = @{ };
+[string]$ClassesModuleName                 = 'IcingaForWindows.Classes.ps1';
+[string]$ClassesOutput                     = Join-Path -Path $OutputPath -ChildPath $ClassesModuleName;
+[System.Text.StringBuilder]$ClassesContent = New-Object System.Text.StringBuilder;
+
+# Add classes header
+$ClassesContent.AppendLine('<#') | Out-Null;
+$ClassesContent.AppendLine('.SYNOPSIS') | Out-Null;
+$ClassesContent.AppendLine('    Icinga for Windows - Classes Module') | Out-Null;
+$ClassesContent.AppendLine('.DESCRIPTION') | Out-Null;
+$ClassesContent.AppendLine('    Single compiled file containing all Icinga for Windows class definitions') | Out-Null;
+$ClassesContent.AppendLine("    Auto-generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')") | Out-Null;
+$ClassesContent.AppendLine('.NOTES') | Out-Null;
+$ClassesContent.AppendLine("    Source: $ModuleBasePath\src\Classes") | Out-Null;
+$ClassesContent.AppendLine('#>') | Out-Null;
+$ClassesContent.AppendLine() | Out-Null;
+
+# Append all classes sorted alphabetically (stripped of comments for minimal runtime memory)
+Write-Host "  * Appending $($Components['Classes'].Count) class file(s) (minified)..." -ForegroundColor White;
+foreach ($classFile in ($Components['Classes'] | Sort-Object)) {
+    $FileContent  = Read-IcingaSourceFile -Path $classFile;
+    $CleanContent = Remove-IcingaComments -Content $FileContent;
+    if (-not [string]::IsNullOrWhiteSpace($CleanContent)) {
+        $ClassesContent.AppendLine($CleanContent) | Out-Null;
+        $ClassesContent.AppendLine() | Out-Null;
+    }
+}
+
+Set-Content -Path $ClassesOutput -Value $ClassesContent.ToString() -Encoding UTF8 -Force;
+Write-Host "  * Classes file built successfully: $ClassesModuleName" -ForegroundColor Green;
+
+# Build single consolidated kernel module file (functions only)
+[string]$SingleModuleName                 = 'IcingaForWindows.Kernel.ps1';
+[string]$ModuleOutput                     = Join-Path -Path $OutputPath -ChildPath $SingleModuleName;
+[hashtable]$FncCache                      = @{ };
 
 [System.Text.StringBuilder]$ModuleContent = New-Object System.Text.StringBuilder;
 
@@ -173,21 +244,15 @@ $ModuleContent.AppendLine("    Source: $ModuleBasePath\src") | Out-Null;
 $ModuleContent.AppendLine('#>') | Out-Null;
 $ModuleContent.AppendLine() | Out-Null;
 
-# Append all classes first so their type definitions are parsed before any
-# function that references them within the single dot-sourced kernel file.
-Write-Host "  * Appending $($Components['Classes'].Count) class file(s)..." -ForegroundColor White;
-foreach ($classFile in ($Components['Classes'] | Sort-Object)) {
-    $FileContent = Read-IcingaSourceFile -Path $classFile;
-    $ModuleContent.AppendLine($FileContent) | Out-Null;
-    $ModuleContent.AppendLine() | Out-Null;
-}
-
-# Append all private functions once
-Write-Host "  * Appending $($Components['Private'].Count) private function file(s)..." -ForegroundColor White;
+# Append all private functions once (stripped of comments for minimal runtime memory)
+Write-Host "  * Appending $($Components['Private'].Count) private function file(s) (minified)..." -ForegroundColor White;
 foreach ($privateFile in $Components['Private']) {
-    $FileContent = Read-IcingaSourceFile -Path $privateFile;
-    $ModuleContent.AppendLine($FileContent) | Out-Null;
-    $ModuleContent.AppendLine() | Out-Null;
+    $FileContent  = Read-IcingaSourceFile -Path $privateFile;
+    $CleanContent = Remove-IcingaComments -Content $FileContent;
+    if (-not [string]::IsNullOrWhiteSpace($CleanContent)) {
+        $ModuleContent.AppendLine($CleanContent) | Out-Null;
+        $ModuleContent.AppendLine() | Out-Null;
+    }
 }
 
 # Append all public functions once
