@@ -14,7 +14,7 @@ This function is expected to run inside the performance-counter daemon runspace,
 daemon enters its processing loop, so the manager is created and used on a single thread.
 
 .OUTPUTS
-None — Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter`.
+None -- Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter`.
 
 .EXAMPLE
 PS> New-IcingaPerformanceCounterEnvironment

@@ -15,12 +15,12 @@ before it is ever requested. The function only writes to the thread-safe registr
 dictionary, so it is safe to call from any thread.
 
 .PARAMETER Counter
-| Name    | Type          | Description                                             | Default |
-|---------|---------------|---------------------------------------------------------|---------|
-| Counter | System.Array  | One or more counter paths to register, e.g. '\Cat\Ctr'. | @()     |
+| Name    | Type         | Description                                             | Default |
+|---------|--------------|---------------------------------------------------------|---------|
+| Counter | System.Array | One or more counter paths to register, e.g. '\Cat\Ctr'. | @()     |
 
 .OUTPUTS
-None — Registers the counter paths in the global store.
+None -- Registers the counter paths in the global store.
 
 .EXAMPLE
 PS> New-IcingaPerformanceCounter -Counter @('\Processor(*)\% Processor Time', '\Memory\Available Bytes')
@@ -29,7 +29,7 @@ Declares two counters so the daemon keeps them warm and the discovery step can f
 
 .NOTES
 The counters are stored under `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
-This function does not return counter values — use `Get-IcingaPerformanceCounter` to read them.
+This function does not return counter values -- use `Get-IcingaPerformanceCounter` to read them.
 #>
 function New-IcingaPerformanceCounter()
 {

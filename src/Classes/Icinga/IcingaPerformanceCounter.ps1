@@ -7,8 +7,8 @@ IcingaPerformanceCounterEntry owns exactly one `System.Diagnostics.PerformanceCo
 handle for a fully-qualified counter path (category, optional instance, counter). It
 implements the prime-then-read pattern required for accurate rate counters: `Prime`
 takes the first (throwaway) sample, and `Read` takes the second sample and returns the
-uniform value hashtable. The class never throws on counter errors — failures are
-surfaced through the `error` key of the returned hashtable — and disposes its handle
+uniform value hashtable. The class never throws on counter errors -- failures are
+surfaced through the `error` key of the returned hashtable -- and disposes its handle
 through `Dispose`.
 
 The handle is created and read on a single thread only (the performance-counter
@@ -16,7 +16,7 @@ daemon, or a transient one-shot resolver). The class holds no global state and i
 therefore safe to construct in any runspace, mirroring the IcingaUnit class.
 
 .OUTPUTS
-IcingaPerformanceCounterEntry — A single initialized counter wrapper.
+IcingaPerformanceCounterEntry -- A single initialized counter wrapper.
 
 .EXAMPLE
 PS> [IcingaPerformanceCounterEntry]::new('\Processor(_Total)\% Processor Time', 'Processor', '_Total', '% Processor Time')
@@ -33,6 +33,7 @@ class IcingaPerformanceCounterEntry
     [string]$Counter                               = '';
     [System.Diagnostics.PerformanceCounter]$Handle = $null;
     [bool]$Primed                                  = $false;
+    [string]$LastError                             = '';
 
     <#
     .SYNOPSIS
@@ -43,27 +44,27 @@ class IcingaPerformanceCounterEntry
     lazily on the first `Prime` call, not in the constructor.
 
     .PARAMETER FullName
-    | Name     | Type          | Description                                        | Default |
-    |----------|---------------|----------------------------------------------------|---------|
-    | FullName | System.String | The complete counter path, e.g. '\Cat(Inst)\Ctr'.  |         |
+| Name     | Type          | Description                                       | Default |
+|----------|---------------|---------------------------------------------------|---------|
+| FullName | System.String | The complete counter path, e.g. '\Cat(Inst)\Ctr'. |         |
 
     .PARAMETER Category
-    | Name     | Type          | Description                       | Default |
-    |----------|---------------|-----------------------------------|---------|
-    | Category | System.String | The performance counter category. |         |
+| Name     | Type          | Description                       | Default |
+|----------|---------------|-----------------------------------|---------|
+| Category | System.String | The performance counter category. |         |
 
     .PARAMETER Instance
-    | Name     | Type          | Description                                        | Default |
-    |----------|---------------|----------------------------------------------------|---------|
-    | Instance | System.String | The instance name, or empty for single-instance.   |         |
+| Name     | Type          | Description                                      | Default |
+|----------|---------------|--------------------------------------------------|---------|
+| Instance | System.String | The instance name, or empty for single-instance. |         |
 
     .PARAMETER Counter
-    | Name    | Type          | Description               | Default |
-    |---------|---------------|---------------------------|---------|
-    | Counter | System.String | The counter name to read. |         |
+| Name    | Type          | Description               | Default |
+|---------|---------------|---------------------------|---------|
+| Counter | System.String | The counter name to read. |         |
 
     .OUTPUTS
-    IcingaPerformanceCounterEntry — The configured, not-yet-primed entry.
+    IcingaPerformanceCounterEntry -- The configured, not-yet-primed entry.
 
     .EXAMPLE
     PS> [IcingaPerformanceCounterEntry]::new('\Memory\Available Bytes', 'Memory', '', 'Available Bytes')
@@ -87,7 +88,7 @@ class IcingaPerformanceCounterEntry
     `Read`. Priming errors are swallowed and surface later through `Read`.
 
     .OUTPUTS
-    None — Populates the `Handle` field and sets `Primed`.
+    None -- Populates the `Handle` field and sets `Primed`.
 
     .EXAMPLE
     PS> $entry.Prime()
@@ -98,21 +99,23 @@ class IcingaPerformanceCounterEntry
     #>
     [void] Prime()
     {
-        if ($null -eq $this.Handle) {
-            $this.Handle              = New-Object System.Diagnostics.PerformanceCounter;
-            $this.Handle.CategoryName = $this.Category;
-            $this.Handle.CounterName  = $this.Counter;
-
-            if (-not [string]::IsNullOrEmpty($this.Instance)) {
-                $this.Handle.InstanceName = $this.Instance;
-            }
-        }
-
         try {
+            if ($null -eq $this.Handle) {
+                $this.Handle              = [System.Diagnostics.PerformanceCounter]::new();
+                $this.Handle.CategoryName = $this.Category;
+                $this.Handle.CounterName  = $this.Counter;
+
+                if (-not [string]::IsNullOrEmpty($this.Instance)) {
+                    $this.Handle.InstanceName = $this.Instance;
+                }
+            }
+
             $this.Handle.NextValue()  | Out-Null;
             $this.Handle.NextSample() | Out-Null;
+            $this.LastError = '';
         } catch {
             # A priming failure is reported on the next Read call through the error key.
+            $this.LastError = $_.Exception.Message;
             $Error.Clear();
         }
 
@@ -126,11 +129,11 @@ class IcingaPerformanceCounterEntry
     .DESCRIPTION
     Takes the second sample of the counter and returns a hashtable with the fixed keys
     `value`, `sample`, `help`, `type` and `error`. `value` is rounded to six decimals.
-    The method never throws — any exception is captured into the `error` key while the
+    The method never throws -- any exception is captured into the `error` key while the
     remaining keys keep their defaults.
 
     .OUTPUTS
-    System.Collections.Hashtable — Keys value, sample, help, type, error.
+    System.Collections.Hashtable -- Keys value, sample, help, type, error.
 
     .EXAMPLE
     PS> $result = $entry.Read()
@@ -146,7 +149,12 @@ class IcingaPerformanceCounterEntry
         };
 
         if ($null -eq $this.Handle) {
-            $Result['error'] = 'Counter not initialized';
+            if ([string]::IsNullOrEmpty($this.LastError)) {
+                $Result['error'] = 'Counter not initialized';
+            } else {
+                $Result['error'] = $this.LastError;
+            }
+
             return $Result;
         }
 
@@ -176,7 +184,7 @@ class IcingaPerformanceCounterEntry
     the entry can be safely discarded. Safe to call multiple times.
 
     .OUTPUTS
-    None — Releases the native handle.
+    None -- Releases the native handle.
 
     .EXAMPLE
     PS> $entry.Dispose()
@@ -213,7 +221,7 @@ process with the same name exits; its rate counters then read 0 until the next
 snapshot.
 
 .OUTPUTS
-IcingaPerformanceCounterCategory — The snapshot reader of one category.
+IcingaPerformanceCounterCategory -- The snapshot reader of one category.
 
 .EXAMPLE
 PS> $Snapshot = [IcingaPerformanceCounterCategory]::new('Process')
@@ -243,12 +251,12 @@ class IcingaPerformanceCounterCategory
     Stores the category name. The category is read for the first time by `Prime`.
 
     .PARAMETER Category
-    | Name     | Type          | Description                       | Default |
-    |----------|---------------|-----------------------------------|---------|
-    | Category | System.String | The performance counter category. |         |
+| Name     | Type          | Description                       | Default |
+|----------|---------------|-----------------------------------|---------|
+| Category | System.String | The performance counter category. |         |
 
     .OUTPUTS
-    IcingaPerformanceCounterCategory — The not yet primed reader.
+    IcingaPerformanceCounterCategory -- The not yet primed reader.
 
     .EXAMPLE
     PS> [IcingaPerformanceCounterCategory]::new('Processor Information')
@@ -268,7 +276,7 @@ class IcingaPerformanceCounterCategory
     that cannot be read is remembered in `LastError` instead of throwing.
 
     .OUTPUTS
-    None — Populates the current snapshot.
+    None -- Populates the current snapshot.
 
     .EXAMPLE
     PS> $Snapshot.Prime()
@@ -276,7 +284,7 @@ class IcingaPerformanceCounterCategory
     [void] Prime()
     {
         try {
-            $this.Reader    = New-Object System.Diagnostics.PerformanceCounterCategory($this.Category);
+            $this.Reader    = [System.Diagnostics.PerformanceCounterCategory]::new($this.Category);
             $this.Current   = $this.Reader.ReadCategory();
             $this.ReadTime  = [datetime]::UtcNow;
             $this.LastError = '';
@@ -295,7 +303,7 @@ class IcingaPerformanceCounterCategory
     keeps both snapshots and stores the reason in `LastError`.
 
     .OUTPUTS
-    None — Advances the snapshots.
+    None -- Advances the snapshots.
 
     .EXAMPLE
     PS> $Snapshot.Refresh()
@@ -328,7 +336,7 @@ class IcingaPerformanceCounterCategory
     the category was never read.
 
     .OUTPUTS
-    System.Double — Age of the current snapshot.
+    System.Double -- Age of the current snapshot.
 
     .EXAMPLE
     PS> $Snapshot.AgeMilliseconds()
@@ -352,14 +360,14 @@ class IcingaPerformanceCounterCategory
     category returns no instances, like `GetInstanceNames`.
 
     .OUTPUTS
-    System.String[] — The instance names of the current snapshot.
+    System.String[] -- The instance names of the current snapshot.
 
     .EXAMPLE
     PS> $Snapshot.GetInstanceNames()
     #>
     [string[]] GetInstanceNames()
     {
-        $Names = New-Object 'System.Collections.Generic.List[string]';
+        $Names = [System.Collections.Generic.List[string]]::new();
 
         if ($null -eq $this.Current) {
             return $Names.ToArray();
@@ -390,17 +398,17 @@ class IcingaPerformanceCounterCategory
     value is calculated from the current sample alone. The method never throws.
 
     .PARAMETER Instance
-    | Name     | Type          | Description           | Default |
-    |----------|---------------|-----------------------|---------|
-    | Instance | System.String | The instance to read. |         |
+| Name     | Type          | Description           | Default |
+|----------|---------------|-----------------------|---------|
+| Instance | System.String | The instance to read. |         |
 
     .PARAMETER Counter
-    | Name    | Type          | Description          | Default |
-    |---------|---------------|----------------------|---------|
-    | Counter | System.String | The counter to read. |         |
+| Name    | Type          | Description          | Default |
+|---------|---------------|----------------------|---------|
+| Counter | System.String | The counter to read. |         |
 
     .OUTPUTS
-    System.Collections.Hashtable — Keys value, sample, help, type, error.
+    System.Collections.Hashtable -- Keys value, sample, help, type, error.
 
     .EXAMPLE
     PS> $Snapshot.Read('_Total', '% Processor Time')
@@ -471,17 +479,17 @@ class IcingaPerformanceCounterCategory
     counter) the name now belongs to a different process.
 
     .PARAMETER Instance
-    | Name     | Type          | Description        | Default |
-    |----------|---------------|--------------------|---------|
-    | Instance | System.String | The instance name. |         |
+| Name     | Type          | Description        | Default |
+|----------|---------------|--------------------|---------|
+| Instance | System.String | The instance name. |         |
 
     .PARAMETER Counter
-    | Name    | Type          | Description       | Default |
-    |---------|---------------|-------------------|---------|
-    | Counter | System.String | The counter name. |         |
+| Name    | Type          | Description       | Default |
+|---------|---------------|-------------------|---------|
+| Counter | System.String | The counter name. |         |
 
     .OUTPUTS
-    System.Diagnostics.InstanceData — The previous data, or $null.
+    System.Diagnostics.InstanceData -- The previous data, or $null.
 
     .EXAMPLE
     PS> $Snapshot.FindPrevious('svchost#3', '% Processor Time')
@@ -529,17 +537,17 @@ class IcingaPerformanceCounterCategory
     away. Later calls answer from the cached texts.
 
     .PARAMETER Counter
-    | Name    | Type          | Description       | Default |
-    |---------|---------------|-------------------|---------|
-    | Counter | System.String | The counter name. |         |
+| Name    | Type          | Description       | Default |
+|---------|---------------|-------------------|---------|
+| Counter | System.String | The counter name. |         |
 
     .PARAMETER Instance
-    | Name     | Type          | Description                                 | Default |
-    |----------|---------------|---------------------------------------------|---------|
-    | Instance | System.String | An existing instance used to list counters. |         |
+| Name     | Type          | Description                                 | Default |
+|----------|---------------|---------------------------------------------|---------|
+| Instance | System.String | An existing instance used to list counters. |         |
 
     .OUTPUTS
-    System.String — The help text, or $null when it cannot be read.
+    System.String -- The help text, or $null when it cannot be read.
 
     .EXAMPLE
     PS> $Snapshot.GetHelp('% Processor Time', '_Total')
@@ -580,12 +588,12 @@ are picked up by the category snapshots.
 
 The manager is created and used exclusively on the performance-counter daemon thread,
 so its internal `ConcurrentDictionary` is never mutated concurrently. Callers on other
-threads never touch the manager directly — they exchange requests and responses through
+threads never touch the manager directly -- they exchange requests and responses through
 the thread-safe queues in the global runtime store. The self-contained one-shot
 `ResolveOnce` supports command-line usage where no daemon is running.
 
 .OUTPUTS
-IcingaPerformanceCounter — The counter manager instance.
+IcingaPerformanceCounter -- The counter manager instance.
 
 .EXAMPLE
 PS> $manager = [IcingaPerformanceCounter]::new()
@@ -598,9 +606,9 @@ the module's runspace model.
 #>
 class IcingaPerformanceCounter
 {
-    [System.Collections.Concurrent.ConcurrentDictionary[string, IcingaPerformanceCounterEntry]]$Counters      = $null;
-    [System.Collections.Concurrent.ConcurrentDictionary[string, IcingaPerformanceCounterCategory]]$Categories = $null;
-    [int]$WarmupMilliseconds                                                                                  = 250;
+    [System.Collections.Concurrent.ConcurrentDictionary[string, object]]$Counters   = $null;
+    [System.Collections.Concurrent.ConcurrentDictionary[string, object]]$Categories = $null;
+    [int]$WarmupMilliseconds                                                        = 250;
 
     <#
     .SYNOPSIS
@@ -611,15 +619,15 @@ class IcingaPerformanceCounter
     Nothing is read until `Warmup`, `Resolve` or `Reconcile` is called.
 
     .OUTPUTS
-    IcingaPerformanceCounter — An empty manager.
+    IcingaPerformanceCounter -- An empty manager.
 
     .EXAMPLE
     PS> [IcingaPerformanceCounter]::new()
     #>
     IcingaPerformanceCounter()
     {
-        $this.Counters   = New-Object 'System.Collections.Concurrent.ConcurrentDictionary[string, IcingaPerformanceCounterEntry]';
-        $this.Categories = New-Object 'System.Collections.Concurrent.ConcurrentDictionary[string, IcingaPerformanceCounterCategory]';
+        $this.Counters   = [System.Collections.Concurrent.ConcurrentDictionary[string, object]]::new();
+        $this.Categories = [System.Collections.Concurrent.ConcurrentDictionary[string, object]]::new();
     }
 
     <#
@@ -627,18 +635,20 @@ class IcingaPerformanceCounter
     Parse a counter path into its category, instance and counter components
 
     .DESCRIPTION
-    Splits a fully-qualified counter path of the form '\Category\Counter' or
-    '\Category(Instance)\Counter' into its parts. Returns a hashtable with `Category`,
-    `Instance`, `Counter` and a `Valid` flag. Invalid input yields `Valid = $false`
-    instead of throwing.
+    Splits a fully-qualified counter path of the form '\Category\Counter',
+    '\Category(Instance)\Counter' or '\\<LocalHost>\Category\Counter' into its parts.
+    Local machine prefixes ('\\.\', '\\localhost\', '\\127.0.0.1\', '\\::1\' and
+    '\\<MachineName>\') are accepted and stripped automatically; remote host prefixes
+    are rejected. Returns a hashtable with `Category`, `Instance`, `Counter` and a
+    `Valid` flag. Invalid input yields `Valid = $false` instead of throwing.
 
     .PARAMETER Path
-    | Name | Type          | Description                        | Default |
-    |------|---------------|------------------------------------|---------|
-    | Path | System.String | The counter path string to parse.  |         |
+| Name | Type          | Description                       | Default |
+|------|---------------|-----------------------------------|---------|
+| Path | System.String | The counter path string to parse. |         |
 
     .OUTPUTS
-    System.Collections.Hashtable — Keys Category, Instance, Counter, Valid.
+    System.Collections.Hashtable -- Keys Category, Instance, Counter, Valid.
 
     .EXAMPLE
     PS> [IcingaPerformanceCounter]::ParsePath('\PhysicalDisk(0 C:)\Disk Reads/sec')
@@ -656,11 +666,27 @@ class IcingaPerformanceCounter
             return $Result;
         }
 
+        if ($Path.StartsWith('\\')) {
+            [int]$NextSlash = $Path.IndexOf('\', 2);
+
+            if ($NextSlash -le 2) {
+                return $Result;
+            }
+
+            [string]$Machine = $Path.Substring(2, $NextSlash - 2);
+
+            if ($Machine -ne '.' -and -not $Machine.Equals('localhost', [System.StringComparison]::OrdinalIgnoreCase) -and $Machine -ne '127.0.0.1' -and $Machine -ne '::1' -and -not $Machine.Equals([System.Environment]::MachineName, [System.StringComparison]::OrdinalIgnoreCase)) {
+                return $Result;
+            }
+
+            $Path = $Path.Substring($NextSlash);
+        }
+
         [string[]]$Parts = $Path.Split('\');
 
         # A valid path starts with a backslash, so the first split element is empty and
-        # there are at least three elements: '', category(+instance), counter.
-        if ($Parts.Count -lt 3 -or -not [string]::IsNullOrEmpty($Parts[0])) {
+        # there are three elements: '', category(+instance), counter.
+        if ($Parts.Count -ne 3 -or -not [string]::IsNullOrEmpty($Parts[0])) {
             return $Result;
         }
 
@@ -690,6 +716,137 @@ class IcingaPerformanceCounter
 
     <#
     .SYNOPSIS
+    Normalize a counter path by stripping any local machine prefix
+
+    .DESCRIPTION
+    Parses the given counter path and returns its canonical machine-less form
+    ('\Category\Counter' or '\Category(Instance)\Counter'). Invalid paths are returned
+    unchanged.
+
+    .PARAMETER Path
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Path | System.String | The counter path string to normalize. |         |
+
+    .OUTPUTS
+    System.String -- The canonical counter path without a machine prefix.
+
+    .EXAMPLE
+    PS> [IcingaPerformanceCounter]::NormalizePath('\\.\Memory\Available Bytes')
+    #>
+    static [string] NormalizePath([string]$Path)
+    {
+        $CounterType = 'IcingaPerformanceCounter' -as [type];
+        $Parsed      = $CounterType::ParsePath($Path);
+
+        if (-not $Parsed.Valid) {
+            return $Path;
+        }
+
+        if ([string]::IsNullOrEmpty($Parsed.Instance)) {
+            return ('\{0}\{1}' -f $Parsed.Category, $Parsed.Counter);
+        }
+
+        return ('\{0}({1})\{2}' -f $Parsed.Category, $Parsed.Instance, $Parsed.Counter);
+    }
+
+    <#
+    .SYNOPSIS
+    Check whether a performance counter category exists on the local system
+
+    .DESCRIPTION
+    Accepts either a plain category name ('Processor') or a full counter path
+    ('\Processor(*)\% Processor Time' or '\\.\Processor(_Total)\% Processor Time') and
+    returns $true when the category exists and is accessible on this system, or $false
+    otherwise. Never throws.
+
+    .PARAMETER Category
+| Name     | Type          | Description                                 | Default |
+|----------|---------------|---------------------------------------------|---------|
+| Category | System.String | The category name or counter path to check. |         |
+
+    .OUTPUTS
+    System.Boolean -- $true when the category exists on the system; $false otherwise.
+
+    .EXAMPLE
+    PS> [IcingaPerformanceCounter]::CategoryExists('Processor')
+    #>
+    static [bool] CategoryExists([string]$Category)
+    {
+        if ([string]::IsNullOrWhiteSpace($Category)) {
+            return $false;
+        }
+
+        [string]$TargetCategory = $Category.Trim();
+
+        if ($TargetCategory.StartsWith('\')) {
+            $CounterType = 'IcingaPerformanceCounter' -as [type];
+            $Parsed      = $CounterType::ParsePath($TargetCategory);
+
+            if ($Parsed.Valid) {
+                $TargetCategory = $Parsed.Category;
+            } else {
+                return $false;
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($TargetCategory)) {
+            return $false;
+        }
+
+        try {
+            $CategoryObject = [System.Diagnostics.PerformanceCounterCategory]::new($TargetCategory);
+
+            if ($null -eq $CategoryObject -or $null -eq $CategoryObject.CategoryType) {
+                return $false;
+            }
+
+            return $true;
+        } catch {
+            $Error.Clear();
+            return $false;
+        }
+    }
+
+    <#
+    .SYNOPSIS
+    Return the last error recorded for a category snapshot
+
+    .DESCRIPTION
+    Returns the `LastError` string of a registered category snapshot when priming or
+    refreshing that category failed (for example when the category does not exist or
+    access is denied), or an empty string when the category snapshot is healthy.
+
+    .PARAMETER Category
+| Name     | Type          | Description                       | Default |
+|----------|---------------|-----------------------------------|---------|
+| Category | System.String | The performance counter category. |         |
+
+    .OUTPUTS
+    System.String -- The last error message for the category, or an empty string.
+
+    .EXAMPLE
+    PS> $manager.GetCategoryError('Processor')
+    #>
+    [string] GetCategoryError([string]$Category)
+    {
+        if ([string]::IsNullOrWhiteSpace($Category)) {
+            return 'Category name is empty';
+        }
+
+        if ($this.Categories.ContainsKey($Category)) {
+            $Snapshot = $this.Categories[$Category];
+
+            if ($null -ne $Snapshot -and -not [string]::IsNullOrEmpty($Snapshot.LastError)) {
+                return $Snapshot.LastError;
+            }
+        }
+
+        return '';
+    }
+
+    <#
+    .SYNOPSIS
     Expand a counter path into the concrete per-instance paths that exist right now
 
     .DESCRIPTION
@@ -699,19 +856,20 @@ class IcingaPerformanceCounter
     array rather than throwing.
 
     .PARAMETER Path
-    | Name | Type          | Description                          | Default |
-    |------|---------------|--------------------------------------|---------|
-    | Path | System.String | The (possibly wildcard) counter path.|         |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Path | System.String | The (possibly wildcard) counter path. |         |
 
     .OUTPUTS
-    System.String[] — The concrete counter paths currently present.
+    System.String[] -- The concrete counter paths currently present.
 
     .EXAMPLE
     PS> $manager.ExpandPath('\PhysicalDisk(*)\Disk Reads/sec')
     #>
     [string[]] ExpandPath([string]$Path)
     {
-        $Parsed = [IcingaPerformanceCounter]::ParsePath($Path);
+        $CounterType = 'IcingaPerformanceCounter' -as [type];
+        $Parsed      = $CounterType::ParsePath($Path);
 
         if (-not $Parsed.Valid) {
             return @();
@@ -724,7 +882,7 @@ class IcingaPerformanceCounter
         [string[]]$Expanded = @();
 
         try {
-            $CategoryObject = New-Object System.Diagnostics.PerformanceCounterCategory($Parsed.Category);
+            $CategoryObject = [System.Diagnostics.PerformanceCounterCategory]::new($Parsed.Category);
             foreach ($InstanceName in $CategoryObject.GetInstanceNames()) {
                 $Expanded += ('\{0}({1})\{2}' -f $Parsed.Category, $InstanceName, $Parsed.Counter);
             }
@@ -745,25 +903,29 @@ class IcingaPerformanceCounter
     invalid paths so the caller can skip them.
 
     .PARAMETER Path
-    | Name | Type          | Description                     | Default |
-    |------|---------------|---------------------------------|---------|
-    | Path | System.String | The concrete counter path.      |         |
+| Name | Type          | Description                | Default |
+|------|---------------|----------------------------|---------|
+| Path | System.String | The concrete counter path. |         |
 
     .OUTPUTS
-    IcingaPerformanceCounterEntry — The new entry, or $null when the path is invalid.
+    IcingaPerformanceCounterEntry -- The new entry, or $null when the path is invalid.
 
     .EXAMPLE
     PS> $manager.CreateEntry('\Memory\Available Bytes')
     #>
-    [IcingaPerformanceCounterEntry] CreateEntry([string]$Path)
+    [object] CreateEntry([string]$Path)
     {
-        $Parsed = [IcingaPerformanceCounter]::ParsePath($Path);
+        $CounterType = 'IcingaPerformanceCounter' -as [type];
+        $EntryType   = 'IcingaPerformanceCounterEntry' -as [type];
+        $Parsed      = $CounterType::ParsePath($Path);
 
         if (-not $Parsed.Valid) {
             return $null;
         }
 
-        return [IcingaPerformanceCounterEntry]::new($Path, $Parsed.Category, $Parsed.Instance, $Parsed.Counter);
+        [string]$Normalized = $CounterType::NormalizePath($Path);
+
+        return $EntryType::new($Normalized, $Parsed.Category, $Parsed.Instance, $Parsed.Counter);
     }
 
     <#
@@ -777,12 +939,12 @@ class IcingaPerformanceCounter
     repeated calls are cheap.
 
     .PARAMETER Paths
-    | Name  | Type            | Description                              | Default |
-    |-------|-----------------|------------------------------------------|---------|
-    | Paths | System.String[] | The counter paths to ensure are warm.    |         |
+| Name  | Type            | Description                           | Default |
+|-------|-----------------|---------------------------------------|---------|
+| Paths | System.String[] | The counter paths to ensure are warm. |         |
 
     .OUTPUTS
-    None — Populates the internal registry.
+    None -- Populates the internal registry.
 
     .EXAMPLE
     PS> $manager.Warmup(@('\Processor(_Total)\% Processor Time'))
@@ -794,9 +956,10 @@ class IcingaPerformanceCounter
     [void] Warmup([string[]]$Paths)
     {
         [bool]$PrimedAny = $false;
+        $CounterType     = 'IcingaPerformanceCounter' -as [type];
 
         foreach ($Path in $Paths) {
-            $Parsed = [IcingaPerformanceCounter]::ParsePath($Path);
+            $Parsed = $CounterType::ParsePath($Path);
 
             if (-not $Parsed.Valid) {
                 continue;
@@ -810,10 +973,12 @@ class IcingaPerformanceCounter
                 continue;
             }
 
-            if (-not $this.Counters.ContainsKey($Path)) {
-                $Entry = $this.CreateEntry($Path);
+            [string]$Normalized = $CounterType::NormalizePath($Path);
 
-                if ($null -ne $Entry -and $this.Counters.TryAdd($Path, $Entry)) {
+            if (-not $this.Counters.ContainsKey($Normalized)) {
+                $Entry = $this.CreateEntry($Normalized);
+
+                if ($null -ne $Entry -and $this.Counters.TryAdd($Normalized, $Entry)) {
                     $Entry.Prime();
                     $PrimedAny = $true;
                 }
@@ -834,12 +999,12 @@ class IcingaPerformanceCounter
     when a new snapshot was primed, so the caller knows a warm-up sleep is needed.
 
     .PARAMETER Category
-    | Name     | Type          | Description                       | Default |
-    |----------|---------------|-----------------------------------|---------|
-    | Category | System.String | The performance counter category. |         |
+| Name     | Type          | Description                       | Default |
+|----------|---------------|-----------------------------------|---------|
+| Category | System.String | The performance counter category. |         |
 
     .OUTPUTS
-    System.Boolean — $true when a new snapshot was created and primed.
+    System.Boolean -- $true when a new snapshot was created and primed.
 
     .EXAMPLE
     PS> $manager.AddCategory('Process')
@@ -850,7 +1015,8 @@ class IcingaPerformanceCounter
             return $false;
         }
 
-        $Snapshot = [IcingaPerformanceCounterCategory]::new($Category);
+        $CategoryType = 'IcingaPerformanceCounterCategory' -as [type];
+        $Snapshot     = $CategoryType::new($Category);
 
         if (-not $this.Categories.TryAdd($Category, $Snapshot)) {
             return $false;
@@ -870,20 +1036,23 @@ class IcingaPerformanceCounter
     present in the registry, a result with a populated `error` key is returned.
 
     .PARAMETER Path
-    | Name | Type          | Description                | Default |
-    |------|---------------|----------------------------|---------|
-    | Path | System.String | The concrete counter path. |         |
+| Name | Type          | Description                | Default |
+|------|---------------|----------------------------|---------|
+| Path | System.String | The concrete counter path. |         |
 
     .OUTPUTS
-    System.Collections.Hashtable — Keys value, sample, help, type, error.
+    System.Collections.Hashtable -- Keys value, sample, help, type, error.
 
     .EXAMPLE
     PS> $manager.ReadPath('\Memory\Available Bytes')
     #>
     [hashtable] ReadPath([string]$Path)
     {
-        if ($this.Counters.ContainsKey($Path)) {
-            $Entry = $this.Counters[$Path];
+        $CounterType        = 'IcingaPerformanceCounter' -as [type];
+        [string]$Normalized = $CounterType::NormalizePath($Path);
+
+        if ($this.Counters.ContainsKey($Normalized)) {
+            $Entry = $this.Counters[$Normalized];
 
             if ($null -ne $Entry) {
                 return $Entry.Read();
@@ -914,12 +1083,12 @@ class IcingaPerformanceCounter
     interval; the daemon additionally refreshes every snapshot on each `Sample`.
 
     .PARAMETER Paths
-    | Name  | Type            | Description                        | Default |
-    |-------|-----------------|------------------------------------|---------|
-    | Paths | System.String[] | The counter paths to read.         |         |
+| Name  | Type            | Description                | Default |
+|-------|-----------------|----------------------------|---------|
+| Paths | System.String[] | The counter paths to read. |         |
 
     .OUTPUTS
-    System.Collections.Hashtable — Keyed by requested path; flat or nested per path.
+    System.Collections.Hashtable -- Keyed by requested path; flat or nested per path.
 
     .EXAMPLE
     PS> $manager.Resolve(@('\PhysicalDisk(*)\Disk Reads/sec'))
@@ -930,9 +1099,10 @@ class IcingaPerformanceCounter
 
         [hashtable]$Result    = @{ };
         [hashtable]$ReadCache = @{ };
+        $CounterType          = 'IcingaPerformanceCounter' -as [type];
 
         foreach ($Path in $Paths) {
-            $Parsed = [IcingaPerformanceCounter]::ParsePath($Path);
+            $Parsed = $CounterType::ParsePath($Path);
 
             if ($Parsed.Valid -and $Parsed.Instance -eq '*') {
                 [hashtable]$Group = @{ };
@@ -960,11 +1130,13 @@ class IcingaPerformanceCounter
 
                 $Result[$Path] = $Group;
             } else {
-                if (-not $ReadCache.ContainsKey($Path)) {
-                    $ReadCache[$Path] = $this.ReadPath($Path);
+                [string]$Normalized = $CounterType::NormalizePath($Path);
+
+                if (-not $ReadCache.ContainsKey($Normalized)) {
+                    $ReadCache[$Normalized] = $this.ReadPath($Normalized);
                 }
 
-                $Result[$Path] = $ReadCache[$Path];
+                $Result[$Path] = $ReadCache[$Normalized];
             }
         }
 
@@ -978,11 +1150,11 @@ class IcingaPerformanceCounter
     .DESCRIPTION
     Calls `NextValue` on each live handle and refreshes every category snapshot, so the
     next read computes an accurate rate over the refresh interval. Sampling errors are
-    ignored — dead instances are removed separately by `Reconcile`, and a category
+    ignored -- dead instances are removed separately by `Reconcile`, and a category
     snapshot keeps its last read when a refresh fails.
 
     .OUTPUTS
-    None — Advances the internal sample of every counter.
+    None -- Advances the internal sample of every counter.
 
     .EXAMPLE
     PS> $manager.Sample()
@@ -1024,23 +1196,24 @@ class IcingaPerformanceCounter
     sleep.
 
     .PARAMETER RegisteredPaths
-    | Name            | Type            | Description                                   | Default |
-    |-----------------|-----------------|-----------------------------------------------|---------|
-    | RegisteredPaths | System.String[] | The counter paths that should be kept warm.   |         |
+| Name            | Type            | Description                                 | Default |
+|-----------------|-----------------|---------------------------------------------|---------|
+| RegisteredPaths | System.String[] | The counter paths that should be kept warm. |         |
 
     .OUTPUTS
-    None — Adds and removes counter handles to match the desired set.
+    None -- Adds and removes counter handles to match the desired set.
 
     .EXAMPLE
     PS> $manager.Reconcile(@('\PhysicalDisk(*)\Disk Reads/sec'))
     #>
     [void] Reconcile([string[]]$RegisteredPaths)
     {
-        $Desired           = New-Object 'System.Collections.Generic.HashSet[string]';
-        $DesiredCategories = New-Object 'System.Collections.Generic.HashSet[string]';
+        $Desired           = [System.Collections.Generic.HashSet[string]]::new();
+        $DesiredCategories = [System.Collections.Generic.HashSet[string]]::new();
+        $CounterType       = 'IcingaPerformanceCounter' -as [type];
 
         foreach ($Path in $RegisteredPaths) {
-            $Parsed = [IcingaPerformanceCounter]::ParsePath($Path);
+            $Parsed = $CounterType::ParsePath($Path);
 
             if (-not $Parsed.Valid) {
                 continue;
@@ -1049,7 +1222,7 @@ class IcingaPerformanceCounter
             if ($Parsed.Instance -eq '*') {
                 [void]$DesiredCategories.Add($Parsed.Category);
             } else {
-                [void]$Desired.Add($Path);
+                [void]$Desired.Add($CounterType::NormalizePath($Path));
             }
         }
 
@@ -1078,7 +1251,7 @@ class IcingaPerformanceCounter
 
         foreach ($Key in @($this.Counters.Keys)) {
             if (-not $Desired.Contains($Key)) {
-                [IcingaPerformanceCounterEntry]$Stale = $null;
+                [object]$Stale = $null;
 
                 if ($this.Counters.TryRemove($Key, [ref]$Stale) -and $null -ne $Stale) {
                     $Stale.Dispose();
@@ -1088,7 +1261,7 @@ class IcingaPerformanceCounter
 
         foreach ($Key in @($this.Categories.Keys)) {
             if (-not $DesiredCategories.Contains($Key)) {
-                [IcingaPerformanceCounterCategory]$StaleCategory = $null;
+                [object]$StaleCategory = $null;
                 $this.Categories.TryRemove($Key, [ref]$StaleCategory) | Out-Null;
             }
         }
@@ -1104,7 +1277,7 @@ class IcingaPerformanceCounter
     one-shot resolver.
 
     .OUTPUTS
-    None — Releases all native handles.
+    None -- Releases all native handles.
 
     .EXAMPLE
     PS> $manager.Dispose()
@@ -1135,24 +1308,25 @@ class IcingaPerformanceCounter
     shares no state with the daemon and is safe on any thread.
 
     .PARAMETER Paths
-    | Name  | Type            | Description                       | Default |
-    |-------|-----------------|-----------------------------------|---------|
-    | Paths | System.String[] | The counter paths to read once.   |         |
+| Name  | Type            | Description                     | Default |
+|-------|-----------------|---------------------------------|---------|
+| Paths | System.String[] | The counter paths to read once. |         |
 
     .PARAMETER WarmupMilliseconds
-    | Name               | Type         | Description                                 | Default |
-    |--------------------|--------------|---------------------------------------------|---------|
-    | WarmupMilliseconds | System.Int32 | Shared warm-up sleep between the two samples.| 250     |
+| Name               | Type         | Description                                   | Default |
+|--------------------|--------------|-----------------------------------------------|---------|
+| WarmupMilliseconds | System.Int32 | Shared warm-up sleep between the two samples. | 250     |
 
     .OUTPUTS
-    System.Collections.Hashtable — Same shape as Resolve.
+    System.Collections.Hashtable -- Same shape as Resolve.
 
     .EXAMPLE
     PS> [IcingaPerformanceCounter]::ResolveOnce(@('\Processor(_Total)\% Processor Time'), 250)
     #>
     static [hashtable] ResolveOnce([string[]]$Paths, [int]$WarmupMilliseconds)
     {
-        $Manager                    = [IcingaPerformanceCounter]::new();
+        $CounterType                = 'IcingaPerformanceCounter' -as [type];
+        $Manager                    = $CounterType::new();
         $Manager.WarmupMilliseconds = $WarmupMilliseconds;
 
         try {

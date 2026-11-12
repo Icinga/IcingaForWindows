@@ -68,10 +68,11 @@ if (-not (Test-Path -Path $Path)) {
     throw "Test path not found: $Path";
 }
 
-# Ensure the compiled kernel artifact exists before running tests
-$KernelPath = Join-Path -Path $ModuleBasePath -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Kernel.ps1');
-if (-not (Test-Path -Path $KernelPath)) {
-    Write-Host 'Kernel artifact not found, building module first...' -ForegroundColor Yellow;
+# Ensure the compiled kernel and classes artifacts exist before running tests
+$KernelPath  = Join-Path -Path $ModuleBasePath -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Kernel.ps1');
+$ClassesPath = Join-Path -Path $ModuleBasePath -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Classes.ps1');
+if (-not (Test-Path -Path $KernelPath) -or -not (Test-Path -Path $ClassesPath)) {
+    Write-Host 'Kernel or classes artifact not found, building module first...' -ForegroundColor Yellow;
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Build-ModuleProject.ps1') -ModuleBasePath $ModuleBasePath -SkipTests;
 }
 

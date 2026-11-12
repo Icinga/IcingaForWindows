@@ -5,12 +5,12 @@ Persist the registered performance counters to the cache file
 .DESCRIPTION
 `Write-IcingaPerformanceCounterCache` serializes the registered counter paths and their
 last-seen timestamps to a JSON file in the module cache directory. The daemon calls this
-each refresh cycle so the warm counter set survives restarts and self-maintains — new
+each refresh cycle so the warm counter set survives restarts and self-maintains -- new
 counters are added and stale ones drop out over time. The file is written atomically by
 writing to a temporary file and renaming it into place.
 
 .OUTPUTS
-None — Writes the cache file to disk.
+None -- Writes the cache file to disk.
 
 .EXAMPLE
 PS> Write-IcingaPerformanceCounterCache
@@ -36,8 +36,7 @@ function Write-IcingaPerformanceCounterCache()
 
     [string]$CacheFile = Join-Path -Path $CacheDir -ChildPath 'PerformanceCounter.json';
     [string]$TempFile  = Join-Path -Path $CacheDir -ChildPath 'PerformanceCounter.json.tmp';
-
-    [hashtable]$Data = @{ };
+    [hashtable]$Data   = @{ };
 
     foreach ($Key in @($Store.Registered.Keys)) {
         $Timestamp = $Store.Registered[$Key];

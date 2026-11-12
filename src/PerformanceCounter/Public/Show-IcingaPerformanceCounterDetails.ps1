@@ -10,17 +10,17 @@ paths. The result keeps the uniform shape: a hashtable keyed by counter path wit
 hashtables for concrete paths and nested hashtables for wildcard paths.
 
 .PARAMETER Counter
-| Name    | Type         | Description                                                        | Default |
-|---------|--------------|--------------------------------------------------------------------|---------|
-| Counter | System.Array | Counter paths to show. Empty shows all registered counters.        | @()     |
+| Name    | Type         | Description                                                 | Default |
+|---------|--------------|-------------------------------------------------------------|---------|
+| Counter | System.Array | Counter paths to show. Empty shows all registered counters. | @()     |
 
 .PARAMETER StructureByInstance
-| Name                | Type                                         | Description                                                              | Default |
-|---------------------|----------------------------------------------|--------------------------------------------------------------------------|---------|
-| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter, forwarded to Get-IcingaPerformanceCounter. | $false |
+| Name                | Type                                         | Description                                                                                 | Default |
+|---------------------|----------------------------------------------|---------------------------------------------------------------------------------------------|---------|
+| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter, forwarded to Get-IcingaPerformanceCounter. | $false  |
 
 .OUTPUTS
-System.Collections.Hashtable — Keyed by counter path; values as returned by
+System.Collections.Hashtable -- Keyed by counter path; values as returned by
 `Get-IcingaPerformanceCounter`. With `-StructureByInstance`, keyed by instance/category/counter.
 Empty when nothing is registered and nothing is requested.
 

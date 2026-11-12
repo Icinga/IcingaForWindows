@@ -12,11 +12,11 @@ step which refreshes the heartbeat, reconciles transient instances, evicts unuse
 and persists the cache.
 
 Because every performance counter handle is created, sampled and disposed here on this one
-thread, callers never touch the non-thread-safe counter objects directly — they exchange
+thread, callers never touch the non-thread-safe counter objects directly -- they exchange
 data through the thread-safe queues only.
 
 .OUTPUTS
-None — Operates for side effects (serves requests and maintains counters).
+None -- Operates for side effects (serves requests and maintains counters).
 
 .EXAMPLE
 PS> Start-IcingaPerformanceCounterDaemon

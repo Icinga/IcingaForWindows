@@ -15,12 +15,12 @@ Extracting this maintenance out of the daemon loop keeps the loop body small and
 throttling logic live in one place.
 
 .PARAMETER Store
-| Name  | Type          | Description                                                              | Default |
-|-------|---------------|-------------------------------------------------------------------------|---------|
+| Name  | Type          | Description                                                                          | Default |
+|-------|---------------|--------------------------------------------------------------------------------------|---------|
 | Store | System.Object | The performance-counter store to operate on. Resolved from the runtime when omitted. | $null   |
 
 .OUTPUTS
-None — Mutates the global performance-counter store and writes the cache file.
+None -- Mutates the global performance-counter store and writes the cache file.
 
 .EXAMPLE
 PS> Update-IcingaPerformanceCounterState
@@ -46,8 +46,7 @@ function Update-IcingaPerformanceCounterState()
 
     # Always refresh the heartbeat so callers can detect the daemon is alive.
     $Store.Heartbeat = (Get-Date);
-
-    $Manager = $Store.Manager;
+    $Manager         = $Store.Manager;
 
     if ($null -eq $Manager) {
         return;
@@ -79,5 +78,5 @@ function Update-IcingaPerformanceCounterState()
 
     Write-IcingaPerformanceCounterCache;
 
-    $Store.LastRefresh = (Get-Date);
+    $Store.LastRefresh    = (Get-Date);
 }

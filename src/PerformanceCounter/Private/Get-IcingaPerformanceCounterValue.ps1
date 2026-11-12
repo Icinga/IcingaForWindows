@@ -13,12 +13,12 @@ Because the value is always numeric and the error is always a string, callers ca
 with a simple type check (`$result -is [string]` means an error was returned).
 
 .PARAMETER InputObject
-| Name        | Type          | Description                                                          | Default |
-|-------------|---------------|----------------------------------------------------------------------|---------|
+| Name        | Type          | Description                                                           | Default |
+|-------------|---------------|-----------------------------------------------------------------------|---------|
 | InputObject | System.Object | A single counter value object (the leaf hashtable of a counter read). | $null   |
 
 .OUTPUTS
-System.Object — The counter value (typically System.Decimal), or the error message (System.String)
+System.Object -- The counter value (typically System.Decimal), or the error message (System.String)
 when the counter reported one. Returns $null when the input is not a counter value object.
 
 .EXAMPLE

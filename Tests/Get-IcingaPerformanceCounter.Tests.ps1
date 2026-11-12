@@ -75,8 +75,43 @@ Describe 'Get-IcingaPerformanceCounter' {
             $unopened = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\Processor)\% Processor Time') };
             $unopened.Valid | Should -Be $false;
 
-            $noCat = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\(_Total)\% Processor Time') };
+            $noCat    = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\(_Total)\% Processor Time') };
             $noCat.Valid | Should -Be $false;
+        }
+
+        It 'Accepts and normalizes local machine prefixes (\\.\, \\localhost\, \\<MachineName>\)' {
+            $dot         = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\\.\Memory\Available Bytes') };
+            $dot.Valid    | Should -Be $true;
+            $dot.Category | Should -Be 'Memory';
+            $dot.Instance | Should -Be '';
+            $dot.Counter  | Should -Be 'Available Bytes';
+
+            $localhost   = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\\localhost\Processor(_Total)\% Processor Time') };
+            $localhost.Valid    | Should -Be $true;
+            $localhost.Category | Should -Be 'Processor';
+            $localhost.Instance | Should -Be '_Total';
+            $localhost.Counter  | Should -Be '% Processor Time';
+
+            $machinePath = ('\\{0}\PhysicalDisk(*)\Disk Reads/sec' -f [System.Environment]::MachineName);
+            $machine     = & $script:IcingaModule { param($p) [IcingaPerformanceCounter]::ParsePath($p) } $machinePath;
+            $machine.Valid    | Should -Be $true;
+            $machine.Category | Should -Be 'PhysicalDisk';
+            $machine.Instance | Should -Be '*';
+            $machine.Counter  | Should -Be 'Disk Reads/sec';
+
+            $normalized  = & $script:IcingaModule { [IcingaPerformanceCounter]::NormalizePath('\\.\Processor(_Total)\% Processor Time') };
+            $normalized | Should -Be '\Processor(_Total)\% Processor Time';
+        }
+
+        It 'Rejects remote machine prefixes and extra path segments' {
+            $remote       = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\\REMOTE-SERVER-99\Memory\Available Bytes') };
+            $remote.Valid | Should -Be $false;
+
+            $emptyMachine = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\\\Memory\Available Bytes') };
+            $emptyMachine.Valid | Should -Be $false;
+
+            $extraSegment = & $script:IcingaModule { [IcingaPerformanceCounter]::ParsePath('\Memory\Available Bytes\Extra') };
+            $extraSegment.Valid | Should -Be $false;
         }
     }
 
@@ -140,7 +175,7 @@ Describe 'Get-IcingaPerformanceCounter' {
 
     Context 'Category snapshots for wildcard paths' {
         It 'Reads every process instance, including the own process' {
-            $group = (Get-IcingaPerformanceCounter -Counter '\Process(*)\ID Process')['\Process(*)\ID Process'];
+            $group      = (Get-IcingaPerformanceCounter -Counter '\Process(*)\ID Process')['\Process(*)\ID Process'];
             [int[]]$Ids = @($group.Values | ForEach-Object { [int]$_.value });
             $Ids | Should -Contain $PID;
         }
@@ -210,6 +245,27 @@ Describe 'Get-IcingaPerformanceCounter' {
         It 'Returns the value for a specific counter' {
             $result = Show-IcingaPerformanceCounterDetails -Counter '\Memory\Available Bytes';
             [decimal]$result['\Memory\Available Bytes'].value | Should -BeGreaterThan 0;
+        }
+    }
+
+    Context 'Test-IcingaPerformanceCounterCategory and category error inspection' {
+        It 'Returns false for empty, malformed or non-existent categories' {
+            (Test-IcingaPerformanceCounterCategory -Category '')                                   | Should -Be $false;
+            (Test-IcingaPerformanceCounterCategory -Category 'IcingaNoSuchCategory')               | Should -Be $false;
+            (Test-IcingaPerformanceCounterCategory -Category '\IcingaNoSuchCategory(*)\Counter')   | Should -Be $false;
+            (Test-IcingaPerformanceCounterCategory -Category '\\REMOTE-HOST\Processor\Counter')    | Should -Be $false;
+        }
+
+        It 'Records the category error on a failed wildcard category snapshot' {
+            $err = & $script:IcingaModule {
+                $manager = [IcingaPerformanceCounter]::new();
+                $manager.WarmupMilliseconds = 0;
+                $manager.Resolve([string[]]@('\IcingaNoSuchCategory(*)\Counter')) | Out-Null;
+                $msg = $manager.GetCategoryError('IcingaNoSuchCategory');
+                $manager.Dispose();
+                return $msg;
+            };
+            $err | Should -Not -BeNullOrEmpty;
         }
     }
 }

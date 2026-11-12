@@ -446,7 +446,24 @@ All custom declarations must be added above this comment block.
 #>
 New-ModuleBaseEnvironment;
 
-[string]$KernelPath = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Kernel.ps1');
+[string]$ClassesPath = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Classes.ps1');
+[string]$KernelPath  = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath (Join-Path -Path 'lib' -ChildPath 'IcingaForWindows.Kernel.ps1');
+
+if (Test-Path -Path $ClassesPath) {
+    # Windows PowerShell 5.1 reuses the compiled class types when the same class
+    # content is loaded again by a thread runspace and binds their methods to the
+    # runspace that loaded it last. Class methods called on the main thread then run
+    # inside a busy daemon runspace, which hangs or corrupts the call. A unique copy
+    # of the class content per runspace gives every runspace its own class types.
+    # In PowerShell Core (PS 7+), class method dispatch is runspace-independent.
+    if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        . ([ScriptBlock]::Create([System.IO.File]::ReadAllText($ClassesPath) + [System.Environment]::NewLine + '# ' + [System.Guid]::NewGuid().ToString()));
+    } else {
+        . $ClassesPath;
+    }
+} else {
+    Write-Warning "Icinga for Windows classes file not found at '$ClassesPath'. Run Build-ModuleProject first.";
+}
 
 if (Test-Path -Path $KernelPath) {
     . $KernelPath;

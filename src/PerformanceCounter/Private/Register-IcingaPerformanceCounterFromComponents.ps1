@@ -7,13 +7,13 @@ Discover component-declared performance counters by scanning the compiled kernel
 (`lib\IcingaForWindows.Kernel.ps1`, which contains every source file concatenated) and
 finds all calls to `New-IcingaPerformanceCounter`. For each call it extracts the literal
 counter paths passed to the `-Counter` parameter and registers them in the global store.
-No component code is executed — the declaration is read statically from the syntax tree.
+No component code is executed -- the declaration is read statically from the syntax tree.
 
 This runs once during performance-counter environment initialization so that every
 counter any component declares is warmed as soon as the daemon starts.
 
 .OUTPUTS
-None — Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
+None -- Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
 
 .EXAMPLE
 PS> Register-IcingaPerformanceCounterFromComponents
@@ -36,19 +36,16 @@ function Register-IcingaPerformanceCounterFromComponents()
         return;
     }
 
-    $Tokens = $null;
-    $Errors = $null;
-    $Ast    = [System.Management.Automation.Language.Parser]::ParseFile($KernelPath, [ref]$Tokens, [ref]$Errors);
-
-    $Calls = $Ast.FindAll(
+    $Tokens        = $null;
+    $Errors        = $null;
+    $Ast           = [System.Management.Automation.Language.Parser]::ParseFile($KernelPath, [ref]$Tokens, [ref]$Errors);
+    $Calls         = $Ast.FindAll(
         {
             param ($Node)
-            $Node -is [System.Management.Automation.Language.CommandAst] -and
-            $Node.GetCommandName() -eq 'New-IcingaPerformanceCounter'
+            $Node -is [System.Management.Automation.Language.CommandAst] -and $Node.GetCommandName() -eq 'New-IcingaPerformanceCounter'
         },
         $true
     );
-
     [datetime]$Now = (Get-Date);
 
     foreach ($Call in $Calls) {

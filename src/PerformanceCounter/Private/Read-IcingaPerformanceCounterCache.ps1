@@ -10,7 +10,7 @@ previous runs are warmed immediately at startup. A missing, empty or corrupt cac
 is ignored silently so a bad cache never blocks the daemon.
 
 .OUTPUTS
-None — Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
+None -- Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
 
 .EXAMPLE
 PS> Read-IcingaPerformanceCounterCache

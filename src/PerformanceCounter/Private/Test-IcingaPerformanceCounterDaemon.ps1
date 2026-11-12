@@ -10,7 +10,7 @@ falls back to a synchronous inline read. Using the heartbeat keeps the check dec
 the thread registry.
 
 .OUTPUTS
-System.Boolean — $true when the daemon heartbeat is recent, otherwise $false.
+System.Boolean -- $true when the daemon heartbeat is recent, otherwise $false.
 
 .EXAMPLE
 PS> if (Test-IcingaPerformanceCounterDaemon) { 'daemon is serving requests' }

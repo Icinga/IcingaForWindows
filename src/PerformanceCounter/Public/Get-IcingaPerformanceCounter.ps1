@@ -24,22 +24,22 @@ Requesting a counter also refreshes its last-seen timestamp in the registry, kee
 counters warm and out of the eviction path.
 
 .PARAMETER Counter
-| Name    | Type         | Description                                                    | Default |
-|---------|--------------|----------------------------------------------------------------|---------|
-| Counter | System.Array | One or more counter paths to read, e.g. '\Processor(*)\...'.    | @()     |
+| Name    | Type         | Description                                                  | Default |
+|---------|--------------|--------------------------------------------------------------|---------|
+| Counter | System.Array | One or more counter paths to read, e.g. '\Processor(*)\...'. | @()     |
 
 .PARAMETER TimeoutMs
-| Name      | Type         | Description                                                  | Default |
-|-----------|--------------|-------------------------------------------------------------|---------|
-| TimeoutMs | System.Int32 | Milliseconds to wait for the daemon response before giving up.| 5000    |
+| Name      | Type         | Description                                                    | Default |
+|-----------|--------------|----------------------------------------------------------------|---------|
+| TimeoutMs | System.Int32 | Milliseconds to wait for the daemon response before giving up. | 5000    |
 
 .PARAMETER StructureByInstance
-| Name                | Type                                         | Description                                                              | Default |
-|---------------------|----------------------------------------------|--------------------------------------------------------------------------|---------|
-| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter (category/counter when no instance). | $false |
+| Name                | Type                                         | Description                                                                          | Default |
+|---------------------|----------------------------------------------|--------------------------------------------------------------------------------------|---------|
+| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter (category/counter when no instance). | $false  |
 
 .OUTPUTS
-System.Collections.Hashtable — By default keyed by requested path (flat for concrete paths, nested for
+System.Collections.Hashtable -- By default keyed by requested path (flat for concrete paths, nested for
 wildcard paths). With `-StructureByInstance`, keyed by instance then category then counter, or by
 category then counter for counters without an instance. Returns an empty hashtable when no counter is
 requested, or $null when the daemon request times out.
@@ -82,7 +82,7 @@ function Get-IcingaPerformanceCounter()
 
     if ($null -eq $Store) {
         # The environment is not initialized at all; do a fully transient read.
-        $Result = [IcingaPerformanceCounter]::ResolveOnce([string[]]$Counter, 250);
+        $Result = ('IcingaPerformanceCounter' -as [type])::ResolveOnce([string[]]$Counter, 250);
     } else {
         # Keep the requested counters alive in the registry and cache.
         [datetime]$Now = (Get-Date);
@@ -95,9 +95,8 @@ function Get-IcingaPerformanceCounter()
 
         if (Test-IcingaPerformanceCounterDaemon) {
             # Daemon is alive: dispatch through the request/response queue.
-            [string]$RequestId = (New-Guid).ToString();
-            $ResponseQueue     = [System.Collections.Concurrent.BlockingCollection[PSObject]]::New(1);
-
+            [string]$RequestId                 = (New-Guid).ToString();
+            $ResponseQueue                     = [System.Collections.Concurrent.BlockingCollection[PSObject]]::new(1);
             $Store.PendingRequests[$RequestId] = $ResponseQueue;
 
             try {
@@ -140,7 +139,7 @@ function Get-IcingaPerformanceCounter()
             }
 
             $script:IcingaPerformanceCounterInlineManager.WarmupMilliseconds = $Store.Config.WarmupMilliseconds;
-            $Result = $script:IcingaPerformanceCounterInlineManager.Resolve([string[]]$Counter);
+            $Result                                                          = $script:IcingaPerformanceCounterInlineManager.Resolve([string[]]$Counter);
         }
     }
 

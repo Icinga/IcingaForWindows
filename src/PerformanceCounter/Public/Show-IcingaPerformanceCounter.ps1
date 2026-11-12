@@ -16,22 +16,22 @@ Because it only reads metadata it is safe to call from any thread and does not r
 daemon. Errors are logged and yield an empty result rather than throwing.
 
 .PARAMETER Category
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| Category | System.String | List the counters within this category.                  | $null   |
+| Name     | Type          | Description                             | Default |
+|----------|---------------|-----------------------------------------|---------|
+| Category | System.String | List the counters within this category. | $null   |
 
 .PARAMETER Counter
-| Name    | Type          | Description                                                     | Default |
-|---------|---------------|-----------------------------------------------------------------|---------|
-| Counter | System.String | Wildcard counter path whose live instances should be listed.    | $null   |
+| Name    | Type          | Description                                                  | Default |
+|---------|---------------|--------------------------------------------------------------|---------|
+| Counter | System.String | Wildcard counter path whose live instances should be listed. | $null   |
 
 .PARAMETER Filter
-| Name   | Type          | Description                                                | Default |
-|--------|---------------|------------------------------------------------------------|---------|
-| Filter | System.String | Wildcard filter applied when listing categories.           | $null   |
+| Name   | Type          | Description                                      | Default |
+|--------|---------------|--------------------------------------------------|---------|
+| Filter | System.String | Wildcard filter applied when listing categories. | $null   |
 
 .OUTPUTS
-System.Array — Category names, counter paths, or instance paths depending on the mode.
+System.Array -- Category names, counter paths, or instance paths depending on the mode.
 
 .EXAMPLE
 PS> Show-IcingaPerformanceCounter
@@ -63,14 +63,14 @@ function Show-IcingaPerformanceCounter()
     # Mode: list live instance paths for a wildcard counter.
     if (-not [string]::IsNullOrEmpty($Counter)) {
         [array]$Instances = @();
-        $Parsed           = [IcingaPerformanceCounter]::ParsePath($Counter);
+        $Parsed           = ('IcingaPerformanceCounter' -as [type])::ParsePath($Counter);
 
         if (-not $Parsed.Valid) {
             return $Instances;
         }
 
         try {
-            $CategoryObject = New-Object System.Diagnostics.PerformanceCounterCategory($Parsed.Category);
+            $CategoryObject = [System.Diagnostics.PerformanceCounterCategory]::new($Parsed.Category);
 
             foreach ($InstanceName in $CategoryObject.GetInstanceNames()) {
                 $Instances += ('\{0}({1})\{2}' -f $Parsed.Category, $InstanceName, $Parsed.Counter);
@@ -90,7 +90,7 @@ function Show-IcingaPerformanceCounter()
         [array]$Counters = @();
 
         try {
-            $CategoryObject = New-Object System.Diagnostics.PerformanceCounterCategory($Category);
+            $CategoryObject = [System.Diagnostics.PerformanceCounterCategory]::new($Category);
             $InstanceNames  = $CategoryObject.GetInstanceNames();
 
             if ($null -ne $InstanceNames -and $InstanceNames.Count -gt 0) {

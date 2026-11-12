@@ -10,7 +10,7 @@ declares the counters it needs and gives the startup discovery step and the warm
 concrete set to work with. Additional components declare their own counters the same way.
 
 .OUTPUTS
-None — Registers the default counter paths in the global store.
+None -- Registers the default counter paths in the global store.
 
 .EXAMPLE
 PS> Register-IcingaDefaultPerformanceCounter

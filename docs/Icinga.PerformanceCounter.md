@@ -7,6 +7,7 @@
 - [Get-IcingaPerformanceCounter](#get-icingaperformancecounter)
 - [Show-IcingaPerformanceCounter](#show-icingaperformancecounter)
 - [Show-IcingaPerformanceCounterDetails](#show-icingaperformancecounterdetails)
+- [Test-IcingaPerformanceCounterCategory](#test-icingaperformancecountercategory)
 
 ## Private helpers
 
@@ -57,25 +58,25 @@ counters warm and out of the eviction path.
 
 **`$Counter`**
 
-| Name    | Type         | Description                                                    | Default |
-|---------|--------------|----------------------------------------------------------------|---------|
-| Counter | System.Array | One or more counter paths to read, e.g. '\Processor(*)\...'.    | @()     |
+| Name    | Type         | Description                                                  | Default |
+|---------|--------------|--------------------------------------------------------------|---------|
+| Counter | System.Array | One or more counter paths to read, e.g. '\Processor(*)\...'. | @()     |
 
 **`$TimeoutMs`**
 
-| Name      | Type         | Description                                                  | Default |
-|-----------|--------------|-------------------------------------------------------------|---------|
-| TimeoutMs | System.Int32 | Milliseconds to wait for the daemon response before giving up.| 5000    |
+| Name      | Type         | Description                                                    | Default |
+|-----------|--------------|----------------------------------------------------------------|---------|
+| TimeoutMs | System.Int32 | Milliseconds to wait for the daemon response before giving up. | 5000    |
 
 **`$StructureByInstance`**
 
-| Name                | Type                                         | Description                                                              | Default |
-|---------------------|----------------------------------------------|--------------------------------------------------------------------------|---------|
-| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter (category/counter when no instance). | $false |
+| Name                | Type                                         | Description                                                                          | Default |
+|---------------------|----------------------------------------------|--------------------------------------------------------------------------------------|---------|
+| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter (category/counter when no instance). | $false  |
 
 #### Outputs
 
-System.Collections.Hashtable — By default keyed by requested path (flat for concrete paths, nested for
+System.Collections.Hashtable -- By default keyed by requested path (flat for concrete paths, nested for
 wildcard paths). With `-StructureByInstance`, keyed by instance then category then counter, or by
 category then counter for counters without an instance. Returns an empty hashtable when no counter is
 requested, or $null when the daemon request times out.
@@ -135,25 +136,25 @@ daemon. Errors are logged and yield an empty result rather than throwing.
 
 **`$Category`**
 
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| Category | System.String | List the counters within this category.                  | $null   |
+| Name     | Type          | Description                             | Default |
+|----------|---------------|-----------------------------------------|---------|
+| Category | System.String | List the counters within this category. | $null   |
 
 **`$Counter`**
 
-| Name    | Type          | Description                                                     | Default |
-|---------|---------------|-----------------------------------------------------------------|---------|
-| Counter | System.String | Wildcard counter path whose live instances should be listed.    | $null   |
+| Name    | Type          | Description                                                  | Default |
+|---------|---------------|--------------------------------------------------------------|---------|
+| Counter | System.String | Wildcard counter path whose live instances should be listed. | $null   |
 
 **`$Filter`**
 
-| Name   | Type          | Description                                                | Default |
-|--------|---------------|------------------------------------------------------------|---------|
-| Filter | System.String | Wildcard filter applied when listing categories.           | $null   |
+| Name   | Type          | Description                                      | Default |
+|--------|---------------|--------------------------------------------------|---------|
+| Filter | System.String | Wildcard filter applied when listing categories. | $null   |
 
 #### Outputs
 
-System.Array — Category names, counter paths, or instance paths depending on the mode.
+System.Array -- Category names, counter paths, or instance paths depending on the mode.
 
 #### Examples
 
@@ -202,19 +203,19 @@ hashtables for concrete paths and nested hashtables for wildcard paths.
 
 **`$Counter`**
 
-| Name    | Type         | Description                                                        | Default |
-|---------|--------------|--------------------------------------------------------------------|---------|
-| Counter | System.Array | Counter paths to show. Empty shows all registered counters.        | @()     |
+| Name    | Type         | Description                                                 | Default |
+|---------|--------------|-------------------------------------------------------------|---------|
+| Counter | System.Array | Counter paths to show. Empty shows all registered counters. | @()     |
 
 **`$StructureByInstance`**
 
-| Name                | Type                                         | Description                                                              | Default |
-|---------------------|----------------------------------------------|--------------------------------------------------------------------------|---------|
-| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter, forwarded to Get-IcingaPerformanceCounter. | $false |
+| Name                | Type                                         | Description                                                                                 | Default |
+|---------------------|----------------------------------------------|---------------------------------------------------------------------------------------------|---------|
+| StructureByInstance | System.Management.Automation.SwitchParameter | Reshape the result to instance/category/counter, forwarded to Get-IcingaPerformanceCounter. | $false  |
 
 #### Outputs
 
-System.Collections.Hashtable — Keyed by counter path; values as returned by
+System.Collections.Hashtable -- Keyed by counter path; values as returned by
 `Get-IcingaPerformanceCounter`. With `-StructureByInstance`, keyed by instance/category/counter.
 Empty when nothing is registered and nothing is requested.
 
@@ -238,6 +239,56 @@ This is a thin convenience layer over `Get-IcingaPerformanceCounter`; the same d
 behavior and return shape apply. No external services are used.
 
 *Source: [src/PerformanceCounter/Public/Show-IcingaPerformanceCounterDetails.ps1](../../src/PerformanceCounter/Public/Show-IcingaPerformanceCounterDetails.ps1)*
+
+---
+
+### Test-IcingaPerformanceCounterCategory
+
+*Public function*
+
+**Synopsis:** Check whether a Windows performance counter category exists on the local system
+
+#### Description
+
+`Test-IcingaPerformanceCounterCategory` checks whether the given performance counter category
+is present and accessible on the local system. It accepts either a plain category name
+(such as 'Processor' or 'Memory') or a full counter path (such as
+'\Processor(*)\% Processor Time' or '\\.\Processor(_Total)\% Processor Time').
+
+Because it only queries category metadata and never throws, it is safe to call from any
+thread or provider before reading optional role counters (such as Hyper-V, IIS or MSSQL).
+
+#### Parameters
+
+**`$Category`**
+
+| Name     | Type          | Description                                               | Default |
+|----------|---------------|-----------------------------------------------------------|---------|
+| Category | System.String | The category name or counter path to check for existence. |         |
+
+#### Outputs
+
+System.Boolean -- $true when the category exists and is accessible on this system; $false otherwise.
+
+#### Examples
+
+```powershell
+PS> Test-IcingaPerformanceCounterCategory -Category 'Processor'
+
+Returns $true when the 'Processor' performance counter category exists on the system.
+```
+
+```powershell
+PS> Test-IcingaPerformanceCounterCategory -Category '\Hyper-V Virtual Machine Health Summary(*)\Health Critical'
+
+Extracts the category name from the counter path and returns $true when the category exists.
+```
+
+#### Notes
+
+Delegates to `IcingaPerformanceCounter::CategoryExists`. Never throws and reads no global state.
+
+*Source: [src/PerformanceCounter/Public/Test-IcingaPerformanceCounterCategory.ps1](../../src/PerformanceCounter/Public/Test-IcingaPerformanceCounterCategory.ps1)*
 
 ---
 
@@ -267,19 +318,19 @@ nested value is a value hashtable or an instance group.
 
 **`$Result`**
 
-| Name   | Type                        | Description                                                | Default |
-|--------|-----------------------------|------------------------------------------------------------|---------|
-| Result | System.Collections.Hashtable| The result returned by the manager, keyed by requested path.| @{ }    |
+| Name   | Type                         | Description                                                  | Default |
+|--------|------------------------------|--------------------------------------------------------------|---------|
+| Result | System.Collections.Hashtable | The result returned by the manager, keyed by requested path. | @{ }    |
 
 **`$Counter`**
 
-| Name    | Type         | Description                                             | Default |
-|---------|--------------|---------------------------------------------------------|---------|
-| Counter | System.Array | The originally requested counter paths, used to drive the reshape. | @() |
+| Name    | Type         | Description                                                        | Default |
+|---------|--------------|--------------------------------------------------------------------|---------|
+| Counter | System.Array | The originally requested counter paths, used to drive the reshape. | @()     |
 
 #### Outputs
 
-System.Collections.Hashtable — Nested structure keyed by instance/category or category, with the
+System.Collections.Hashtable -- Nested structure keyed by instance/category or category, with the
 uniform value hashtable at the leaf.
 
 #### Examples
@@ -309,20 +360,20 @@ no global state and reads no counters.
 collects the value of every string constant it contains. It is used by the startup
 discovery step to read the literal counter list passed to a `New-IcingaPerformanceCounter`
 call without executing any component code. Non-literal arguments (variables, expressions)
-contribute no values, which is intentional — only statically declarable counters are
+contribute no values, which is intentional -- only statically declarable counters are
 discovered.
 
 #### Parameters
 
 **`$Argument`**
 
-| Name     | Type                                        | Description                                 | Default |
-|----------|---------------------------------------------|---------------------------------------------|---------|
-| Argument | System.Management.Automation.Language.Ast   | The AST node of the `-Counter` argument.     | $null   |
+| Name     | Type                                      | Description                              | Default |
+|----------|-------------------------------------------|------------------------------------------|---------|
+| Argument | System.Management.Automation.Language.Ast | The AST node of the `-Counter` argument. | $null   |
 
 #### Outputs
 
-System.Array — The literal string values found in the argument, or an empty array.
+System.Array -- The literal string values found in the argument, or an empty array.
 
 #### Examples
 
@@ -360,13 +411,13 @@ with a simple type check (`$result -is [string]` means an error was returned).
 
 **`$InputObject`**
 
-| Name        | Type          | Description                                                          | Default |
-|-------------|---------------|----------------------------------------------------------------------|---------|
+| Name        | Type          | Description                                                           | Default |
+|-------------|---------------|-----------------------------------------------------------------------|---------|
 | InputObject | System.Object | A single counter value object (the leaf hashtable of a counter read). | $null   |
 
 #### Outputs
 
-System.Object — The counter value (typically System.Decimal), or the error message (System.String)
+System.Object -- The counter value (typically System.Decimal), or the error message (System.String)
 when the counter reported one. Returns $null when the input is not a counter value object.
 
 #### Examples
@@ -410,13 +461,13 @@ dictionary, so it is safe to call from any thread.
 
 **`$Counter`**
 
-| Name    | Type          | Description                                             | Default |
-|---------|---------------|---------------------------------------------------------|---------|
-| Counter | System.Array  | One or more counter paths to register, e.g. '\Cat\Ctr'. | @()     |
+| Name    | Type         | Description                                             | Default |
+|---------|--------------|---------------------------------------------------------|---------|
+| Counter | System.Array | One or more counter paths to register, e.g. '\Cat\Ctr'. | @()     |
 
 #### Outputs
 
-None — Registers the counter paths in the global store.
+None -- Registers the counter paths in the global store.
 
 #### Examples
 
@@ -429,7 +480,7 @@ Declares two counters so the daemon keeps them warm and the discovery step can f
 #### Notes
 
 The counters are stored under `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
-This function does not return counter values — use `Get-IcingaPerformanceCounter` to read them.
+This function does not return counter values -- use `Get-IcingaPerformanceCounter` to read them.
 
 *Source: [src/PerformanceCounter/Private/New-IcingaPerformanceCounter.ps1](../../src/PerformanceCounter/Private/New-IcingaPerformanceCounter.ps1)*
 
@@ -455,7 +506,7 @@ daemon enters its processing loop, so the manager is created and used on a singl
 
 #### Outputs
 
-None — Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter`.
+None -- Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter`.
 
 #### Examples
 
@@ -488,7 +539,7 @@ is ignored silently so a bad cache never blocks the daemon.
 
 #### Outputs
 
-None — Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
+None -- Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
 
 #### Examples
 
@@ -522,7 +573,7 @@ concrete set to work with. Additional components declare their own counters the 
 
 #### Outputs
 
-None — Registers the default counter paths in the global store.
+None -- Registers the default counter paths in the global store.
 
 #### Examples
 
@@ -551,14 +602,14 @@ set is intentionally minimal and generic; it is an example, not a fixed contract
 (`lib\IcingaForWindows.Kernel.ps1`, which contains every source file concatenated) and
 finds all calls to `New-IcingaPerformanceCounter`. For each call it extracts the literal
 counter paths passed to the `-Counter` parameter and registers them in the global store.
-No component code is executed — the declaration is read statically from the syntax tree.
+No component code is executed -- the declaration is read statically from the syntax tree.
 
 This runs once during performance-counter environment initialization so that every
 counter any component declares is warmed as soon as the daemon starts.
 
 #### Outputs
 
-None — Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
+None -- Populates `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
 
 #### Examples
 
@@ -592,12 +643,12 @@ step which refreshes the heartbeat, reconciles transient instances, evicts unuse
 and persists the cache.
 
 Because every performance counter handle is created, sampled and disposed here on this one
-thread, callers never touch the non-thread-safe counter objects directly — they exchange
+thread, callers never touch the non-thread-safe counter objects directly -- they exchange
 data through the thread-safe queues only.
 
 #### Outputs
 
-None — Operates for side effects (serves requests and maintains counters).
+None -- Operates for side effects (serves requests and maintains counters).
 
 #### Examples
 
@@ -631,7 +682,7 @@ the thread registry.
 
 #### Outputs
 
-System.Boolean — $true when the daemon heartbeat is recent, otherwise $false.
+System.Boolean -- $true when the daemon heartbeat is recent, otherwise $false.
 
 #### Examples
 
@@ -671,13 +722,13 @@ throttling logic live in one place.
 
 **`$Store`**
 
-| Name  | Type          | Description                                                              | Default |
-|-------|---------------|-------------------------------------------------------------------------|---------|
+| Name  | Type          | Description                                                                          | Default |
+|-------|---------------|--------------------------------------------------------------------------------------|---------|
 | Store | System.Object | The performance-counter store to operate on. Resolved from the runtime when omitted. | $null   |
 
 #### Outputs
 
-None — Mutates the global performance-counter store and writes the cache file.
+None -- Mutates the global performance-counter store and writes the cache file.
 
 #### Examples
 
@@ -705,13 +756,13 @@ passes its cached store reference to avoid re-resolving it through Get-GlobalRun
 
 `Write-IcingaPerformanceCounterCache` serializes the registered counter paths and their
 last-seen timestamps to a JSON file in the module cache directory. The daemon calls this
-each refresh cycle so the warm counter set survives restarts and self-maintains — new
+each refresh cycle so the warm counter set survives restarts and self-maintains -- new
 counters are added and stale ones drop out over time. The file is written atomically by
 writing to a temporary file and renaming it into place.
 
 #### Outputs
 
-None — Writes the cache file to disk.
+None -- Writes the cache file to disk.
 
 #### Examples
 

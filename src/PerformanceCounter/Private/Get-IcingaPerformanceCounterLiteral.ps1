@@ -7,16 +7,16 @@ Extract literal counter path strings from an AST argument node
 collects the value of every string constant it contains. It is used by the startup
 discovery step to read the literal counter list passed to a `New-IcingaPerformanceCounter`
 call without executing any component code. Non-literal arguments (variables, expressions)
-contribute no values, which is intentional — only statically declarable counters are
+contribute no values, which is intentional -- only statically declarable counters are
 discovered.
 
 .PARAMETER Argument
-| Name     | Type                                        | Description                                 | Default |
-|----------|---------------------------------------------|---------------------------------------------|---------|
-| Argument | System.Management.Automation.Language.Ast   | The AST node of the `-Counter` argument.     | $null   |
+| Name     | Type                                      | Description                              | Default |
+|----------|-------------------------------------------|------------------------------------------|---------|
+| Argument | System.Management.Automation.Language.Ast | The AST node of the `-Counter` argument. | $null   |
 
 .OUTPUTS
-System.Array — The literal string values found in the argument, or an empty array.
+System.Array -- The literal string values found in the argument, or an empty array.
 
 .EXAMPLE
 PS> Get-IcingaPerformanceCounterLiteral -Argument $argumentAst
