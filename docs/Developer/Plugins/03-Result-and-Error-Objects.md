@@ -14,7 +14,7 @@ Alongside [`IcingaPlugin`](02-IcingaPlugin-Reference.md), two lightweight compan
 
 ## 1. `IcingaCheckResult` Class
 
-When `IcingaPlugin.Compile()` finishes evaluating a plugin tree, it stores an `IcingaCheckResult` instance in the current runspace's private runtime state:
+Defined in [`src/Classes/Icinga/IcingaCheckResult.ps1`](../../../src/Classes/Icinga/IcingaCheckResult.ps1). When `IcingaPlugin.Compile()` finishes evaluating a plugin tree, it stores an `IcingaCheckResult` instance in the current runspace's private runtime state:
 
 ```powershell
 $Global:IcingaForWindows.Private.Icinga.CheckResult
@@ -62,7 +62,7 @@ $Result.PerformanceData # e.g. @('icingaicingaforwindowsrenewcertificate::ifw_sc
 
 ## 2. `IcingaError` Class
 
-Data collection functions (such as `Get-IcingaWindowsInformation` or provider functions like `Get-IcingaScheduledTask`) must **never** throw unhandled exceptions into a plugin. Instead, when an underlying query (CIM/WMI, Task Scheduler, Registry, Service Controller) fails, the provider returns an `IcingaError` object describing the failure.
+Defined in [`src/Classes/Icinga/IcingaError.ps1`](../../../src/Classes/Icinga/IcingaError.ps1). Data collection functions (such as `Get-IcingaWindowsInformation` or provider functions like `Get-IcingaScheduledTask`) must **never** throw unhandled exceptions into a plugin. Instead, when an underlying query (CIM/WMI, Task Scheduler, Registry, Service Controller) fails, the provider returns an `IcingaError` object describing the failure.
 
 ### Properties
 
@@ -111,7 +111,7 @@ try {
 
 ## 3. `Test-IcingaError` Cmdlet
 
-`Test-IcingaError` is the runspace-safe cmdlet used by plugins and providers to check whether a data collection call returned an `IcingaError`.
+Defined in [`src/Core/ErrorHandling/Public/Test-IcingaError.ps1`](../../../src/Core/ErrorHandling/Public/Test-IcingaError.ps1), `Test-IcingaError` is the runspace-safe cmdlet used by plugins and providers to check whether a data collection call returned an `IcingaError`.
 
 ### Syntax
 

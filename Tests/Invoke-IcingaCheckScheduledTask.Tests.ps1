@@ -3,52 +3,6 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
     Import-Module -Name $ModulePath -Force -Global;
 }
 
-function Invoke-TestScheduledTaskCheck()
-{
-    param (
-        [array]$Tasks         = @(),
-        [hashtable]$Infos     = @{ },
-        [hashtable]$Arguments = @{ },
-        [switch]$Fail         = $false
-    );
-
-    return (& $script:IcingaModule {
-        param ($Tasks, $Infos, $Arguments, $Fail);
-
-        function Get-ScheduledTask()
-        {
-            param (
-                [string]$TaskName    = '*',
-                [string]$ErrorAction = 'Continue'
-            );
-
-            if ($Fail) {
-                throw 'Access is denied';
-            }
-
-            return $Tasks;
-        }
-
-        function Get-ScheduledTaskInfo()
-        {
-            param (
-                [string]$TaskName    = '',
-                [string]$TaskPath    = '',
-                [string]$ErrorAction = 'Continue'
-            );
-
-            [string]$Key = '{0}{1}' -f $TaskPath, $TaskName;
-            if ($Infos.ContainsKey($Key)) {
-                return $Infos[$Key];
-            }
-
-            return $null;
-        }
-
-        return (Invoke-IcingaCheckScheduledTask @Arguments);
-    } $Tasks $Infos $Arguments $Fail);
-}
-
 Describe 'Invoke-IcingaCheckScheduledTask' {
     BeforeAll {
         $script:IcingaModule       = Get-Module -Name 'IcingaForWindows' -All |
@@ -57,12 +11,58 @@ Describe 'Invoke-IcingaCheckScheduledTask' {
 
         $script:OriginalDaemonFlag = $Global:IcingaForWindows.Protected.IsBackgroundDaemon;
 
-        $script:DefaultTask        = [PSCustomObject]@{
+        function Invoke-TestScheduledTaskCheck()
+        {
+            param (
+                [array]$Tasks         = @(),
+                [hashtable]$Infos     = @{ },
+                [hashtable]$Arguments = @{ },
+                [switch]$Fail         = $false
+            );
+
+            return (& $script:IcingaModule {
+                param ($Tasks, $Infos, $Arguments, $Fail);
+
+                function Get-ScheduledTask()
+                {
+                    param (
+                        [string]$TaskName    = '*',
+                        [string]$ErrorAction = 'Continue'
+                    );
+
+                    if ($Fail) {
+                        throw 'Access is denied';
+                    }
+
+                    return $Tasks;
+                }
+
+                function Get-ScheduledTaskInfo()
+                {
+                    param (
+                        [string]$TaskName    = '',
+                        [string]$TaskPath    = '',
+                        [string]$ErrorAction = 'Continue'
+                    );
+
+                    [string]$Key = '{0}{1}' -f $TaskPath, $TaskName;
+                    if ($Infos.ContainsKey($Key)) {
+                        return $Infos[$Key];
+                    }
+
+                    return $null;
+                }
+
+                return (Invoke-IcingaCheckScheduledTask @Arguments);
+            } $Tasks $Infos $Arguments $Fail);
+        }
+
+        $script:DefaultTask = [PSCustomObject]@{
             'TaskName' = 'Renew Certificate';
             'TaskPath' = '\Icinga\Icinga for Windows\';
             'State'    = 'Ready';
         };
-        $script:DefaultInfo        = @{
+        $script:DefaultInfo = @{
             '\Icinga\Icinga for Windows\Renew Certificate' = [PSCustomObject]@{
                 'LastRunTime'        = [datetime]::Now.AddHours(-1);
                 'NextRunTime'        = [datetime]::Now.AddHours(2);

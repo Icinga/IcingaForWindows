@@ -3,57 +3,57 @@ if (-not (Get-Module -Name 'IcingaForWindows')) {
     Import-Module -Name $ModulePath -Force -Global;
 }
 
-function Invoke-TestGetScheduledTask()
-{
-    param (
-        [array]$Tasks         = @(),
-        [hashtable]$Infos     = @{ },
-        [hashtable]$Arguments = @{ },
-        [switch]$Fail         = $false
-    );
-
-    return (& $script:IcingaModule {
-        param ($Tasks, $Infos, $Arguments, $Fail);
-
-        function Get-ScheduledTask()
-        {
-            param (
-                [string]$TaskName    = '*',
-                [string]$ErrorAction = 'Continue'
-            );
-
-            if ($Fail) {
-                throw 'Access is denied';
-            }
-
-            return $Tasks;
-        }
-
-        function Get-ScheduledTaskInfo()
-        {
-            param (
-                [string]$TaskName    = '',
-                [string]$TaskPath    = '',
-                [string]$ErrorAction = 'Continue'
-            );
-
-            [string]$Key = '{0}{1}' -f $TaskPath, $TaskName;
-            if ($Infos.ContainsKey($Key)) {
-                return $Infos[$Key];
-            }
-
-            return $null;
-        }
-
-        return (Get-IcingaScheduledTask @Arguments);
-    } $Tasks $Infos $Arguments $Fail);
-}
-
 Describe 'Get-IcingaScheduledTask' {
     BeforeAll {
         $script:IcingaModule = Get-Module -Name 'IcingaForWindows' -All |
             Where-Object { $_.ModuleType -eq 'Script' } |
             Select-Object -First 1;
+
+        function Invoke-TestGetScheduledTask()
+        {
+            param (
+                [array]$Tasks         = @(),
+                [hashtable]$Infos     = @{ },
+                [hashtable]$Arguments = @{ },
+                [switch]$Fail         = $false
+            );
+
+            return (& $script:IcingaModule {
+                param ($Tasks, $Infos, $Arguments, $Fail);
+
+                function Get-ScheduledTask()
+                {
+                    param (
+                        [string]$TaskName    = '*',
+                        [string]$ErrorAction = 'Continue'
+                    );
+
+                    if ($Fail) {
+                        throw 'Access is denied';
+                    }
+
+                    return $Tasks;
+                }
+
+                function Get-ScheduledTaskInfo()
+                {
+                    param (
+                        [string]$TaskName    = '',
+                        [string]$TaskPath    = '',
+                        [string]$ErrorAction = 'Continue'
+                    );
+
+                    [string]$Key = '{0}{1}' -f $TaskPath, $TaskName;
+                    if ($Infos.ContainsKey($Key)) {
+                        return $Infos[$Key];
+                    }
+
+                    return $null;
+                }
+
+                return (Get-IcingaScheduledTask @Arguments);
+            } $Tasks $Infos $Arguments $Fail);
+        }
     }
 
     Context 'Task collection and filtering' {

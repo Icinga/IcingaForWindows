@@ -1,8 +1,8 @@
-# Icinga.Plugins
+# Icinga.Plugins.Lib
 
-*Auto-generated from `src/Plugins/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
+*Auto-generated from `src/Plugins/Lib/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
 
-## Public functions
+## Private helpers
 
 - [New-IcingaPlugin](#new-icingaplugin)
 
@@ -10,7 +10,7 @@
 
 ### New-IcingaPlugin
 
-*Public function*
+*Private function*
 
 **Synopsis:** Create an IcingaPlugin node with the class type of the current runspace
 
@@ -77,5 +77,5 @@ workers. The runtime lookup returns the type the current runspace loaded itself.
 Keep the node inside the runspace that created it and hand only its rendered
 output, exit code and performance data to other threads.
 
-*Source: [src/Plugins/Public/New-IcingaPlugin.ps1](../../src/Plugins/Public/New-IcingaPlugin.ps1)*
+*Source: [src/Plugins/Lib/Private/New-IcingaPlugin.ps1](../../src/Plugins/Lib/Private/New-IcingaPlugin.ps1)*
 

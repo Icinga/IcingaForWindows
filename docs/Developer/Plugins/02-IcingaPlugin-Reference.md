@@ -11,7 +11,7 @@ This document is the complete technical reference for **[`New-IcingaPlugin`](#1-
 
 ## 1. `New-IcingaPlugin` Factory Cmdlet
 
-`New-IcingaPlugin` is the runspace-safe factory function that every plugin and helper function outside `src/Classes` must use instead of `[IcingaPlugin]::new()`. It resolves the `IcingaPlugin` class in the calling runspace (`'IcingaPlugin' -as [type]`) and invokes either `$PluginType::new($Name)` (when neither `-Value` nor `-Unit` is bound) or `$PluginType::new($Name, $Value, $Unit)`.
+Defined in [`src/Plugins/Lib/Private/New-IcingaPlugin.ps1`](../../../src/Plugins/Lib/Private/New-IcingaPlugin.ps1), `New-IcingaPlugin` is the runspace-safe factory function that every plugin and helper function outside `src/Classes` must use instead of `[IcingaPlugin]::new()`. It resolves the `IcingaPlugin` class in the calling runspace (`'IcingaPlugin' -as [type]`) and invokes either `$PluginType::new($Name)` (when neither `-Value` nor `-Unit` is bound) or `$PluginType::new($Name, $Value, $Unit)`.
 
 ### Syntax
 
@@ -51,6 +51,8 @@ $CheckPackage.AddCheck(
 ---
 
 ## 2. `IcingaPlugin` Class Properties
+
+The `IcingaPlugin` class is defined in [`src/Classes/Icinga/IcingaPlugin.ps1`](../../../src/Classes/Icinga/IcingaPlugin.ps1).
 
 ### Public Instance Properties (10)
 

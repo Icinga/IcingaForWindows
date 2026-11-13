@@ -5,10 +5,13 @@
 ## Public functions
 
 - [Compare-IcingaTextContent](#compare-icingatextcontent)
+- [ConvertTo-IcingaSortedArray](#convertto-icingasortedarray)
 - [ConvertTo-IcingaUnit](#convertto-icingaunit)
 - [Get-IcingaUnixTime](#get-icingaunixtime)
+- [Get-IcingaWindowsInformation](#get-icingawindowsinformation)
 - [Join-WebPath](#join-webpath)
 - [Resolve-IcingaIPAddress](#resolve-icingaipaddress)
+- [Test-IcingaArrayFilter](#test-icingaarrayfilter)
 
 ## Private helpers
 
@@ -17,6 +20,7 @@
 - [ConvertTo-StringNormalizedArray](#convertto-stringnormalizedarray)
 - [Get-NormalizedTextContent](#get-normalizedtextcontent)
 - [Remove-ModuleAmbitiousCharacters](#remove-moduleambitiouscharacters)
+- [Test-ModuleWildcardMatch](#test-modulewildcardmatch)
 
 ---
 
@@ -103,6 +107,75 @@ packages beyond the PowerShell standard library are used.
 
 ---
 
+### ConvertTo-IcingaSortedArray
+
+*Public function*
+
+**Synopsis:** Sort objects by one or more properties in natural order without a script block
+
+#### Description
+
+ConvertTo-IcingaSortedArray sorts an array without Sort-Object and without any
+script block, so the plugins stay usable in JEA sessions. Every element gets a
+sort key from IcingaSortKey once, then the native [Array]::Sort orders keys and
+elements with an ordinal string comparison, which keeps the sort fast for large
+inputs such as all Windows services.
+
+The objects are compared by the given properties in order of precedence, or by
+themselves when no property is given. Values sort in natural order: numbers
+numerically and strings case-insensitively with digit runs compared by value,
+so '0,2' comes before '0,10' and '_Total' after every numbered instance. The
+sort is stable, equal elements keep their input order in both directions.
+Hashtables are read by key, every other object (including CIM instances) by
+member name.
+
+#### Parameters
+
+**`$InputObject`**
+
+| Name        | Type         | Description            | Default |
+|-------------|--------------|------------------------|---------|
+| InputObject | System.Array | The elements to sort.  | @()     |
+
+**`$Property`**
+
+| Name     | Type         | Description                                                              | Default |
+|----------|--------------|--------------------------------------------------------------------------|---------|
+| Property | System.Array | Properties to sort by, in order of precedence; empty sorts the elements. | @()     |
+
+**`$Descending`**
+
+| Name       | Type                                         | Description               | Default |
+|------------|----------------------------------------------|---------------------------|---------|
+| Descending | System.Management.Automation.SwitchParameter | Sort in descending order. | False   |
+
+#### Outputs
+
+System.Object[] -- A new array with the sorted elements; the input stays unchanged.
+
+#### Examples
+
+```powershell
+PS> ConvertTo-IcingaSortedArray -InputObject @('0,10', '_Total', '0,2', '0,_Total')
+
+Returns @('0,2', '0,10', '0,_Total', '_Total').
+```
+
+```powershell
+PS> ConvertTo-IcingaSortedArray -InputObject $Services -Property 'Name'
+
+Sorts Win32_Service instances by their name.
+```
+
+#### Notes
+
+No external dependencies. Replaces 'Sort-Object -Property { ... }' in plugin
+code. The verb follows the approved PowerShell verbs; 'Sort' is not one of them.
+
+*Source: [src/Tools/Public/ConvertTo-IcingaSortedArray.ps1](../../src/Tools/Public/ConvertTo-IcingaSortedArray.ps1)*
+
+---
+
 ### ConvertTo-IcingaUnit
 
 *Public function*
@@ -137,31 +210,31 @@ $null.
 
 **`$InputValue`**
 
-| Name       | Type          | Description                                                                                  | Default |
-|------------|---------------|----------------------------------------------------------------------------------------------|---------|
-| InputValue | System.String | Value to convert, either as a plain number ('1000') or with a unit suffix ('1000B', '1.5MiB').| $null   |
+| Name       | Type          | Description                                                                                    | Default |
+|------------|---------------|------------------------------------------------------------------------------------------------|---------|
+| InputValue | System.String | Value to convert, either as a plain number ('1000') or with a unit suffix ('1000B', '1.5MiB'). | $null   |
 
 **`$InputUnit`**
 
-| Name      | Type          | Description                                                                                     | Default |
-|-----------|---------------|-------------------------------------------------------------------------------------------------|---------|
-| InputUnit | System.String | Unit of the input when InputValue has no suffix. A suffix on InputValue takes precedence.       | $null   |
+| Name      | Type          | Description                                                                               | Default |
+|-----------|---------------|-------------------------------------------------------------------------------------------|---------|
+| InputUnit | System.String | Unit of the input when InputValue has no suffix. A suffix on InputValue takes precedence. | $null   |
 
 **`$TargetUnit`**
 
-| Name       | Type          | Description                                                                                          | Default |
-|------------|---------------|------------------------------------------------------------------------------------------------------|---------|
-| TargetUnit | System.String | Unit to convert to. Must be in the same family as the input. When omitted the best-fitting unit wins.| $null   |
+| Name       | Type          | Description                                                                                           | Default |
+|------------|---------------|-------------------------------------------------------------------------------------------------------|---------|
+| TargetUnit | System.String | Unit to convert to. Must be in the same family as the input. When omitted the best-fitting unit wins. | $null   |
 
 **`$AsHumanReadable`**
 
-| Name            | Type                                         | Description                                                                                 | Default |
-|-----------------|----------------------------------------------|---------------------------------------------------------------------------------------------|---------|
-| AsHumanReadable | System.Management.Automation.SwitchParameter | Render OutputString with full, pluralized unit names ('2 Hours 23 Minutes 20 Seconds').     | $false  |
+| Name            | Type                                         | Description                                                                             | Default |
+|-----------------|----------------------------------------------|-----------------------------------------------------------------------------------------|---------|
+| AsHumanReadable | System.Management.Automation.SwitchParameter | Render OutputString with full, pluralized unit names ('2 Hours 23 Minutes 20 Seconds'). | $false  |
 
 #### Outputs
 
-IcingaUnit — Object with InputValue, InputUnit, OutputValue, OutputUnit and
+IcingaUnit -- Object with InputValue, InputUnit, OutputValue, OutputUnit and
 OutputString describing the conversion. Returns $null via Write-FunctionReturnValue
 on failure with return codes IcingaUnitInvalidInputValue, IcingaUnitMissingInputUnit,
 IcingaUnitUnknownUnit or IcingaUnitFamilyMismatch.
@@ -247,6 +320,90 @@ With -Milliseconds the function divides TotalMilliseconds by 1000 and casts to I
 callers requiring sub-second precision should verify the returned value before use.
 
 *Source: [src/Tools/Public/Get-IcingaUnixTime.ps1](../../src/Tools/Public/Get-IcingaUnixTime.ps1)*
+
+---
+
+### Get-IcingaWindowsInformation
+
+*Public function*
+
+**Synopsis:** Query a CIM class and return its instances or an IcingaError
+
+#### Description
+
+Get-IcingaWindowsInformation is the single entry point for reading Windows
+management data. It runs Get-CimInstance with -ErrorAction Stop and never
+throws: on success it returns the instances as an array (empty when nothing
+matches), on failure it returns an IcingaError that names the class, the
+namespace and the reason, so a plugin can stop with one check:
+
+    if (Test-IcingaError -InputObject $Data) { return $CheckPackage.SetError($Data).Compile(); }
+
+Every exit goes through Write-FunctionReturnValue with its own return code, so
+the log shows exactly which query succeeded or failed and why: a successful
+query (WindowsInformationQueried), a missing class name
+(WindowsInformationClassNameMissing), an unknown class
+(WindowsInformationClassUnknown), an unknown namespace
+(WindowsInformationNamespaceInvalid), missing permissions
+(WindowsInformationAccessDenied), an invalid filter or property list
+(WindowsInformationInvalidQuery) and every other error
+(WindowsInformationQueryFailed). The return code of a failure is also stored in
+the ReturnCode of the IcingaError.
+
+#### Parameters
+
+**`$ClassName`**
+
+| Name      | Type          | Description                             | Default |
+|-----------|---------------|-----------------------------------------|---------|
+| ClassName | System.String | Name of the CIM class to query.         |         |
+
+**`$Namespace`**
+
+| Name      | Type          | Description                    | Default    |
+|-----------|---------------|--------------------------------|------------|
+| Namespace | System.String | CIM namespace of the class.    | root/cimv2 |
+
+**`$Filter`**
+
+| Name   | Type          | Description                                   | Default |
+|--------|---------------|-----------------------------------------------|---------|
+| Filter | System.String | WQL filter, e.g. 'DriveType = 3'; '' for all. |         |
+
+**`$Property`**
+
+| Name     | Type         | Description                                     | Default |
+|----------|--------------|-------------------------------------------------|---------|
+| Property | System.Array | Properties to fetch; empty fetches all of them. | @()     |
+
+#### Outputs
+
+System.Object[] -- The CIM instances on success (an empty array when nothing
+matches), or an IcingaError when the query failed.
+
+#### Examples
+
+```powershell
+PS> Get-IcingaWindowsInformation -ClassName 'Win32_Volume' -Filter 'DriveType = 3' -Property 'Name', 'Capacity', 'FreeSpace'
+
+Returns the local disk volumes with the three requested properties.
+```
+
+```powershell
+PS> $Mpio = Get-IcingaWindowsInformation -ClassName 'MPIO_DISK_INFO' -Namespace 'root/wmi'
+
+Returns an IcingaError with the return code WindowsInformationClassUnknown on
+hosts without the MPIO feature.
+```
+
+#### Notes
+
+Windows-only, uses the local CIM provider. The required permissions depend on
+the class; standard users can read most root/cimv2 classes. Unknown classes and
+namespaces are logged at Debug level only, because optional classes are probed
+on purpose.
+
+*Source: [src/Tools/Public/Get-IcingaWindowsInformation.ps1](../../src/Tools/Public/Get-IcingaWindowsInformation.ps1)*
 
 ---
 
@@ -354,6 +511,76 @@ Simple regex literal checks are performed before DNS resolution to avoid unneces
 lookups. Error conditions are surfaced via Write-FunctionReturnValue.
 
 *Source: [src/Tools/Public/Resolve-IcingaIPAddress.ps1](../../src/Tools/Public/Resolve-IcingaIPAddress.ps1)*
+
+---
+
+### Test-IcingaArrayFilter
+
+*Public function*
+
+**Synopsis:** Test a value against include and exclude wildcard lists
+
+#### Description
+
+Test-IcingaArrayFilter decides whether a value passes the usual plugin filters
+-Include and -Exclude, without any script block. Both lists hold wildcard
+patterns ('*', '?', '[a-z]') that are compared case-insensitively against the
+value converted to a string. An exclude match always wins; with an empty include
+list every value that is not excluded passes, otherwise at least one include
+pattern has to match.
+
+A single value returns a boolean. An array returns a new array with every
+element that passes, so a whole list can be filtered in one call. An invalid
+wildcard pattern is logged through Write-FunctionReturnValue
+(ArrayFilterInvalidPattern) and the value is treated as not matching that
+pattern.
+
+#### Parameters
+
+**`$InputObject`**
+
+| Name        | Type          | Description                                  | Default |
+|-------------|---------------|----------------------------------------------|---------|
+| InputObject | System.Object | Value, or array of values, to test.          | $null   |
+
+**`$Include`**
+
+| Name    | Type         | Description                                            | Default |
+|---------|--------------|--------------------------------------------------------|---------|
+| Include | System.Array | Wildcard patterns of which at least one has to match.  | @()     |
+
+**`$Exclude`**
+
+| Name    | Type         | Description                                   | Default |
+|---------|--------------|-----------------------------------------------|---------|
+| Exclude | System.Array | Wildcard patterns of which none may match.    | @()     |
+
+#### Outputs
+
+System.Boolean -- For a single value, whether it passes the filters.
+System.Object[] -- For an array, the elements that pass the filters.
+
+#### Examples
+
+```powershell
+PS> Test-IcingaArrayFilter -InputObject 'Spooler' -Include 'Spo*' -Exclude 'WinRM'
+
+Returns $true.
+```
+
+```powershell
+PS> Test-IcingaArrayFilter -InputObject @('C', 'D', 'E') -Exclude 'D'
+
+Returns the array @('C', 'E').
+```
+
+#### Notes
+
+No external dependencies. A $null value never passes. Used by the plugins for
+their -Include/-Exclude parameters, which must not rely on script blocks so the
+plugins stay usable in JEA sessions.
+
+*Source: [src/Tools/Public/Test-IcingaArrayFilter.ps1](../../src/Tools/Public/Test-IcingaArrayFilter.ps1)*
 
 ---
 
@@ -580,4 +807,50 @@ normalization (lowercasing, trimming) if needed.
 
 *Source: [src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1](../../src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1)*
 
+---
+
+### Test-ModuleWildcardMatch
+
+*Private function*
+
+**Synopsis:** Test a string against a single wildcard pattern without throwing
+
+#### Description
+
+Compares the value case-insensitively with a wildcard pattern ('*', '?',
+'[a-z]'). An invalid pattern, such as an unclosed '[', is logged through
+Write-FunctionReturnValue (ArrayFilterInvalidPattern) and counts as no match, so
+a broken filter argument never aborts a plugin.
+
+#### Parameters
+
+**`$Value`**
+
+| Name  | Type          | Description          | Default |
+|-------|---------------|----------------------|---------|
+| Value | System.String | The value to test.   |         |
+
+**`$Pattern`**
+
+| Name    | Type          | Description                | Default |
+|---------|---------------|----------------------------|---------|
+| Pattern | System.String | Wildcard pattern to match. |         |
+
+#### Outputs
+
+System.Boolean -- True when the value matches the pattern.
+
+#### Examples
+
+```powershell
+PS> Test-ModuleWildcardMatch -Value 'Spooler' -Pattern 'spo*'
+
+Returns $true.
+```
+
+#### Notes
+
+Internal helper of Test-IcingaArrayFilter.
+
+*Source: [src/Tools/Private/Test-ModuleWildcardMatch.ps1](../../src/Tools/Private/Test-ModuleWildcardMatch.ps1)*
 
