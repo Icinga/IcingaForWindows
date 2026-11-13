@@ -28,7 +28,7 @@ the build job produces those artifacts; locally run
 | Path | System.String | Directory containing the `*.Tests.ps1` files to execute. | `<ModuleBasePath>\Tests` |
 
 .OUTPUTS
-System.Object — The Pester result object. Throws when one or more
+System.Object -- The Pester result object. Throws when one or more
 tests fail.
 
 .EXAMPLE
@@ -116,7 +116,7 @@ $PesterConfiguration.TestResult.Enabled      = $true;
 $PesterConfiguration.TestResult.OutputPath   = Join-Path -Path $ModuleBasePath -ChildPath 'TestResults.xml';
 $PesterConfiguration.TestResult.OutputFormat = 'NUnitXml';
 
-$TestResults = Invoke-Pester -Configuration $PesterConfiguration;
+$TestResults                                 = Invoke-Pester -Configuration $PesterConfiguration;
 
 Write-Host '' -ForegroundColor White;
 Write-Host '[2/2] Evaluating results ...' -ForegroundColor Yellow;

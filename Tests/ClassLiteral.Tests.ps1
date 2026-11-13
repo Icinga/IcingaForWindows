@@ -25,6 +25,8 @@ Describe 'Class literals in functions' {
     }
 
     It 'reads the class names from the class files' {
+        $script:ClassNames | Should -Contain 'IcingaPlugin';
+        $script:ClassNames | Should -Contain 'IcingaError';
         $script:ClassNames | Should -Contain 'IcingaPerformanceCounter';
         $script:ClassNames | Should -Contain 'IcingaUnit';
     }

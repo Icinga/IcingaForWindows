@@ -17,7 +17,7 @@ and logged without stopping the loop.
 | WorkerId | System.Object | Zero-based index of the worker queue to pull from.       | $null   |
 
 .OUTPUTS
-None — Processes queued messages and sends replies; no pipeline output.
+None -- Processes queued messages and sends replies; no pipeline output.
 
 .EXAMPLE
 PS> New-Thread -Command 'Start-IcingaProtocolWorker' -Parameters @{ 'WorkerId' = 0 } -KeepAlive -WaitForJobs -Start
@@ -132,6 +132,27 @@ function Start-IcingaProtocolWorker()
                     };
                     #>
 
+                    # Initialize variables for check result data
+                    $CheckResultOutput    = '';
+                    [array]$CheckPerfData = @();
+
+                    # Execute the command, and catch any exceptions
+                    try {
+                        $ExitCode = & $ExecuteCommand;
+                    } catch {
+                        $ExitCode          = 3;
+                        $CheckResultOutput = "[UNKNOWN] Icinga Plugin Command Execution was thrown:`n`n" + $_.Exception.Message.ToString();
+                    }
+
+                    # In case we have a CheckResult, store the result in our variables
+                    if ($null -ne $Global:IcingaForWindows.Private.Icinga.CheckResult) {
+                        $CheckResultOutput    = $Global:IcingaForWindows.Private.Icinga.CheckResult.ToString();
+                        [array]$CheckPerfData = $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData;
+                    }
+
+                    # Create the finish timestamp after our plugin execution
+                    $CheckFinished = (Get-IcingaUnixTime -Milliseconds);
+
                     Write-LoggingEntry -Message 'Executing check command' -Level 'Debug' -Data @{
                         'Command'       = $ExecuteCommand;
                         'Host'          = $RPCMessage.params.host;
@@ -143,23 +164,21 @@ function Start-IcingaProtocolWorker()
                         'ExecutionTime' = ($CheckFinished - $CheckStarted);
                     };
 
-                    $CheckFinished = (Get-IcingaUnixTime -Milliseconds);
-                    $CheckResult   = $CheckFinished;
-
+                    # Build our entire CheckResult object for Icinga
                     $CheckResultData = @{
                         'host'    = $RPCMessage.params.host;
                         'service' = $RPCMessage.params.service;
                         'cr'      = @{
                             'check_source'     = $Global:IcingaForWindows.Public.IcingaProtocol.Config.Hostname;
                             'command'          = 'full call stack with arguments';
-                            'output'           = $CheckResult;
-                            'exit_status'      = 0;
+                            'output'           = $CheckResultOutput;
+                            'exit_status'      = $ExitCode;
                             'active'           = $TRUE;
-                            'state'            = 0;
+                            'state'            = $ExitCode;
                             'type'             = 'CheckResult';
                             'execution_start'  = $CheckStarted;
                             'execution_end'    = $CheckFinished;
-                            'performance_data' = @();
+                            'performance_data' = @($CheckPerfData);
                         };
                     };
 
@@ -197,13 +216,17 @@ function Start-IcingaProtocolWorker()
         } catch {
             Write-LoggingEntry -Message 'An error occurred in Icinga Protocol Worker' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; };
         } finally {
-            $RPCMessage      = $null;
-            $RPCObject       = $null;
-            $CheckStarted    = $null;
-            $CheckFinished   = $null;
-            $ExecuteCommand  = $null;
-            $CheckResult     = $null;
-            $CheckResultData = $null;
+            # Cleanup our entire scop
+            $RPCMessage                                         = $null;
+            $RPCObject                                          = $null;
+            $CheckStarted                                       = $null;
+            $CheckFinished                                      = $null;
+            $ExecuteCommand                                     = $null;
+            $CheckResultOutput                                  = $null;
+            $CheckPerfData                                      = $null;
+            $ExitCode                                           = $null;
+            $CheckResultData                                    = $null;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult = $null;
         }
     }
 }

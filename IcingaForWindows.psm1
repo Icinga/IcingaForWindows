@@ -70,10 +70,10 @@ function New-ModuleBaseEnvironment()
         'Public'    = [hashtable]::Synchronized(
             @{
                 'Config'         = [PSCustomObject]@{
-                    'ModuleRoot'   = $PSScriptRoot;
-                    'Root'         = (Join-Path -Path $env:ProgramData -ChildPath (Get-ModuleProjectName));
-                    'Theme'    = 'DefaultDark';
-                    'Colors'   = [PSCustomObject]@{
+                    'ModuleRoot' = $PSScriptRoot;
+                    'Root'       = (Join-Path -Path $env:ProgramData -ChildPath (Get-ModuleProjectName));
+                    'Theme'      = 'DefaultDark';
+                    'Colors'     = [PSCustomObject]@{
                         'Debug'   = 'Magenta';
                         'Audit'   = 'DarkGreen';
                         'Info'    = 'Cyan';
@@ -159,8 +159,8 @@ function New-ModuleBaseEnvironment()
                         'EvictionMinutes'    = 60;
                     };
                 };
-                'External'       = $null;
-                'ReturnCodes'    = $null;
+                'External'    = $null;
+                'ReturnCodes' = $null;
             }
         );
         'Private'   = [PSCustomObject]@{
@@ -191,6 +191,9 @@ function New-ModuleBaseEnvironment()
             };
             'Logging' = [PSCustomObject]@{
                 'CurrentLoggingId' = (New-Guid);
+            };
+            'Icinga' = [PSCustomObject]@{
+                'CheckResult' = $null;
             };
         };
         'Protected' = [PSCustomObject]@{
@@ -241,22 +244,22 @@ under `lib/`, updates the module manifest, and optionally generates documentatio
 or executes memory leak tests.
 
 .PARAMETER SkipTests
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| SkipTests | System.Management.Automation.SwitchParameter | When set, skip running automated tests during the build. | $false |
+| Name      | Type                                         | Description                                              | Default |
+|-----------|----------------------------------------------|----------------------------------------------------------|---------|
+| SkipTests | System.Management.Automation.SwitchParameter | When set, skip running automated tests during the build. | $false  |
 
 .PARAMETER GenerateDocs
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| GenerateDocs | System.Management.Automation.SwitchParameter | When set, regenerate API Markdown documentation from comment help. | $false |
+| Name         | Type                                         | Description                                                        | Default |
+|--------------|----------------------------------------------|--------------------------------------------------------------------|---------|
+| GenerateDocs | System.Management.Automation.SwitchParameter | When set, regenerate API Markdown documentation from comment help. | $false  |
 
 .PARAMETER TestDaemonMemoryLeaks
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TestDaemonMemoryLeaks | System.Management.Automation.SwitchParameter | When set, run daemon memory leak stress tests. | $false |
+| Name                  | Type                                         | Description                                    | Default |
+|-----------------------|----------------------------------------------|------------------------------------------------|---------|
+| TestDaemonMemoryLeaks | System.Management.Automation.SwitchParameter | When set, run daemon memory leak stress tests. | $false  |
 
 .OUTPUTS
-None — Side effects only: generates module artifacts under lib/ and docs/.
+None -- Side effects only: generates module artifacts under lib/ and docs/.
 
 .EXAMPLE
 PS> Build-ModuleProject -GenerateDocs
@@ -287,12 +290,12 @@ It executes all test suites under the specified path or the default `Tests/`
 directory using `build/Invoke-ModuleTests.ps1`.
 
 .PARAMETER Path
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to a specific test file or directory containing Pester test suites to execute. | $null |
+| Name | Type          | Description                                                                          | Default |
+|------|---------------|--------------------------------------------------------------------------------------|---------|
+| Path | System.String | Path to a specific test file or directory containing Pester test suites to execute.  | $null   |
 
 .OUTPUTS
-System.Object — Pester test result summary object and test execution output.
+System.Object -- Pester test result summary object and test execution output.
 
 .EXAMPLE
 PS> Invoke-IcingaModuleTests
@@ -342,22 +345,22 @@ and Icinga agent). The function is idempotent; repeated calls while already
 initialized return immediately.
 
 .PARAMETER LogLevel
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name     | Type          | Description                                                                                             | Default |
+|----------|---------------|---------------------------------------------------------------------------------------------------------|---------|
 | LogLevel | System.String | Minimum log level for the session. Accepted values: Debug, Audit, Info, Success, Warning, Error, Fatal. | Warning |
 
 .PARAMETER RunBackgroundDaemons
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RunBackgroundDaemons | System.Management.Automation.SwitchParameter | When set, start the standard background daemon threads (logging, garbage collector, housekeeper, REST API, WebSocket, Icinga agent). Default is false. | $false |
+| Name                 | Type                                         | Description                                                                                                                                            | Default |
+|----------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| RunBackgroundDaemons | System.Management.Automation.SwitchParameter | When set, start the standard background daemon threads (logging, garbage collector, housekeeper, REST API, WebSocket, Icinga agent). Default is false. | $false  |
 
 .PARAMETER NoNewShell
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| NoNewShell | System.Management.Automation.SwitchParameter | When set, initialize directly in the current shell instead of spawning a new process. | $false |
+| Name       | Type                                         | Description                                                                                     | Default |
+|------------|----------------------------------------------|-------------------------------------------------------------------------------------------------|---------|
+| NoNewShell | System.Management.Automation.SwitchParameter | When set, initialize directly in the current shell instead of spawning a new process.           | $false  |
 
 .OUTPUTS
-None — Side effects only: configures global runtime state and optionally starts background threads.
+None -- Side effects only: configures global runtime state and optionally starts background threads.
 
 .EXAMPLE
 PS> Use-IcingaForWindows
@@ -428,7 +431,8 @@ function Use-IcingaForWindows()
             # have a proper call stack and can manage everything way easier
             Use-IcingaForWindows -NoNewShell -LogLevel $LogLevel -RunBackgroundDaemons:$RunBackgroundDaemons;
 
-            function prompt {
+            function prompt()
+            {
                 Write-Host -Object 'icinga' -NoNewline;
                 return '> '
             }
