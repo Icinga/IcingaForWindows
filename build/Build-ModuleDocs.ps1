@@ -395,7 +395,7 @@ $BuildStartTime = Get-Date;
 
 Write-Host "[1/4] Discovering source files in $SourcePath ..." -ForegroundColor Yellow;
 
-$SourceFiles    = Get-ChildItem -Path $SourcePath -Recurse -Filter '*.ps1';
+$SourceFiles    = Get-ChildItem -Path $SourcePath -Recurse -Filter '*.ps1' | Sort-Object FullName;
 
 if (-not $IncludePrivate) {
     $SourceFiles = $SourceFiles | Where-Object { $_.FullName -match '[\\/]Public[\\/]' };
@@ -478,8 +478,8 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
     [void]$md.AppendLine('*Auto-generated from `src/' + $srcDir + '/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*');
     [void]$md.AppendLine();
 
-    $publicFns                     = @($group.Group | Where-Object { $_.Visibility -eq 'Public'  } | Sort-Object FunctionName);
-    $privateFns                    = @($group.Group | Where-Object { $_.Visibility -eq 'Private' } | Sort-Object FunctionName);
+    $publicFns                     = @($group.Group | Where-Object { $_.Visibility -eq 'Public'  } | Sort-Object { $_.FunctionName });
+    $privateFns                    = @($group.Group | Where-Object { $_.Visibility -eq 'Private' } | Sort-Object { $_.FunctionName });
 
     if ($publicFns.Count -gt 0) {
         [void]$md.AppendLine('## Public functions');
@@ -566,7 +566,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
         [void]$md.AppendLine();
     }
 
-    [System.IO.File]::WriteAllText($outFile, $md.ToString(), (New-Object System.Text.UTF8Encoding($false)));
+    [System.IO.File]::WriteAllText($outFile, ($md.ToString() -replace "`r`n", "`n"), (New-Object System.Text.UTF8Encoding($false)));
     $WrittenFiles++;
 }
 
@@ -594,7 +594,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
 [void]$idx.AppendLine("- Public: $($Parsed | Where-Object { $_.Visibility -eq 'Public'  } | Measure-Object | Select-Object -ExpandProperty Count)");
 [void]$idx.AppendLine("- Private: $($Parsed | Where-Object { $_.Visibility -eq 'Private' } | Measure-Object | Select-Object -ExpandProperty Count)");
 
-[System.IO.File]::WriteAllText($indexFile, $idx.ToString(), (New-Object System.Text.UTF8Encoding($false)));
+[System.IO.File]::WriteAllText($indexFile, ($idx.ToString() -replace "`r`n", "`n"), (New-Object System.Text.UTF8Encoding($false)));
 $WrittenFiles++;
 
 Write-Host "  * Wrote $WrittenFiles Markdown file(s)" -ForegroundColor Green;

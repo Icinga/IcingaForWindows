@@ -132,17 +132,6 @@ function Start-IcingaProtocolWorker()
                     };
                     #>
 
-                    Write-LoggingEntry -Message 'Executing check command' -Level 'Debug' -Data @{
-                        'Command'       = $ExecuteCommand;
-                        'Host'          = $RPCMessage.params.host;
-                        'Service'       = $RPCMessage.params.service;
-                        'Arguments'     = $RPCMessage.params.macros.PSObject.Properties.Name -join ', ';
-                        'WorkerId'      = $WorkerId;
-                        'CheckStarted'  = $CheckStarted;
-                        'CheckFinished' = $CheckFinished;
-                        'ExecutionTime' = ($CheckFinished - $CheckStarted);
-                    };
-
                     # Initialize variables for check result data
                     $CheckResultOutput    = '';
                     [array]$CheckPerfData = @();
@@ -162,7 +151,18 @@ function Start-IcingaProtocolWorker()
                     }
 
                     # Create the finish timestamp after our plugin execution
-                    $CheckFinished   = (Get-IcingaUnixTime -Milliseconds);
+                    $CheckFinished = (Get-IcingaUnixTime -Milliseconds);
+
+                    Write-LoggingEntry -Message 'Executing check command' -Level 'Debug' -Data @{
+                        'Command'       = $ExecuteCommand;
+                        'Host'          = $RPCMessage.params.host;
+                        'Service'       = $RPCMessage.params.service;
+                        'Arguments'     = $RPCMessage.params.macros.PSObject.Properties.Name -join ', ';
+                        'WorkerId'      = $WorkerId;
+                        'CheckStarted'  = $CheckStarted;
+                        'CheckFinished' = $CheckFinished;
+                        'ExecutionTime' = ($CheckFinished - $CheckStarted);
+                    };
 
                     # Build our entire CheckResult object for Icinga
                     $CheckResultData = @{

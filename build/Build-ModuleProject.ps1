@@ -53,7 +53,7 @@ function Read-IcingaSourceFile()
 
     $FileStream.Dispose();
 
-    return $FileContent;
+    return $FileContent.TrimStart([char]0xFEFF);
 }
 
 function Remove-IcingaComments()
