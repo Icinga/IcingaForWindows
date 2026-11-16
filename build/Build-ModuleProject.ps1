@@ -192,6 +192,13 @@ if (Test-Path $OutputPath) {
 
 Write-Host "  * Output directory ready: $OutputPath" -ForegroundColor Green;
 
+# TODO: Compile native helpers into signed DLLs here instead of generating them at runtime.
+# Keep their C# sources as .cs files in the repository (e.g. the DeviceIoControl based
+# volume/disk-extent and NTFS volume data reader for Get-IcingaDiskInformation), build
+# them into lib/ during this step, sign them together with the module and load them at
+# import time only when the type is not present yet. Nothing may call Add-Type with a
+# type definition at runtime anymore.
+
 # Build consolidated classes and kernel files
 Write-Host "`n[3/4] Building consolidated classes and kernel modules..." -ForegroundColor Yellow;
 

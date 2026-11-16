@@ -1,6 +1,6 @@
-# Icinga.Plugins
+# Icinga.Plugins.Lib
 
-*Auto-generated from `src/Plugins/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
+*Auto-generated from `src/Plugins/Lib/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*
 
 ## Public functions
 
@@ -16,11 +16,12 @@
 
 #### Description
 
-New-IcingaPlugin is the factory every plugin and function uses instead of
-[IcingaPlugin]::new(). It resolves the IcingaPlugin type at runtime in the
-calling runspace and calls the matching constructor: with a name only it creates
-a container that aggregates child checks, with a value it creates a check, and
-with a unit the value and the thresholds of the check use that unit.
+New-IcingaPlugin is the public plugin SDK factory every check plugin, external
+script and helper function uses instead of [IcingaPlugin]::new(). It resolves
+the IcingaPlugin type at runtime in the calling runspace and calls the matching
+constructor: with a name only it creates a container that aggregates child
+checks, with a value it creates a check, and with a unit the value and the
+thresholds of the check use that unit.
 
 The returned node exposes the full fluent surface of IcingaPlugin. Wrap the call
 in parentheses to chain methods directly, for example
@@ -77,5 +78,5 @@ workers. The runtime lookup returns the type the current runspace loaded itself.
 Keep the node inside the runspace that created it and hand only its rendered
 output, exit code and performance data to other threads.
 
-*Source: [src/Plugins/Public/New-IcingaPlugin.ps1](../../src/Plugins/Public/New-IcingaPlugin.ps1)*
+*Source: [src/Plugins/Lib/Public/New-IcingaPlugin.ps1](../../src/Plugins/Lib/Public/New-IcingaPlugin.ps1)*
 

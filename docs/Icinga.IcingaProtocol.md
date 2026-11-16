@@ -15,21 +15,29 @@
 - [Add-IcingaProtocolClient](#add-icingaprotocolclient)
 - [Add-IcingaRPCMessageToWorker](#add-icingarpcmessagetoworker)
 - [Add-IcingaRPCMessageToWriterQueue](#add-icingarpcmessagetowriterqueue)
+- [ConvertFrom-IcingaProtocolMacros](#convertfrom-icingaprotocolmacros)
+- [Expand-IcingaProtocolMacroValue](#expand-icingaprotocolmacrovalue)
+- [Invoke-IcingaProtocolBinaryProcess](#invoke-icingaprotocolbinaryprocess)
+- [Invoke-IcingaProtocolCheckCommand](#invoke-icingaprotocolcheckcommand)
+- [Invoke-IcingaProtocolExternalScript](#invoke-icingaprotocolexternalscript)
 - [New-IcingaAgentEnvironment](#new-icingaagentenvironment)
 - [New-IcingaRPCMessage](#new-icingarpcmessage)
 - [Read-IcingaProtocolConnection](#read-icingaprotocolconnection)
 - [Read-IcingaRPCMessage](#read-icingarpcmessage)
+- [Resolve-IcingaProtocolCommand](#resolve-icingaprotocolcommand)
 - [Send-IcingaProtocolCertificateRequest](#send-icingaprotocolcertificaterequest)
 - [Send-IcingaProtocolCheckResult](#send-icingaprotocolcheckresult)
 - [Send-IcingaProtocolHeartbeat](#send-icingaprotocolheartbeat)
 - [Send-IcingaProtocolHello](#send-icingaprotocolhello)
 - [Send-IcingaProtocolLogPosition](#send-icingaprotocollogposition)
+- [Split-IcingaBinaryPluginOutput](#split-icingabinarypluginoutput)
 - [Start-IcingaProtocolConnector](#start-icingaprotocolconnector)
 - [Start-IcingaProtocolHeartbeat](#start-icingaprotocolheartbeat)
 - [Start-IcingaProtocolListener](#start-icingaprotocollistener)
 - [Start-IcingaProtocolSocketReader](#start-icingaprotocolsocketreader)
 - [Start-IcingaProtocolSocketWriter](#start-icingaprotocolsocketwriter)
 - [Start-IcingaProtocolWorker](#start-icingaprotocolworker)
+- [Stop-IcingaProtocolProcessTree](#stop-icingaprotocolprocesstree)
 - [Test-IcingaProtocolClientStatus](#test-icingaprotocolclientstatus)
 
 ---
@@ -359,44 +367,42 @@ No additional connectivity checks are performed; the function only stores the pr
 
 *Private function*
 
-**Synopsis:** Adds a serialized RPC message to a worker queue using a round-robin assignment.
+**Synopsis:** Add a serialized Icinga 2 JSON-RPC message to a worker queue in round-robin order
 
 #### Description
 
-Add-IcingaRPCMessageToWorker accepts a serialized JSON-RPC message string and enqueues
-a message object for processing by one of the module's worker threads. The function
-performs round-robin worker selection by incrementing the global LastWorkerId and
-wrapping it when it reaches the configured WorkerCount. If the message is null or empty,
-the function returns immediately via Write-FunctionReturnValue. The message is first
-deserialized with ConvertFrom-ModuleJson and only forwarded when its method is icinga::Hello
-or event::ExecuteCommand; all other methods are dropped. The enqueued object contains
-the parsed message, the current global TCP client and the global stream. This function
-mutates $Global:IcingaForWindows.Private.TCP.LastWorkerId as a side effect.
+Add-IcingaRPCMessageToWorker accepts a serialized JSON-RPC message string,
+strips Icinga empty-key placeholder entries ('"":"$"') for Windows PowerShell
+5.1 JavaScriptSerializer compatibility, deserializes the payload via
+ConvertFrom-ModuleJson, and enqueues the parsed message together with the
+current socket client and TLS stream into the next worker queue via round-robin
+selection. Null, empty or malformed JSON payloads emit structured return values
+and are dropped without throwing.
 
 #### Parameters
 
 **`$Message`**
 
-| Name    | Type          | Description                                                                      | Default |
-|---------|---------------|----------------------------------------------------------------------------------|---------|
-| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty.      | $null   |
+| Name    | Type          | Description                                                                  | Default |
+|---------|---------------|------------------------------------------------------------------------------|---------|
+| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty.  | $null   |
 
 #### Outputs
 
-None — The function enqueues the message object and returns no pipeline output.
+None -- Enqueues the parsed message object into WorkerQueue and returns nothing.
 
 #### Examples
 
 ```powershell
 PS> Add-IcingaRPCMessageToWorker -Message '{"jsonrpc":"2.0","method":"event::ExecuteCommand","params":{}}'
+
+Parses the JSON-RPC message and dispatches it to the next protocol worker queue.
 ```
 
 #### Notes
 
-Caller must ensure the module-global WorkerCount and WorkerQueue are initialized before
-use. The function is not explicitly synchronized; the caller must ensure appropriate
-concurrency guarantees. Only messages with methods icinga::Hello and event::ExecuteCommand
-are forwarded; all other methods are silently dropped.
+Caller must ensure WorkerCount and WorkerQueue are initialized in
+Public.IcingaProtocol before invoking this helper.
 
 *Source: [src/IcingaProtocol/Private/Add-IcingaRPCMessageToWorker.ps1](../../src/IcingaProtocol/Private/Add-IcingaRPCMessageToWorker.ps1)*
 
@@ -445,6 +451,330 @@ call from within thread runspaces. The writer queue is keyed by the string repre
 of the remote endpoint IP address.
 
 *Source: [src/IcingaProtocol/Private/Add-IcingaRPCMessageToWriterQueue.ps1](../../src/IcingaProtocol/Private/Add-IcingaRPCMessageToWriterQueue.ps1)*
+
+---
+
+### ConvertFrom-IcingaProtocolMacros
+
+*Private function*
+
+**Synopsis:** Parse Icinga 2 ExecuteCommand macros into typed PowerShell or binary arguments
+
+#### Description
+
+ConvertFrom-IcingaProtocolMacros translates the macros dictionary of an Icinga 2
+event::ExecuteCommand message into either a typed PowerShell splatting hashtable
+or an ordered string array of CLI arguments for external binaries, plus a
+human-readable CommandLine string with SecureString secrets masked as '********'.
+
+Two Icinga 2 delivery modes are supported seamlessly across Windows PowerShell
+5.1 (Dictionary[string, object]) and PowerShell 7+ (Hashtable):
+1. Active ifw-api template (macros.ifw_api_arguments present): resolves single
+   and embedded $macro$ references via Expand-IcingaProtocolMacroValue,
+   evaluates set_if conditions, orders binary arguments by order, honors
+   skip_key and repeat_key, and rejects unknown PowerShell parameters that carry
+   a non-empty value with IWKB001001 (skipping empty strings, empty lists and
+   empty dictionaries).
+2. Fallback without ifw-api (macros.ifw_api_arguments absent): ignores internal
+   ifw_api_* and IcingaPowerShellBase_* variables, maps PowerShell parameters by
+   exact parameter/alias name or the IcingaCheck<Name>_<Type>_<Param> convention
+   (returning IWKB001000 on unmapped custom variables), and enforces '-' or '/'
+   prefixes on custom variables passed to external binaries (returning IWKB001002
+   when unprefixed custom variables are present).
+
+#### Parameters
+
+**`$ResolvedCommand`**
+
+| Name            | Type                         | Description                                                  | Default |
+|-----------------|------------------------------|--------------------------------------------------------------|---------|
+| ResolvedCommand | System.Collections.Hashtable | Command descriptor returned by Resolve-IcingaProtocolCommand.| @{}     |
+
+**`$Macros`**
+
+| Name   | Type          | Description                                                           | Default |
+|--------|---------------|-----------------------------------------------------------------------|---------|
+| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand.  | $null   |
+
+#### Outputs
+
+System.Collections.Hashtable -- Parsed argument bundle containing Status,
+PowerShellArguments, BinaryArguments, AllocatedSecureStrings, CommandLine,
+Message, KnowledgeBaseId and ReturnCodeKey.
+
+#### Examples
+
+```powershell
+PS> $resolved = Resolve-IcingaProtocolCommand -Macros @{ 'ifw_api_command' = 'Invoke-IcingaCheckDirectory' }
+PS> ConvertFrom-IcingaProtocolMacros -ResolvedCommand $resolved -Macros @{ 'ifw_api_command' = 'Invoke-IcingaCheckDirectory'; 'Path' = 'C:\Temp' }
+
+Maps the Path macro to Invoke-IcingaCheckDirectory's -Path parameter.
+```
+
+#### Notes
+
+Callers must dispose every entry in AllocatedSecureStrings once plugin execution
+completes. On validation errors, any SecureString allocated earlier in the same
+call is disposed before returning.
+
+*Source: [src/IcingaProtocol/Private/ConvertFrom-IcingaProtocolMacros.ps1](../../src/IcingaProtocol/Private/ConvertFrom-IcingaProtocolMacros.ps1)*
+
+---
+
+### Expand-IcingaProtocolMacroValue
+
+*Private function*
+
+**Synopsis:** Expand single and embedded Icinga 2 macro references against a macro dictionary
+
+#### Description
+
+Expand-IcingaProtocolMacroValue evaluates a single Icinga 2 argument value or
+set_if expression against an ordinal MacroMap and case-insensitive fallback
+table:
+- Non-string values (booleans, numbers, arrays, dictionaries) preserve their
+  native type directly when non-null.
+- Exact single-token '$macro$' strings resolve directly to the native macro
+  object (preserving arrays, booleans and numbers without stringifying).
+- Strings containing embedded '$macro$' tokens or escaped '$$' literals are
+  interpolated in a single left-to-right pass so macro values containing '$'
+  characters (such as Windows administrative shares '\\host\C$\MSSQL$INST') are
+  never re-expanded. If any referenced token is unset or null, IsSet returns
+  $false so optional Icinga arguments are cleanly skipped.
+
+#### Parameters
+
+**`$Expression`**
+
+| Name       | Type          | Description                                               | Default |
+|------------|---------------|-----------------------------------------------------------|---------|
+| Expression | System.Object | Raw 'value' or 'set_if' expression from ifw_api_arguments.| $null   |
+
+**`$MacroMap`**
+
+| Name     | Type          | Description                                              | Default |
+|----------|---------------|----------------------------------------------------------|---------|
+| MacroMap | System.Object | Case-sensitive OrderedDictionary of macro key/values.    | $null   |
+
+**`$MacroIgnoreCase`**
+
+| Name            | Type                         | Description                                       | Default |
+|-----------------|------------------------------|---------------------------------------------------|---------|
+| MacroIgnoreCase | System.Collections.Hashtable | Case-insensitive fallback hashtable for macros.   | @{}     |
+
+#### Outputs
+
+System.Collections.Hashtable -- Hashtable with keys IsSet (System.Boolean) and
+Value (System.Object).
+
+#### Examples
+
+```powershell
+PS> Expand-IcingaProtocolMacroValue -Expression 'http://$address$:$port$/health' -MacroMap $map -MacroIgnoreCase $ci
+
+Interpolates the '$address$' and '$port$' tokens in a single pass.
+```
+
+#### Notes
+
+Pure macro evaluator with no side effects or global state dependencies.
+
+*Source: [src/IcingaProtocol/Private/Expand-IcingaProtocolMacroValue.ps1](../../src/IcingaProtocol/Private/Expand-IcingaProtocolMacroValue.ps1)*
+
+---
+
+### Invoke-IcingaProtocolBinaryProcess
+
+*Private function*
+
+**Synopsis:** Execute an approved external binary or batch check process with timeout control
+
+#### Description
+
+Invoke-IcingaProtocolBinaryProcess runs an approved executable (.exe, .com, .cmd
+or .bat) inside Get-ModuleBinaryDirectory via System.Diagnostics.Process with
+UseShellExecute = $false:
+1. Validates .cmd/.bat arguments against cmd.exe command, redirection and
+   '%VAR%' expansion metacharacters before spawning a child process.
+2. Escapes CLI tokens via Format-ModuleCommandLineArguments.
+3. Captures StandardOutput and StandardError asynchronously (falling back to
+   StandardError when StandardOutput is blank).
+4. Enforces TimeoutMs across both process exit and output stream closure,
+   terminating the entire process tree via Stop-IcingaProtocolProcessTree when
+   exceeded.
+5. Splits output and performance data via Split-IcingaBinaryPluginOutput.
+
+#### Parameters
+
+**`$BinaryPath`**
+
+| Name       | Type          | Description                                               | Default |
+|------------|---------------|-----------------------------------------------------------|---------|
+| BinaryPath | System.String | Full canonical path to the approved binary executable.    | ''      |
+
+**`$CommandName`**
+
+| Name        | Type          | Description                                               | Default |
+|-------------|---------------|-----------------------------------------------------------|---------|
+| CommandName | System.String | Display file name of the binary for status messages.      | ''      |
+
+**`$BinaryArguments`**
+
+| Name            | Type            | Description                                           | Default |
+|-----------------|-----------------|-------------------------------------------------------|---------|
+| BinaryArguments | System.String[] | Ordered CLI argument tokens to pass to the process.   | @()     |
+
+**`$TimeoutMs`**
+
+| Name      | Type         | Description                                                  | Default |
+|-----------|--------------|--------------------------------------------------------------|---------|
+| TimeoutMs | System.Int32 | Maximum execution window in milliseconds before termination. | 60000   |
+
+**`$DefaultCommandLine`**
+
+| Name               | Type          | Description                                              | Default |
+|--------------------|---------------|----------------------------------------------------------|---------|
+| DefaultCommandLine | System.String | Rendered command line reported in CheckResult telemetry. | ''      |
+
+#### Outputs
+
+System.Collections.Hashtable -- Hashtable containing ExitCode, Output,
+PerformanceData and CommandLine.
+
+#### Examples
+
+```powershell
+PS> Invoke-IcingaProtocolBinaryProcess -BinaryPath 'C:\ProgramData\IcingaForWindows\Binaries\check_load.exe' -CommandName 'check_load.exe' -BinaryArguments @('-w', '80%') -TimeoutMs 60000
+
+Executes check_load.exe with a 60s timeout and splits its Nagios output.
+```
+
+#### Notes
+
+Always disposes the root Process handle in finally.
+
+*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolBinaryProcess.ps1](../../src/IcingaProtocol/Private/Invoke-IcingaProtocolBinaryProcess.ps1)*
+
+---
+
+### Invoke-IcingaProtocolCheckCommand
+
+*Private function*
+
+**Synopsis:** Resolve, validate and execute an Icinga 2 ExecuteCommand payload
+
+#### Description
+
+Invoke-IcingaProtocolCheckCommand orchestrates the complete execution lifecycle
+for an Icinga 2 event::ExecuteCommand RPC request:
+1. Clears the thread-local CheckResult and ActiveCheckCommand slots on
+   Get-GlobalRuntimeVariable.
+2. Resolves macros.ifw_api_command via Resolve-IcingaProtocolCommand (returning
+   UNKNOWN 3 with IWKB001003 on missing, unapproved or unknown commands).
+3. Parses macros via ConvertFrom-IcingaProtocolMacros (returning UNKNOWN 3 with
+   IWKB001000, IWKB001001 or IWKB001002 on macro/parameter mapping errors).
+4. Executes PowerShell check plugins via Invoke-ModulePowerShellCommand and
+   approved external .ps1 scripts via Invoke-IcingaProtocolExternalScript.
+5. Executes approved native binaries and batch scripts (.exe, .cmd, .bat, .com)
+   via Invoke-IcingaProtocolBinaryProcess with check_timeout enforcement and
+   descendant process-tree termination.
+6. Normalizes exit codes outside 0..3 to 3 (UNKNOWN) and records telemetry.
+
+Returns a plain hashtable of primitive values and arrays so no PowerShell class
+instance ever crosses runspace boundaries.
+
+#### Parameters
+
+**`$Params`**
+
+| Name   | Type          | Description                                                           | Default |
+|--------|---------------|-----------------------------------------------------------------------|---------|
+| Params | System.Object | Deserialized params dictionary or object from event::ExecuteCommand.  | $null   |
+
+#### Outputs
+
+System.Collections.Hashtable -- Hashtable containing ExitCode (Int32 0..3),
+Output (String), PerformanceData (Array) and CommandLine (String).
+
+#### Examples
+
+```powershell
+PS> Invoke-IcingaProtocolCheckCommand -Params @{ 'command' = 'Invoke-IcingaCheckUptime'; 'macros' = @{ 'ifw_api_command' = 'Invoke-IcingaCheckUptime' } }
+
+Executes Invoke-IcingaCheckUptime and returns its exit code, output, perfdata
+and rendered command line.
+```
+
+#### Notes
+
+Runs inside protocol worker threads; accesses runtime state exclusively via
+Get-GlobalRuntimeVariable.
+
+*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolCheckCommand.ps1](../../src/IcingaProtocol/Private/Invoke-IcingaProtocolCheckCommand.ps1)*
+
+---
+
+### Invoke-IcingaProtocolExternalScript
+
+*Private function*
+
+**Synopsis:** Bind CLI arguments and execute an approved external PowerShell check script
+
+#### Description
+
+Invoke-IcingaProtocolExternalScript introspects an external .ps1 script inside
+Get-ModuleBinaryDirectory via Get-ModuleCommandParameterMap, parses CLI-style
+BinaryArguments ('-Param:Val', '-Param Val', switches, multi-item arrays and
+positional parameters), coerces values through ConvertTo-ModuleParameterValue,
+masks any SecureString parameter tokens as '********' in the returned
+CommandLine via Format-ModuleCommandLineArguments, and executes the script
+in-process via Invoke-ModulePowerShellCommand -UseLastExitCode.
+
+#### Parameters
+
+**`$ScriptPath`**
+
+| Name       | Type          | Description                                             | Default |
+|------------|---------------|---------------------------------------------------------|---------|
+| ScriptPath | System.String | Full canonical path to the approved .ps1 check script.  | ''      |
+
+**`$CommandName`**
+
+| Name        | Type          | Description                                             | Default |
+|-------------|---------------|---------------------------------------------------------|---------|
+| CommandName | System.String | Display file name of the script for error messages.     | ''      |
+
+**`$BinaryArguments`**
+
+| Name            | Type            | Description                                         | Default |
+|-----------------|-----------------|-----------------------------------------------------|---------|
+| BinaryArguments | System.String[] | Ordered CLI tokens produced by macro resolution.    | @()     |
+
+**`$DefaultCommandLine`**
+
+| Name               | Type          | Description                                             | Default |
+|--------------------|---------------|---------------------------------------------------------|---------|
+| DefaultCommandLine | System.String | Pre-rendered command line when no secret masking occurs.| ''      |
+
+#### Outputs
+
+System.Collections.Hashtable -- Hashtable containing ExitCode, Output,
+PerformanceData and CommandLine.
+
+#### Examples
+
+```powershell
+PS> Invoke-IcingaProtocolExternalScript -ScriptPath 'C:\ProgramData\IcingaForWindows\Binaries\check_custom.ps1' -CommandName 'check_custom.ps1' -BinaryArguments @('-ExitWith', '0')
+
+Binds the parameters of check_custom.ps1 and executes it in-process.
+```
+
+#### Notes
+
+Delegates execution and deterministic SecureString disposal to
+Invoke-ModulePowerShellCommand.
+
+*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolExternalScript.ps1](../../src/IcingaProtocol/Private/Invoke-IcingaProtocolExternalScript.ps1)*
 
 ---
 
@@ -621,6 +951,75 @@ the end of the buffer are preserved for the next read cycle.
 Complete messages are dispatched via Add-IcingaRPCMessageToWorker.
 
 *Source: [src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1](../../src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1)*
+
+---
+
+### Resolve-IcingaProtocolCommand
+
+*Private function*
+
+**Synopsis:** Resolve and validate an Icinga ExecuteCommand target against approved plugins and binaries
+
+#### Description
+
+Resolve-IcingaProtocolCommand inspects macros.ifw_api_command from an incoming
+Icinga 2 event::ExecuteCommand payload and resolves it deterministically without
+consulting $env:PATH or guessing from params.command. If ifw_api_command is
+missing or blank, Status is returned as CommandMissing (IWKB001003). Control
+characters (0x00..0x1F), NTFS Alternate Data Stream colons, drive-relative paths,
+directory separators and parent-directory traversal segments are validated and
+normalized against Get-ModuleBinaryDirectory, returning BinaryPathRejected
+(IWKB001003) whenever invalid or escaping that directory. Explicit
+Invoke-IcingaCheck* names are resolved via Get-Command against loaded functions
+and cmdlets (preferring Icinga* module commands). Bare names and relative
+filenames are probed strictly inside Get-ModuleBinaryDirectory via
+System.IO.File.Exists (exact match when a known executable extension is present,
+or probing .exe, .cmd, .bat, .com, .ps1 when extensionless or carrying a
+non-executable dotted suffix such as check_app_v1.2). If no binary exists in
+Get-ModuleBinaryDirectory and the name has neither path separators nor an
+extension, shorthand PowerShell check names such as 'cpu' or 'IcingaCheckCPU'
+are expanded to 'Invoke-IcingaCheck*' and resolved as PowerShell check commands.
+
+#### Parameters
+
+**`$Macros`**
+
+| Name   | Type          | Description                                                           | Default |
+|--------|---------------|-----------------------------------------------------------------------|---------|
+| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand.  | $null   |
+
+**`$CheckCommand`**
+
+| Name         | Type          | Description                                                                   | Default |
+|--------------|---------------|-------------------------------------------------------------------------------|---------|
+| CheckCommand | System.String | Optional Icinga CheckCommand object name (params.command) for error context.  | ''      |
+
+#### Outputs
+
+System.Collections.Hashtable -- Resolution descriptor containing Status, Kind,
+CommandName, BinaryPath, Parameters, Message, KnowledgeBaseId and ReturnCodeKey.
+
+#### Examples
+
+```powershell
+PS> Resolve-IcingaProtocolCommand -Macros @{ 'ifw_api_command' = 'Invoke-IcingaCheckDirectory' }
+
+Resolves the PowerShell check command and returns its parameter metadata.
+```
+
+```powershell
+PS> Resolve-IcingaProtocolCommand -Macros @{ 'ifw_api_command' = 'cpu' }
+
+Expands the shorthand 'cpu' to Invoke-IcingaCheckCPU when no cpu binary exists
+in Get-ModuleBinaryDirectory.
+```
+
+#### Notes
+
+Never searches $env:PATH for binaries or scripts. External executables must
+reside inside Get-ModuleBinaryDirectory.
+
+*Source: [src/IcingaProtocol/Private/Resolve-IcingaProtocolCommand.ps1](../../src/IcingaProtocol/Private/Resolve-IcingaProtocolCommand.ps1)*
 
 ---
 
@@ -807,6 +1206,52 @@ Sends the log position update to the connected Icinga endpoint.
 Requires an active TCP connection to the Icinga endpoint.
 
 *Source: [src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1)*
+
+---
+
+### Split-IcingaBinaryPluginOutput
+
+*Private function*
+
+**Synopsis:** Split Nagios and Icinga binary plugin stdout into text output and performance data
+
+#### Description
+
+Split-IcingaBinaryPluginOutput separates raw console output produced by an
+external Nagios or Icinga plugin binary at the pipe delimiter ('|') according to
+the Monitoring Plugins specification. Supports single-line and multi-line check
+output as well as multi-line performance data blocks, while preserving quoted,
+scoped and doubled-quote metric labels containing spaces (for example
+"'C:\ Free Space'=50GB;20;10;0;100" or "check_disk::'C:\ Free Space'=12GB") as
+individual elements in the returned PerformanceData array.
+
+#### Parameters
+
+**`$RawOutput`**
+
+| Name      | Type          | Description                                               | Default |
+|-----------|---------------|-----------------------------------------------------------|---------|
+| RawOutput | System.String | Raw stdout captured from an external binary or script.    | ''      |
+
+#### Outputs
+
+System.Collections.Hashtable -- Hashtable with keys Output (System.String) and
+PerformanceData (System.Array of metric strings).
+
+#### Examples
+
+```powershell
+PS> Split-IcingaBinaryPluginOutput -RawOutput "DISK OK - free space | 'C:\ Free'=50GB;20;10;0;100 inode=12%"
+
+Splits the plugin output into its human-readable status message and two
+individual performance-data metric strings.
+```
+
+#### Notes
+
+Pure string parser with no external dependencies or side effects.
+
+*Source: [src/IcingaProtocol/Private/Split-IcingaBinaryPluginOutput.ps1](../../src/IcingaProtocol/Private/Split-IcingaBinaryPluginOutput.ps1)*
 
 ---
 
@@ -1069,25 +1514,27 @@ queue slot exists before the first message is enqueued by other threads.
 
 *Private function*
 
-**Synopsis:** Starts a protocol worker that processes enqueued RPC messages.
+**Synopsis:** Start a protocol worker that processes enqueued Icinga 2 JSON-RPC messages
 
 #### Description
 
-Start-IcingaProtocolWorker pulls RPC message objects from the BlockingCollection at
-$Global:IcingaForWindows.Public.IcingaProtocol.WorkerQueue[$WorkerId] and dispatches
-them by method name via a switch statement. Supported methods are icinga::Hello,
-event::ExecuteCommand and event::Heartbeat. For each message, Set-ThreadProcessing
-is called and Set-TCPClientAndStream is used to route replies to the correct connection.
-The worker runs until Test-ThreadRunning returns false. Errors are caught per iteration
-and logged without stopping the loop.
+Start-IcingaProtocolWorker pulls RPC message objects from the BlockingCollection
+at (Get-GlobalRuntimeVariable).Public.IcingaProtocol.WorkerQueue[$WorkerId] and
+dispatches them by method name via a switch statement. Supported methods include
+icinga::Hello, event::ExecuteCommand, event::Heartbeat, config::Update,
+log::SetLogPosition and pki::UpdateCertificate. For event::ExecuteCommand, the
+worker starts a monotonic execution timer immediately before resolving and
+evaluating arguments via Invoke-IcingaProtocolCheckCommand, stops the timer
+immediately after check execution completes, logs execution telemetry and
+dispatches the resulting CheckResult via Send-IcingaProtocolCheckResult.
 
 #### Parameters
 
 **`$WorkerId`**
 
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| WorkerId | System.Object | Zero-based index of the worker queue to pull from.       | $null   |
+| Name     | Type          | Description                                        | Default |
+|----------|---------------|----------------------------------------------------|---------|
+| WorkerId | System.Object | Zero-based index of the worker queue to pull from. | $null   |
 
 #### Outputs
 
@@ -1102,10 +1549,66 @@ PS> New-Thread -Command 'Start-IcingaProtocolWorker' -Parameters @{ 'WorkerId' =
 #### Notes
 
 WorkerId must be a valid index into the WorkerQueue ArrayList initialized by
-New-IcingaAgentEnvironment. The function logs an error and returns if WorkerId is null.
-Thread safety relies on the BlockingCollection's Take() method.
+New-IcingaAgentEnvironment. Accesses shared state via Get-GlobalRuntimeVariable
+and nulls all per-iteration reference variables in finally to prevent daemon
+memory retention.
 
 *Source: [src/IcingaProtocol/Private/Start-IcingaProtocolWorker.ps1](../../src/IcingaProtocol/Private/Start-IcingaProtocolWorker.ps1)*
+
+---
+
+### Stop-IcingaProtocolProcessTree
+
+*Private function*
+
+**Synopsis:** Terminate a timed-out external binary process and all of its descendant processes
+
+#### Description
+
+Stop-IcingaProtocolProcessTree ensures that a timed-out external binary check
+cannot leave orphaned child processes holding stdout/stderr handles open or
+consuming host resources:
+- On Windows, kills the root process first while holding its SafeProcessHandle
+  open (preventing OS PID reuse), performs up to three Win32_Process
+  ParentProcessId breadth-first sweeps to terminate any newly spawned
+  descendants, waits up to 2000ms per handle, and disposes all descendant
+  Process handles.
+- On Linux and macOS, walks child PIDs via 'pgrep -P', kills the root process
+  tree (using Process.Kill($true) on PowerShell 7+), terminates every discovered
+  descendant handle, waits for exit, and disposes all descendant handles.
+
+#### Parameters
+
+**`$Process`**
+
+| Name    | Type                       | Description                                         | Default |
+|---------|----------------------------|-----------------------------------------------------|---------|
+| Process | System.Diagnostics.Process | Live root Process object whose handle stays open.   | $null   |
+
+**`$RootProcessId`**
+
+| Name          | Type         | Description                                     | Default |
+|---------------|--------------|-------------------------------------------------|---------|
+| RootProcessId | System.Int32 | OS process identifier of the root binary check. | 0       |
+
+#### Outputs
+
+None -- Terminates the process tree and waits briefly for OS rundown.
+
+#### Examples
+
+```powershell
+PS> Stop-IcingaProtocolProcessTree -Process $proc -RootProcessId $proc.Id
+
+Kills the root process and all descendant processes spawned by it.
+```
+
+#### Notes
+
+Caller remains responsible for disposing the root Process instance after stream
+drain completes.
+
+*Source: [src/IcingaProtocol/Private/Stop-IcingaProtocolProcessTree.ps1](../../src/IcingaProtocol/Private/Stop-IcingaProtocolProcessTree.ps1)*
 
 ---
 

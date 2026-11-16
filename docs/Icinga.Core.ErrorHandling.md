@@ -74,7 +74,7 @@ idempotent and will return immediately if the table is already set.
 
 #### Outputs
 
-None — Populates (Get-GlobalRuntimeVariable).Public.ReturnCodes as a side effect.
+None -- Populates (Get-GlobalRuntimeVariable).Public.ReturnCodes as a side effect.
 
 #### Examples
 

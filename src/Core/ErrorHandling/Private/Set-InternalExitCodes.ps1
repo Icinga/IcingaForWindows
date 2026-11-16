@@ -10,7 +10,7 @@ longer description, severity and area metadata. The function is
 idempotent and will return immediately if the table is already set.
 
 .OUTPUTS
-None — Populates (Get-GlobalRuntimeVariable).Public.ReturnCodes as a side effect.
+None -- Populates (Get-GlobalRuntimeVariable).Public.ReturnCodes as a side effect.
 
 .EXAMPLE
 PS> Set-InternalExitCodes
@@ -1051,6 +1051,13 @@ function Set-InternalExitCodes()
             'Severity' = 'Error';
             'Area'     = 'Tools';
         };
+        'SecureStringConversionFailed' = @{
+            'Code'        = 4004;
+            'Message'     = 'The provided secret input could not be converted into a SecureString';
+            'Severity'    = 'Error';
+            'Area'        = 'Tools';
+            'Description' = 'Populating or sealing the System.Security.SecureString instance failed (for example when exceeding the 65,536-character SecureString limit or encountering a platform memory-protection error).';
+        };
         'IcingaUnitInvalidInputValue' = @{
             'Code'     = 4100;
             'Message'  = 'The provided input value is not a valid "<number><unit>" value and could not be converted';
@@ -1080,6 +1087,141 @@ function Set-InternalExitCodes()
             'Message'  = 'The unit conversion completed successfully';
             'Severity' = 'Debug';
             'Area'     = 'Tools';
+        };
+        'WindowsInformationClassUnknown' = @{
+            'Code'        = 4200;
+            'Message'     = 'The requested CIM class does not exist on this system';
+            'Severity'    = 'Debug';
+            'Area'        = 'Tools';
+            'Description' = 'Optional classes such as MPIO_DISK_INFO are probed on purpose, so this is only logged at Debug level; plugins surface the error in their output';
+        };
+        'WindowsInformationNamespaceInvalid' = @{
+            'Code'        = 4201;
+            'Message'     = 'The requested CIM namespace does not exist on this system';
+            'Severity'    = 'Debug';
+            'Area'        = 'Tools';
+            'Description' = 'Optional namespaces are probed on purpose, so this is only logged at Debug level; plugins surface the error in their output';
+        };
+        'WindowsInformationAccessDenied' = @{
+            'Code'        = 4202;
+            'Message'     = 'Access to the requested CIM class was denied';
+            'Severity'    = 'Error';
+            'Area'        = 'Tools';
+            'Description' = 'The user running the check needs the "Enable Account" and "Remote Enable" WMI permissions on the namespace, for example through the "Remote Management Users" group';
+        };
+        'WindowsInformationInvalidQuery' = @{
+            'Code'     = 4203;
+            'Message'  = 'The CIM query is invalid, check the filter and the requested properties';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'WindowsInformationQueryFailed' = @{
+            'Code'     = 4204;
+            'Message'  = 'The CIM query failed with an unhandled error';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'WindowsInformationClassNameMissing' = @{
+            'Code'     = 4205;
+            'Message'  = 'No CIM class name was provided for the query';
+            'Severity' = 'Error';
+            'Area'     = 'Tools';
+        };
+        'WindowsInformationQueried' = @{
+            'Code'     = 4210;
+            'Message'  = 'The CIM query completed successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Tools';
+        };
+        'ArrayFilterInvalidPattern' = @{
+            'Code'     = 4250;
+            'Message'  = 'A filter pattern is no valid wildcard expression, the value is treated as not matching';
+            'Severity' = 'Warning';
+            'Area'     = 'Tools';
+        };
+        'DiskInformationVolumeQueryFailed' = @{
+            'Code'     = 4300;
+            'Message'  = 'The volume data for the disk information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DiskInformationPartitionQueryFailed' = @{
+            'Code'     = 4301;
+            'Message'  = 'The partition data for the disk information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DiskInformationDiskQueryFailed' = @{
+            'Code'     = 4302;
+            'Message'  = 'The physical disk data for the disk information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DiskInformationCollected' = @{
+            'Code'     = 4350;
+            'Message'  = 'The disk information was collected successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Provider';
+        };
+        'DirectoryPathMissing' = @{
+            'Code'     = 4400;
+            'Message'  = 'No directory path was provided';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryPathNotFound' = @{
+            'Code'     = 4401;
+            'Message'  = 'The directory does not exist on this system';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryAccessDenied' = @{
+            'Code'     = 4402;
+            'Message'  = 'Access to the directory was denied';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryFilterInvalid' = @{
+            'Code'     = 4403;
+            'Message'  = 'A directory filter value is invalid';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryReadFailed' = @{
+            'Code'     = 4404;
+            'Message'  = 'The directory could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'DirectoryInformationCollected' = @{
+            'Code'     = 4450;
+            'Message'  = 'The directory information was collected successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Provider';
+        };
+        'ProcessCounterReadFailed' = @{
+            'Code'     = 4500;
+            'Message'  = 'The performance counters for the process information could not be read';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'ProcessInformationCollected' = @{
+            'Code'     = 4550;
+            'Message'  = 'The process information was collected successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Provider';
+        };
+        'ScheduledTaskQueryFailed' = @{
+            'Code'     = 4600;
+            'Message'  = 'The scheduled tasks could not be queried';
+            'Severity' = 'Error';
+            'Area'     = 'Provider';
+        };
+        'ScheduledTaskInformationCollected' = @{
+            'Code'     = 4650;
+            'Message'  = 'The scheduled task information was collected successfully';
+            'Severity' = 'Debug';
+            'Area'     = 'Provider';
         };
         'WebUIAssetPathEmpty' = @{
             'Code'     = 13000;
@@ -1230,6 +1372,48 @@ function Set-InternalExitCodes()
             'Severity'    = 'Info';
             'Area'        = 'IcingaProtocol';
             'Description' = 'The Icinga Protocol configuration has been successfully written to disk.';
+        };
+        'IcingaProtocolCommandMissing' = @{
+            'Code'        = 50020;
+            'Message'     = 'The required macro "ifw_api_command" is missing from the Icinga ExecuteCommand payload';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'Every CheckCommand executed by Icinga for Windows must provide macros.ifw_api_command via the ifw-api template (IWKB001003).';
+        };
+        'IcingaProtocolCommandNotFound' = @{
+            'Code'        = 50021;
+            'Message'     = 'The requested Icinga check command could not be resolved as a PowerShell plugin or approved binary';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The command specified in macros.ifw_api_command matches neither an Invoke-IcingaCheck* function nor a file inside Get-ModuleBinaryDirectory (IWKB001003).';
+        };
+        'IcingaProtocolBinaryPathRejected' = @{
+            'Code'        = 50022;
+            'Message'     = 'The requested binary check command path is outside the approved Icinga for Windows binaries directory';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'External binaries and scripts may only be executed from Get-ModuleBinaryDirectory (IWKB001003).';
+        };
+        'IcingaProtocolMacroMappingFailed' = @{
+            'Code'        = 50023;
+            'Message'     = 'Custom variables from Icinga could not be mapped to the target check command';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'When the ifw-api CheckCommand template is inactive, custom variables could not be mapped cleanly to the PowerShell plugin (IWKB001000) or external binary (IWKB001002).';
+        };
+        'IcingaProtocolUnknownParameter' = @{
+            'Code'        = 50024;
+            'Message'     = 'An unknown parameter was supplied in ifw_api_arguments for a PowerShell check plugin';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'A parameter entry in macros.ifw_api_arguments resolved to a non-empty value, but the target PowerShell check plugin does not define that parameter (IWKB001001).';
+        };
+        'IcingaProtocolCheckExecuted' = @{
+            'Code'        = 50025;
+            'Message'     = 'Icinga protocol check command execution completed';
+            'Severity'    = 'Debug';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'Telemetry event recorded after executing a PowerShell or binary check command via the Icinga protocol worker.';
         };
     };
 }
