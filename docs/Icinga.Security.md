@@ -56,57 +56,59 @@ Get-FileEncoding -Path (Join-Path (Get-ModuleConfigDirectory) 'settings.json')
 
 *Private function*
 
-**Synopsis:** Secure wrapper around `Get-ChildItem` that restricts access to approved paths.
+**Synopsis:** Secure wrapper around Get-ChildItem that restricts access to approved paths
 
 #### Description
 
 Fetches child items from the filesystem while enforcing approved-path checks
-via `Test-SecureApprovedPath`. This prevents access to arbitrary filesystem
-locations. Returns standardized return values with `Write-FunctionReturnValue`.
+via Test-SecureApprovedPath. This prevents access to arbitrary filesystem
+locations outside the module root, configuration, cache and binaries
+directories. Logs outcomes via Write-FunctionReturnValue and returns the
+enumerated child items via -OverrideReturn on success or $null on error.
 
 #### Parameters
 
 **`$Path`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Directory path to enumerate. | '' |
+| Name | Type          | Description                  | Default |
+|------|---------------|------------------------------|---------|
+| Path | System.String | Directory path to enumerate. | ''      |
 
 **`$Filter`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Filter | System.String | File name filter (for example '*.json'). | '*' |
+| Name   | Type          | Description                              | Default |
+|--------|---------------|------------------------------------------|---------|
+| Filter | System.String | File name filter (for example '*.json'). | '*'     |
 
 **`$Include`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Include | System.Array | Additional include patterns for `Get-ChildItem`. | @() |
+| Name    | Type         | Description                                     | Default |
+|---------|--------------|-------------------------------------------------|---------|
+| Include | System.Array | Additional include patterns for Get-ChildItem.  | @()     |
 
 **`$File`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| File | System.Management.Automation.SwitchParameter | If set, only return files. | $false |
+| Name | Type                                         | Description               | Default |
+|------|----------------------------------------------|---------------------------|---------|
+| File | System.Management.Automation.SwitchParameter | If set, only return files.| $false  |
 
 **`$Directory`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Directory | System.Management.Automation.SwitchParameter | If set, only return directories. | $false |
+| Name      | Type                                         | Description                     | Default |
+|-----------|----------------------------------------------|---------------------------------|---------|
+| Directory | System.Management.Automation.SwitchParameter | If set, only return directories.| $false  |
 
 **`$Recurse`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Recurse | System.Management.Automation.SwitchParameter | Recurse into subdirectories. | $false |
+| Name    | Type                                         | Description                  | Default |
+|---------|----------------------------------------------|------------------------------|---------|
+| Recurse | System.Management.Automation.SwitchParameter | Recurse into subdirectories. | $false  |
 
 #### Outputs
 
-PSCustomObject — Function return value via Write-FunctionReturnValue.
-ChildItemFetchSucceeded on success (Data contains Path and Items).
-ChildItemFetchFailed, AccessViolation or ChildItemPathArgumentEmpty on errors.
+System.Object -- Enumerated FileInfo/DirectoryInfo items via -OverrideReturn on
+success (ChildItemFetchSucceeded), or $null on ChildItemPathArgumentEmpty,
+AccessViolation or ChildItemFetchFailed.
 
 #### Examples
 
@@ -116,7 +118,7 @@ PS> Get-SecureChildItem -Path (Get-ModuleConfigDirectory) -File
 
 #### Notes
 
-This helper logs attempted access to unapproved paths and returns `AccessViolation`.
+This helper logs attempted access to unapproved paths and returns AccessViolation.
 
 *Source: [src/Security/Private/Get-SecureChildItem.ps1](../../src/Security/Private/Get-SecureChildItem.ps1)*
 
@@ -362,5 +364,4 @@ Creates the file if it does not exist by delegating to `New-SecureItem`. Uses UT
 without BOM when writing bytes. Caller receives the content in the return data.
 
 *Source: [src/Security/Private/Write-SecureFile.ps1](../../src/Security/Private/Write-SecureFile.ps1)*
-
 

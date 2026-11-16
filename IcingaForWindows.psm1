@@ -103,7 +103,7 @@ function New-ModuleBaseEnvironment()
                     'WorkerQueue' = $null;
                 };
                 'WebSocket'    = [PSCustomObject]@{
-                    'Config'      = New-Object PSCustomObject; # Global config, containing all endpoints being loaded
+                    'Config' = New-Object PSCustomObject; # Global config, containing all endpoints being loaded
                 <#
                     WebSocket example structure:
                     $WebSocketName = [PSCustomObject]@{
@@ -235,6 +235,35 @@ function Get-ModuleCertificateDirectory()
 
 <#
 .SYNOPSIS
+Return the approved directory path for external check binaries and scripts
+
+.DESCRIPTION
+Get-ModuleBinaryDirectory resolves the dedicated Binaries subdirectory inside
+the Icinga for Windows ProgramData root ($env:ProgramData\IcingaForWindows\Binaries
+on Windows, or $env:HOME\ProgramData\IcingaForWindows\Binaries on Linux and
+macOS). Resolve-IcingaProtocolCommand and Invoke-IcingaProtocolCheckCommand
+restrict external binary and .ps1 script execution exclusively to this folder.
+
+.OUTPUTS
+System.String -- Full path to the Icinga for Windows Binaries directory.
+
+.EXAMPLE
+PS> Get-ModuleBinaryDirectory
+C:\ProgramData\IcingaForWindows\Binaries
+
+Returns the approved Icinga for Windows binaries directory path.
+
+.NOTES
+Created automatically during startup by New-ModuleConfigEnvironment and
+whitelisted in Get-SecureChildItem.
+#>
+function Get-ModuleBinaryDirectory()
+{
+    return (Join-Path -Path $env:ProgramData -ChildPath (Join-Path -Path (Get-ModuleProjectName) -ChildPath 'Binaries'));
+}
+
+<#
+.SYNOPSIS
 Build and compile the Icinga for Windows module project
 
 .DESCRIPTION
@@ -277,7 +306,7 @@ function Build-ModuleProject()
         [switch]$TestDaemonMemoryLeaks = $false
     );
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'build\Build-ModuleProject.ps1') -SkipTests:$SkipTests -GenerateDocs:$GenerateDocs -TestDaemonMemoryLeaks:$TestDaemonMemoryLeaks;
+    & (Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path 'build' -ChildPath 'Build-ModuleProject.ps1')) -SkipTests:$SkipTests -GenerateDocs:$GenerateDocs -TestDaemonMemoryLeaks:$TestDaemonMemoryLeaks;
 }
 
 <#
@@ -316,7 +345,7 @@ function Invoke-IcingaModuleTests()
         [string]$Path = $null
     );
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'build\Invoke-ModuleTests.ps1') -Path $Path;
+    & (Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path 'build' -ChildPath 'Invoke-ModuleTests.ps1')) -Path $Path;
 }
 
 function Get-GlobalRuntimeVariable()

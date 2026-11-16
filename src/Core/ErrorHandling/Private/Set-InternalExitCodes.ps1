@@ -1051,6 +1051,13 @@ function Set-InternalExitCodes()
             'Severity' = 'Error';
             'Area'     = 'Tools';
         };
+        'SecureStringConversionFailed' = @{
+            'Code'        = 4004;
+            'Message'     = 'The provided secret input could not be converted into a SecureString';
+            'Severity'    = 'Error';
+            'Area'        = 'Tools';
+            'Description' = 'Populating or sealing the System.Security.SecureString instance failed (for example when exceeding the 65,536-character SecureString limit or encountering a platform memory-protection error).';
+        };
         'IcingaUnitInvalidInputValue' = @{
             'Code'     = 4100;
             'Message'  = 'The provided input value is not a valid "<number><unit>" value and could not be converted';
@@ -1365,6 +1372,48 @@ function Set-InternalExitCodes()
             'Severity'    = 'Info';
             'Area'        = 'IcingaProtocol';
             'Description' = 'The Icinga Protocol configuration has been successfully written to disk.';
+        };
+        'IcingaProtocolCommandMissing' = @{
+            'Code'        = 50020;
+            'Message'     = 'The required macro "ifw_api_command" is missing from the Icinga ExecuteCommand payload';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'Every CheckCommand executed by Icinga for Windows must provide macros.ifw_api_command via the ifw-api template (IWKB001003).';
+        };
+        'IcingaProtocolCommandNotFound' = @{
+            'Code'        = 50021;
+            'Message'     = 'The requested Icinga check command could not be resolved as a PowerShell plugin or approved binary';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'The command specified in macros.ifw_api_command matches neither an Invoke-IcingaCheck* function nor a file inside Get-ModuleBinaryDirectory (IWKB001003).';
+        };
+        'IcingaProtocolBinaryPathRejected' = @{
+            'Code'        = 50022;
+            'Message'     = 'The requested binary check command path is outside the approved Icinga for Windows binaries directory';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'External binaries and scripts may only be executed from Get-ModuleBinaryDirectory (IWKB001003).';
+        };
+        'IcingaProtocolMacroMappingFailed' = @{
+            'Code'        = 50023;
+            'Message'     = 'Custom variables from Icinga could not be mapped to the target check command';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'When the ifw-api CheckCommand template is inactive, custom variables could not be mapped cleanly to the PowerShell plugin (IWKB001000) or external binary (IWKB001002).';
+        };
+        'IcingaProtocolUnknownParameter' = @{
+            'Code'        = 50024;
+            'Message'     = 'An unknown parameter was supplied in ifw_api_arguments for a PowerShell check plugin';
+            'Severity'    = 'Error';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'A parameter entry in macros.ifw_api_arguments resolved to a non-empty value, but the target PowerShell check plugin does not define that parameter (IWKB001001).';
+        };
+        'IcingaProtocolCheckExecuted' = @{
+            'Code'        = 50025;
+            'Message'     = 'Icinga protocol check command execution completed';
+            'Severity'    = 'Debug';
+            'Area'        = 'IcingaProtocol';
+            'Description' = 'Telemetry event recorded after executing a PowerShell or binary check command via the Icinga protocol worker.';
         };
     };
 }

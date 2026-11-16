@@ -1,20 +1,22 @@
 <#
 .SYNOPSIS
-Starts a protocol worker that processes enqueued RPC messages.
+Start a protocol worker that processes enqueued Icinga 2 JSON-RPC messages
 
 .DESCRIPTION
-Start-IcingaProtocolWorker pulls RPC message objects from the BlockingCollection at
-$Global:IcingaForWindows.Public.IcingaProtocol.WorkerQueue[$WorkerId] and dispatches
-them by method name via a switch statement. Supported methods are icinga::Hello,
-event::ExecuteCommand and event::Heartbeat. For each message, Set-ThreadProcessing
-is called and Set-TCPClientAndStream is used to route replies to the correct connection.
-The worker runs until Test-ThreadRunning returns false. Errors are caught per iteration
-and logged without stopping the loop.
+Start-IcingaProtocolWorker pulls RPC message objects from the BlockingCollection
+at (Get-GlobalRuntimeVariable).Public.IcingaProtocol.WorkerQueue[$WorkerId] and
+dispatches them by method name via a switch statement. Supported methods include
+icinga::Hello, event::ExecuteCommand, event::Heartbeat, config::Update,
+log::SetLogPosition and pki::UpdateCertificate. For event::ExecuteCommand, the
+worker starts a monotonic execution timer immediately before resolving and
+evaluating arguments via Invoke-IcingaProtocolCheckCommand, stops the timer
+immediately after check execution completes, logs execution telemetry and
+dispatches the resulting CheckResult via Send-IcingaProtocolCheckResult.
 
 .PARAMETER WorkerId
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| WorkerId | System.Object | Zero-based index of the worker queue to pull from.       | $null   |
+| Name     | Type          | Description                                        | Default |
+|----------|---------------|----------------------------------------------------|---------|
+| WorkerId | System.Object | Zero-based index of the worker queue to pull from. | $null   |
 
 .OUTPUTS
 None -- Processes queued messages and sends replies; no pipeline output.
@@ -24,209 +26,183 @@ PS> New-Thread -Command 'Start-IcingaProtocolWorker' -Parameters @{ 'WorkerId' =
 
 .NOTES
 WorkerId must be a valid index into the WorkerQueue ArrayList initialized by
-New-IcingaAgentEnvironment. The function logs an error and returns if WorkerId is null.
-Thread safety relies on the BlockingCollection's Take() method.
+New-IcingaAgentEnvironment. Accesses shared state via Get-GlobalRuntimeVariable
+and nulls all per-iteration reference variables in finally to prevent daemon
+memory retention.
 #>
 function Start-IcingaProtocolWorker()
 {
     param (
-        $WorkerId = $null
+        [object]$WorkerId = $null
     );
 
-    # Validate WorkerId
     if ($null -eq $WorkerId) {
         Write-LoggingEntry -Message 'Please specify a valid WorkerId to start the Icinga Protocol Worker' -Level 'Error';
         return;
     }
 
-    # Start processing messages from the worker queue
+    $GlobalVariable = Get-GlobalRuntimeVariable;
+
     while (Test-ThreadRunning -NoSleep) {
         try {
-            # Wait for a new RPC message to process
             $RPCObject = $null;
-            if (-not $Global:IcingaForWindows.Public.IcingaProtocol.WorkerQueue[$WorkerId].TryTake([ref]$RPCObject, 10000)) {
+            if (-not $GlobalVariable.Public.IcingaProtocol.WorkerQueue[$WorkerId].TryTake([ref]$RPCObject, 10000)) {
                 Set-ThreadProcessing;
                 continue;
             }
-            $CheckStarted = (Get-IcingaUnixTime -Milliseconds);
 
             if ($null -eq $RPCObject -or $null -eq $RPCObject.Message) {
-                continue; # No message to process, loop again
+                continue;
             }
 
-            # Ensure we set the thread processing context for proper logging and state management
             Set-ThreadProcessing;
             $RPCMessage = $RPCObject.Message;
-            # Set our internal TCP client and stream to ensure we can send messages to the same connection
             Set-TCPClientAndStream -TcpClient $RPCObject.Client -SslStream $RPCObject.Stream;
 
-            switch ($RPCMessage.method) {
+            $MethodName = $null;
+            $RPCParams  = $null;
+
+            if ($RPCMessage -is [System.Collections.IDictionary]) {
+                foreach ($MsgKey in $RPCMessage.Keys) {
+                    if ([string]::Equals([string]$MsgKey, 'method', [System.StringComparison]::OrdinalIgnoreCase)) {
+                        $MethodName = [string]$RPCMessage[$MsgKey];
+                    } elseif ([string]::Equals([string]$MsgKey, 'params', [System.StringComparison]::OrdinalIgnoreCase)) {
+                        $RPCParams = $RPCMessage[$MsgKey];
+                    }
+                }
+            } else {
+                $MethodName = [string]$RPCMessage.method;
+                $RPCParams  = $RPCMessage.params;
+            }
+
+            switch ($MethodName) {
                 'icinga::Hello' {
-                    Write-LoggingEntry -Message '  ✓ Received Hello method' -Level 'Debug';
+                    Write-LoggingEntry -Message '  [+] Received Hello method' -Level 'Debug';
                     break;
                 };
                 'event::ExecuteCommand' {
-                    Write-LoggingEntry -Message '  ✓ Received ExecuteCommand event' -Level 'Debug' -Data @{ 'Command' = $RPCMessage.params.macros.ifw_api_command; };
+                    # 1. Start execution timer before command resolution & macro evaluation
+                    [double]$CheckStarted   = [double](Get-IcingaUnixTime -Milliseconds);
+                    $Stopwatch              = [System.Diagnostics.Stopwatch]::StartNew();
 
-                    [string]$ExecuteCommand = $RPCMessage.params.macros.ifw_api_command;
+                    # 2. Evaluate macros/arguments and execute the PowerShell or binary check
+                    $ExecutionResult        = Invoke-IcingaProtocolCheckCommand -Params $RPCParams;
 
-                    <#
-                    TODO: Actuall check logic
-                    # Read the command definition and arguments type, to ensure we properly handle SecureStrings
-                    $CommandHelp    = Get-Help -Name $ExecuteCommand -Full;
-                    $CommandDetails = @{ };
+                    # 3. Stop execution timer immediately after check completion
+                    $Stopwatch.Stop();
+                    [double]$ElapsedSeconds = $Stopwatch.Elapsed.TotalSeconds;
+                    [double]$CheckFinished  = [System.Math]::Round(($CheckStarted + $ElapsedSeconds), 6);
 
-                    foreach ($parameter in $CommandHelp.parameters.parameter) {
-                        $CommandDetails.Add($parameter.Name, $parameter.Type.Name);
+                    # 4. Log telemetry and send CheckResult back to Icinga 2
+                    $HostName               = $null;
+                    $ServiceName            = $null;
+
+                    if ($RPCParams -is [System.Collections.IDictionary]) {
+                        foreach ($ParamKey in $RPCParams.Keys) {
+                            if ([string]::Equals([string]$ParamKey, 'host', [System.StringComparison]::OrdinalIgnoreCase)) {
+                                $HostName = $RPCParams[$ParamKey];
+                            } elseif ([string]::Equals([string]$ParamKey, 'service', [System.StringComparison]::OrdinalIgnoreCase)) {
+                                $ServiceName = $RPCParams[$ParamKey];
+                            }
+                        }
+                    } elseif ($null -ne $RPCParams) {
+                        $HostName    = $RPCParams.host;
+                        $ServiceName = $RPCParams.service;
                     }
 
-                    # For executing the checks, we will require the data as
-                    # hashtable, so declare it here
-                    [hashtable]$Arguments = @{ };
-
-                    # Now convert our custom object by Key<->Value to
-                    # a valid hashtable, allowing us to parse arguments
-                    # to our check command
-                    $RPCMessage.params.macros.PSObject.Properties | ForEach-Object {
-                        $CmdArgValue        = $_.Value;
-                        [string]$CmdArgName = $_.Name;
-
-                        if ($CmdArgName -eq 'ifw_api_command') {
-                            return; # Skip the command name itself
-                        }
-
-                        # Ensure we can use both, `-MyArgument` and `MyArgument` as valid input
-                        if ($CmdArgName[0] -eq '-') {
-                            $CmdArgName = $CmdArgName.Substring(1, $CmdArgName.Length - 1);
-                        }
-
-                        $CmdArgName = $CmdArgName.Split('_')[-1];
-
-                        # Ensure we convert strings to SecureString, in case the plugin argument requires it
-                        if ($CommandDetails.ContainsKey($CmdArgName) -And $CommandDetails[$CmdArgName] -Like 'SecureString') {
-                            $CmdArgValue = ConvertTo-IcingaSecureString -String $_.Value;
-                        }
-
-                        Add-IcingaHashtableItem `
-                            -Hashtable $Arguments `
-                            -Key $CmdArgName `
-                            -Value $CmdArgValue | Out-Null;
-                    }#>
-
-                    #$ExitCode      = & $RPCMessage.params.macros.ifw_api_command @Arguments;
-
-                    <#
-                    $CheckResultData = @{
-                        'host'    = $RPCMessage.params.host;
-                        'service' = $RPCMessage.params.service;
-                        'cr'      = @{
-                            'output'           = (Get-IcingaInternalPluginOutput);
-                            'exit_status'      = $ExitCode;
-                            'active'           = $TRUE;
-                            'state'            = $ExitCode;
-                            'type'             = 'CheckResult';
-                            'execution_start'  = $CheckStarted;
-                            'execution_end'    = $CheckFinished;
-                            'performance_data' = @((Get-IcingaCheckSchedulerPerfData).Split(' '));
-                        }
-                    };
-                    #>
-
-                    # Initialize variables for check result data
-                    $CheckResultOutput    = '';
-                    [array]$CheckPerfData = @();
-
-                    # Execute the command, and catch any exceptions
-                    try {
-                        $ExitCode = & $ExecuteCommand;
-                    } catch {
-                        $ExitCode          = 3;
-                        $CheckResultOutput = "[UNKNOWN] Icinga Plugin Command Execution was thrown:`n`n" + $_.Exception.Message.ToString();
-                    }
-
-                    # In case we have a CheckResult, store the result in our variables
-                    if ($null -ne $Global:IcingaForWindows.Private.Icinga.CheckResult) {
-                        $CheckResultOutput    = $Global:IcingaForWindows.Private.Icinga.CheckResult.ToString();
-                        [array]$CheckPerfData = $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData;
-                    }
-
-                    # Create the finish timestamp after our plugin execution
-                    $CheckFinished = (Get-IcingaUnixTime -Milliseconds);
-
-                    Write-LoggingEntry -Message 'Executing check command' -Level 'Debug' -Data @{
-                        'Command'       = $ExecuteCommand;
-                        'Host'          = $RPCMessage.params.host;
-                        'Service'       = $RPCMessage.params.service;
-                        'Arguments'     = $RPCMessage.params.macros.PSObject.Properties.Name -join ', ';
+                    Write-LoggingEntry -Message 'Executed check command' -Level 'Debug' -Data @{
+                        'Command'       = $ExecutionResult['CommandLine'];
+                        'Host'          = $HostName;
+                        'Service'       = $ServiceName;
+                        'ExitCode'      = $ExecutionResult['ExitCode'];
                         'WorkerId'      = $WorkerId;
                         'CheckStarted'  = $CheckStarted;
                         'CheckFinished' = $CheckFinished;
-                        'ExecutionTime' = ($CheckFinished - $CheckStarted);
+                        'ExecutionTime' = $ElapsedSeconds;
                     };
 
-                    # Build our entire CheckResult object for Icinga
+                    [string]$CheckSource = [string]$GlobalVariable.Public.IcingaProtocol.Config.Hostname;
+                    if ([string]::IsNullOrWhiteSpace($CheckSource) -and $null -ne $HostName) {
+                        $CheckSource = [string]$HostName;
+                    }
+
                     $CheckResultData = @{
-                        'host'    = $RPCMessage.params.host;
-                        'service' = $RPCMessage.params.service;
-                        'cr'      = @{
-                            'check_source'     = $Global:IcingaForWindows.Public.IcingaProtocol.Config.Hostname;
-                            'command'          = 'full call stack with arguments';
-                            'output'           = $CheckResultOutput;
-                            'exit_status'      = $ExitCode;
-                            'active'           = $TRUE;
-                            'state'            = $ExitCode;
+                        'host' = $HostName;
+                        'cr'   = @{
+                            'check_source'     = $CheckSource;
+                            'command'          = $ExecutionResult['CommandLine'];
+                            'output'           = $ExecutionResult['Output'];
+                            'exit_status'      = [int]$ExecutionResult['ExitCode'];
+                            'active'           = $true;
+                            'state'            = [int]$ExecutionResult['ExitCode'];
                             'type'             = 'CheckResult';
                             'execution_start'  = $CheckStarted;
                             'execution_end'    = $CheckFinished;
-                            'performance_data' = @($CheckPerfData);
+                            'performance_data' = @($ExecutionResult['PerformanceData']);
                         };
                     };
+
+                    if (-not [string]::IsNullOrEmpty([string]$ServiceName)) {
+                        $CheckResultData['service'] = $ServiceName;
+                    }
 
                     Send-IcingaProtocolCheckResult -CheckResult $CheckResultData;
                     break;
                 };
                 'event::Heartbeat' {
-                    # Update the current log position to the parent with every heartbeat
                     Send-IcingaProtocolLogPosition;
-                    Write-LoggingEntry -Message '  ✓ Received Heartbeat event' -Level 'Debug';
+                    Write-LoggingEntry -Message '  [+] Received Heartbeat event' -Level 'Debug';
                     break;
                 };
                 'config::Update' {
-                    Write-LoggingEntry -Message '  ✓ Received Config Update event' -Level 'Debug';
+                    Write-LoggingEntry -Message '  [+] Received Config Update event' -Level 'Debug';
                     break;
                 };
                 'log::SetLogPosition' {
-                    Write-LoggingEntry -Message '  ✓ Received SetLogPosition event' -Level 'Debug' -Data @{ 'Message' = $RPCMessage; };
+                    Write-LoggingEntry -Message '  [+] Received SetLogPosition event' -Level 'Debug' -Data @{ 'Message' = $RPCMessage; };
                     break;
-                }
+                };
                 'pki::UpdateCertificate' {
-                    # This will in general fail, as we normally are not running as Administrator. Will be done during installation.
-                    # Import-IcingaCertAuthority -Certificate $RPCMessage.params.ca;
-                    New-IcingaProtocolCertificate -CommonName $Global:IcingaForWindows.Public.IcingaProtocol.Config.Hostname -SignedCert $RPCMessage.params.cert;
-                    # Once we received a new certificte, we should close the connection immediatels and let our handler create a new one afterwards
+                    $SignedCert = $null;
+                    if ($RPCParams -is [System.Collections.IDictionary]) {
+                        foreach ($CertKey in $RPCParams.Keys) {
+                            if ([string]::Equals([string]$CertKey, 'cert', [System.StringComparison]::OrdinalIgnoreCase)) {
+                                $SignedCert = $RPCParams[$CertKey];
+                                break;
+                            }
+                        }
+                    } elseif ($null -ne $RPCParams) {
+                        $SignedCert = $RPCParams.cert;
+                    }
+
+                    New-IcingaProtocolCertificate -CommonName $GlobalVariable.Public.IcingaProtocol.Config.Hostname -SignedCert $SignedCert;
                     Close-TcpConnection;
                     Close-TcpSocket;
                     break;
                 };
                 default {
-                    Write-LoggingEntry -Message '  ✓ Received unhandled RPC method' -Level 'Error' -Data @{ 'Method' = $RPCMessage.method; };
+                    Write-LoggingEntry -Message '  [!] Received unhandled RPC method' -Level 'Error' -Data @{ 'Method' = $MethodName; };
                     break;
                 };
             }
         } catch {
             Write-LoggingEntry -Message 'An error occurred in Icinga Protocol Worker' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; };
         } finally {
-            # Cleanup our entire scop
-            $RPCMessage                                         = $null;
-            $RPCObject                                          = $null;
-            $CheckStarted                                       = $null;
-            $CheckFinished                                      = $null;
-            $ExecuteCommand                                     = $null;
-            $CheckResultOutput                                  = $null;
-            $CheckPerfData                                      = $null;
-            $ExitCode                                           = $null;
-            $CheckResultData                                    = $null;
-            $Global:IcingaForWindows.Private.Icinga.CheckResult = $null;
+            $RPCObject                                 = $null;
+            $RPCMessage                                = $null;
+            $MsgKey                                    = $null;
+            $MethodName                                = $null;
+            $RPCParams                                 = $null;
+            $ParamKey                                  = $null;
+            $Stopwatch                                 = $null;
+            $ExecutionResult                           = $null;
+            $HostName                                  = $null;
+            $ServiceName                               = $null;
+            $CheckSource                               = $null;
+            $CheckResultData                           = $null;
+            $CertKey                                   = $null;
+            $SignedCert                                = $null;
+            $GlobalVariable.Private.Icinga.CheckResult = $null;
         }
     }
 }

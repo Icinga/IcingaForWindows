@@ -15,8 +15,10 @@
 
 ## Private helpers
 
+- [ConvertFrom-ModuleBoolean](#convertfrom-moduleboolean)
 - [ConvertFrom-ModuleJson](#convertfrom-modulejson)
 - [ConvertTo-ModuleJson](#convertto-modulejson)
+- [ConvertTo-ModuleSecureString](#convertto-modulesecurestring)
 - [ConvertTo-StringNormalizedArray](#convertto-stringnormalizedarray)
 - [Get-NormalizedTextContent](#get-normalizedtextcontent)
 - [Remove-ModuleAmbitiousCharacters](#remove-moduleambitiouscharacters)
@@ -276,48 +278,49 @@ conversion). No external services, credentials or configuration files are used.
 
 *Public function*
 
-**Synopsis:** Returns the current Unix time (epoch) from the local system in UTC.
+**Synopsis:** Return the current Unix epoch timestamp in UTC
 
 #### Description
 
-Get-IcingaUnixTime returns the number of seconds (or, when requested, milliseconds) elapsed since the Unix epoch (1970-01-01T00:00:00Z).
-The function obtains the current time in UTC and converts it to a numeric Unix timestamp.
+Get-IcingaUnixTime returns the current UTC Unix timestamp relative to
+1970-01-01T00:00:00Z using DateTimeOffset.UtcNow so local system timezones or
+culture formats never skew the result. Without -Milliseconds it returns whole
+seconds as an Int32; with -Milliseconds it returns fractional seconds with
+millisecond precision as a Double, matching the timestamp format expected by
+Icinga 2 check result payloads (execution_start and execution_end).
 
 #### Parameters
 
 **`$Milliseconds`**
 
-| Name         | Type                                         | Description                                                          | Default |
-|--------------|----------------------------------------------|----------------------------------------------------------------------|---------|
-| Milliseconds | System.Management.Automation.SwitchParameter | When set, returns Unix time in milliseconds (Int64) instead of seconds (Int32). | $false |
+| Name         | Type                                         | Description                                                                   | Default |
+|--------------|----------------------------------------------|-------------------------------------------------------------------------------|---------|
+| Milliseconds | System.Management.Automation.SwitchParameter | When set, returns fractional Unix seconds with millisecond precision (Double).| $false  |
 
 #### Outputs
 
-System.Int32 — Unix time in seconds when called without -Milliseconds.
-System.Int64 — Unix time in milliseconds when called with -Milliseconds.
+System.ValueType -- System.Int32 whole Unix seconds by default, or System.Double
+fractional Unix seconds when -Milliseconds is set.
 
 #### Examples
 
 ```powershell
 PS> Get-IcingaUnixTime
-1609459200
+1731750000
 
-Returns the current Unix time in seconds (int).
+Returns the current UTC Unix time in whole seconds.
 ```
 
 ```powershell
 PS> Get-IcingaUnixTime -Milliseconds
-1609459200000
+1731750000.123
 
-Intended to return the current Unix time in milliseconds (int64).
+Returns the current UTC Unix time in seconds with millisecond precision.
 ```
 
 #### Notes
 
-The timestamp is calculated using UTC to represent the standard Unix epoch (1970-01-01T00:00:00Z).
-Without -Milliseconds the function returns a System.Int32 via Get-Date -UFormat %s.
-With -Milliseconds the function divides TotalMilliseconds by 1000 and casts to Int64;
-callers requiring sub-second precision should verify the returned value before use.
+Uses System.DateTimeOffset.UtcNow across Windows PowerShell 5.1 and PowerShell 7+.
 
 *Source: [src/Tools/Public/Get-IcingaUnixTime.ps1](../../src/Tools/Public/Get-IcingaUnixTime.ps1)*
 
@@ -584,6 +587,53 @@ plugins stay usable in JEA sessions.
 
 ---
 
+### ConvertFrom-ModuleBoolean
+
+*Private function*
+
+**Synopsis:** Convert boolean, numeric or string macro values into a PowerShell Boolean
+
+#### Description
+
+ConvertFrom-ModuleBoolean converts JSON and Icinga 2 macro values into a strict
+System.Boolean so PowerShell switch and bool parameters never misinterpret
+strings such as 'False' or '0' as truthy. Recognizes booleans, SwitchParameter
+values, numeric 1/0, and case-insensitive strings ('true', '1', 'yes', '$true'
+for $true; 'false', '0', 'no', '$false', '' and $null for $false). Unknown values
+are logged through Write-FunctionReturnValue using StringToBoolConversionInvalidValue
+and evaluate to $false.
+
+#### Parameters
+
+**`$Value`**
+
+| Name  | Type          | Description                                               | Default |
+|-------|---------------|-----------------------------------------------------------|---------|
+| Value | System.Object | Input value from JSON or Icinga macros to convert.        | $null   |
+
+#### Outputs
+
+System.Boolean -- Resolved boolean value ($true or $false).
+
+#### Examples
+
+```powershell
+PS> ConvertFrom-ModuleBoolean -Value 'False'
+False
+
+Converts the string 'False' into boolean $false instead of PowerShell's non-empty
+string truthiness.
+```
+
+#### Notes
+
+Uses Write-FunctionReturnValue with key StringToBoolConversionInvalidValue when
+an unrecognized value is supplied.
+
+*Source: [src/Tools/Private/ConvertFrom-ModuleBoolean.ps1](../../src/Tools/Private/ConvertFrom-ModuleBoolean.ps1)*
+
+---
+
 ### ConvertFrom-ModuleJson
 
 *Private function*
@@ -665,6 +715,54 @@ In Windows PowerShell 5.1, this function dynamically loads the System.Web.Extens
 assembly if it is not already loaded.
 
 *Source: [src/Tools/Private/ConvertTo-ModuleJson.ps1](../../src/Tools/Private/ConvertTo-ModuleJson.ps1)*
+
+---
+
+### ConvertTo-ModuleSecureString
+
+*Private function*
+
+**Synopsis:** Convert plain-text or existing secret input into a SecureString safely
+
+#### Description
+
+ConvertTo-ModuleSecureString converts plain-text strings delivered through
+Icinga 2 command macros into read-only System.Security.SecureString instances
+via direct character population (AppendChar + MakeReadOnly), avoiding both
+ConvertTo-SecureString -AsPlainText analyzer errors and empty-string
+ParameterBindingException failures on Windows PowerShell 5.1. Null values
+return $null, existing SecureString instances are returned unchanged, and
+conversion errors emit SecureStringConversionFailed via
+Write-FunctionReturnValue and return $null.
+
+#### Parameters
+
+**`$InputObject`**
+
+| Name        | Type          | Description                                                 | Default |
+|-------------|---------------|-------------------------------------------------------------|---------|
+| InputObject | System.Object | Plain-text string, SecureString or null value to normalize. | $null   |
+
+#### Outputs
+
+System.Security.SecureString -- Converted SecureString instance, or $null when
+InputObject is $null or conversion fails (SecureStringConversionFailed).
+
+#### Examples
+
+```powershell
+PS> $secret = ConvertTo-ModuleSecureString -InputObject 'MySecretValue'
+
+Converts the plain-text string into a SecureString instance.
+```
+
+#### Notes
+
+Compatible with Windows PowerShell 5.1 and PowerShell 7+. Callers that allocate
+temporary SecureString instances for check execution should call Dispose() once
+the check finishes.
+
+*Source: [src/Tools/Private/ConvertTo-ModuleSecureString.ps1](../../src/Tools/Private/ConvertTo-ModuleSecureString.ps1)*
 
 ---
 

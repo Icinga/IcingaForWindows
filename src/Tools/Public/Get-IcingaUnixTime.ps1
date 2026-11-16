@@ -1,52 +1,48 @@
 <#
 .SYNOPSIS
-Returns the current Unix time (epoch) from the local system in UTC.
+Return the current Unix epoch timestamp in UTC
 
 .DESCRIPTION
-Get-IcingaUnixTime returns the number of seconds (or, when requested, milliseconds) elapsed since the Unix epoch (1970-01-01T00:00:00Z).
-The function obtains the current time in UTC and converts it to a numeric Unix timestamp.
+Get-IcingaUnixTime returns the current UTC Unix timestamp relative to
+1970-01-01T00:00:00Z using DateTimeOffset.UtcNow so local system timezones or
+culture formats never skew the result. Without -Milliseconds it returns whole
+seconds as an Int32; with -Milliseconds it returns fractional seconds with
+millisecond precision as a Double, matching the timestamp format expected by
+Icinga 2 check result payloads (execution_start and execution_end).
 
 .PARAMETER Milliseconds
-| Name         | Type                                         | Description                                                          | Default |
-|--------------|----------------------------------------------|----------------------------------------------------------------------|---------|
-| Milliseconds | System.Management.Automation.SwitchParameter | When set, returns Unix time in milliseconds (Int64) instead of seconds (Int32). | $false |
+| Name         | Type                                         | Description                                                                   | Default |
+|--------------|----------------------------------------------|-------------------------------------------------------------------------------|---------|
+| Milliseconds | System.Management.Automation.SwitchParameter | When set, returns fractional Unix seconds with millisecond precision (Double).| $false  |
+
+.OUTPUTS
+System.ValueType -- System.Int32 whole Unix seconds by default, or System.Double
+fractional Unix seconds when -Milliseconds is set.
 
 .EXAMPLE
 PS> Get-IcingaUnixTime
-1609459200
+1731750000
 
-Returns the current Unix time in seconds (int).
+Returns the current UTC Unix time in whole seconds.
 
 .EXAMPLE
 PS> Get-IcingaUnixTime -Milliseconds
-1609459200000
+1731750000.123
 
-Intended to return the current Unix time in milliseconds (int64).
-
-.OUTPUTS
-System.Int32 — Unix time in seconds when called without -Milliseconds.
-System.Int64 — Unix time in milliseconds when called with -Milliseconds.
+Returns the current UTC Unix time in seconds with millisecond precision.
 
 .NOTES
-The timestamp is calculated using UTC to represent the standard Unix epoch (1970-01-01T00:00:00Z).
-Without -Milliseconds the function returns a System.Int32 via Get-Date -UFormat %s.
-With -Milliseconds the function divides TotalMilliseconds by 1000 and casts to Int64;
-callers requiring sub-second precision should verify the returned value before use.
-
+Uses System.DateTimeOffset.UtcNow across Windows PowerShell 5.1 and PowerShell 7+.
 #>
 function Get-IcingaUnixTime()
 {
     param (
-        [switch]$Milliseconds = $FALSE
+        [switch]$Milliseconds = $false
     );
 
-    # Return the current Unix time in milliseconds
     if ($Milliseconds) {
-        return ([int64](([DateTime]::UtcNow) - (Get-Date '1/1/1970')).TotalMilliseconds / 1000);
+        return [double]([System.DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() / 1000.0);
     }
 
-    # Return the current Unix time in seconds
-    return [int][double]::Parse(
-        (Get-Date -UFormat %s -Date (Get-Date).ToUniversalTime())
-    );
+    return [int][System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds();
 }
