@@ -51,8 +51,8 @@ so there are no races on the underlying counter handles. When no daemon is runni
 persistent per-runspace manager kept in module scope, so repeated reads stay warm and only the first
 read of a new counter pays the warm-up sleep.
 
-Requesting a counter also refreshes its last-seen timestamp in the registry, keeping actively used
-counters warm and out of the eviction path.
+Requesting a valid counter path also refreshes its last-seen timestamp in the registry, keeping
+actively used counters warm and out of the eviction path.
 
 #### Parameters
 
@@ -637,10 +637,10 @@ Only literal array/string arguments are discoverable. The kernel file is produce
 `Start-IcingaPerformanceCounterDaemon` initializes the performance-counter environment and
 then runs the request/refresh loop while `Test-ThreadRunning` is true. Each cycle it blocks
 briefly on the request queue; when a request arrives it resolves the requested counters
-through the central manager and pushes the result into the caller's pending response queue,
-keyed by the request id. When idle (and on a throttled interval) it runs the maintenance
-step which refreshes the heartbeat, reconciles transient instances, evicts unused counters
-and persists the cache.
+through the central manager and atomically claims the caller's pending response queue via
+`TryRemove` before pushing the result, preventing disposal races when a caller times out.
+When idle (and on a throttled interval) it runs the maintenance step which refreshes the
+heartbeat, reconciles transient instances, evicts unused counters and persists the cache.
 
 Because every performance counter handle is created, sampled and disposed here on this one
 thread, callers never touch the non-thread-safe counter objects directly -- they exchange
@@ -755,10 +755,11 @@ passes its cached store reference to avoid re-resolving it through Get-GlobalRun
 #### Description
 
 `Write-IcingaPerformanceCounterCache` serializes the registered counter paths and their
-last-seen timestamps to a JSON file in the module cache directory. The daemon calls this
-each refresh cycle so the warm counter set survives restarts and self-maintains -- new
-counters are added and stale ones drop out over time. The file is written atomically by
-writing to a temporary file and renaming it into place.
+last-seen timestamps to a JSON file in the module cache directory using UTF-8 without BOM.
+The daemon calls this each refresh cycle so the warm counter set survives restarts and
+self-maintains -- new counters are added and stale ones drop out over time. The file is
+written atomically via a temporary file and guarded with try/catch so transient file locks
+or permission issues never interrupt the daemon.
 
 #### Outputs
 
@@ -777,5 +778,4 @@ are stored in ISO 8601 round-trip format so they parse identically on Windows Po
 5.1 and PowerShell 7.
 
 *Source: [src/PerformanceCounter/Private/Write-IcingaPerformanceCounterCache.ps1](../../src/PerformanceCounter/Private/Write-IcingaPerformanceCounterCache.ps1)*
-
 

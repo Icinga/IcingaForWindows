@@ -118,6 +118,46 @@ Describe 'Invoke-IcingaCheckScheduledTask' {
             Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $FailedInfo -Arguments @{ 'IgnoreExitCodes' = @('0x41301'); } | Should -Be 0;
         }
 
+        It 'treats 267009 on Running tasks and 267011 as OK, masks 32-bit HRESULT hex codes, and supports legacy aliases' {
+            $RunningTask  = [PSCustomObject]@{
+                'TaskName' = 'Active Job';
+                'TaskPath' = '\Icinga\';
+                'State'    = 'Running';
+            };
+            $RunningInfo  = @{
+                '\Icinga\Active Job' = [PSCustomObject]@{
+                    'LastRunTime'        = [datetime]::Now.AddMinutes(-2);
+                    'NextRunTime'        = $null;
+                    'NumberOfMissedRuns' = 0;
+                    'LastTaskResult'     = 267009;
+                };
+            };
+            $NeverRunInfo = @{
+                '\Icinga\Icinga for Windows\Renew Certificate' = [PSCustomObject]@{
+                    'LastRunTime'        = [datetime]::new(1999, 11, 30, 0, 0, 0);
+                    'NextRunTime'        = $null;
+                    'NumberOfMissedRuns' = 0;
+                    'LastTaskResult'     = 267011;
+                };
+            };
+            $HresultInfo  = @{
+                '\Icinga\Icinga for Windows\Renew Certificate' = [PSCustomObject]@{
+                    'LastRunTime'        = [datetime]::Now.AddMinutes(-10);
+                    'NextRunTime'        = $null;
+                    'NumberOfMissedRuns' = 0;
+                    'LastTaskResult'     = -2147024891;
+                };
+            };
+
+            Invoke-TestScheduledTaskCheck -Tasks @($RunningTask) -Infos $RunningInfo | Should -Be 0;
+            Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $NeverRunInfo | Should -Be 0;
+
+            Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $HresultInfo | Should -Be 2;
+            Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $HresultInfo -Arguments @{ 'IgnoreExitCodes' = @('0x80070005'); } | Should -Be 0;
+            Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $HresultInfo -Arguments @{ 'IgnoreLastResult' = $true; }           | Should -Be 0;
+            Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $HresultInfo -Arguments @{ 'IgnoreExitCode' = $true; }             | Should -Be 0;
+        }
+
         It 'evaluates WarningMissedRuns and WarningLastRunTime thresholds' {
             $Info = @{
                 '\Icinga\Icinga for Windows\Renew Certificate' = [PSCustomObject]@{
@@ -168,6 +208,7 @@ Describe 'Invoke-IcingaCheckScheduledTask' {
             $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[UNKNOWN] Scheduled Tasks: No scheduled task matches the given filter';
 
             Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $script:DefaultInfo -Arguments @{ 'TaskPath' = '\DoesNotExist\*'; 'MitigateUnknown' = $true; } | Should -Be 0;
+            Invoke-TestScheduledTaskCheck -Tasks @($script:DefaultTask) -Infos $script:DefaultInfo -Arguments @{ 'TaskPath' = '\DoesNotExist\*'; 'IgnoreEmptyChecks' = $true; } | Should -Be 0;
         }
 
         It 'returns UNKNOWN when querying scheduled tasks fails' {

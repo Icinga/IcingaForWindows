@@ -185,4 +185,21 @@ Describe 'Invoke-IcingaCheckMemory' {
         Invoke-TestMemoryCheck -Arguments @{ 'NoPerfData' = $true; } | Should -Be 0;
         @($Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData).Count | Should -Be 0;
     }
+
+    It 'guards empty Win32_ComputerSystem results and skips 0-byte pagefiles cleanly' {
+        [hashtable]$EmptyComp    = @{
+            'Win32_ComputerSystem' = @();
+            'Win32_PageFileUsage'  = @();
+        };
+        Invoke-TestMemoryCheck -CimData $EmptyComp | Should -Be 3;
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Match 'Failed to read installed physical memory';
+
+        [hashtable]$ZeroPageData = @{
+            'Win32_ComputerSystem' = @([PSCustomObject]@{ 'TotalPhysicalMemory' = [uint64]17179869184; 'AutomaticManagedPagefile' = $true; });
+            'Win32_PageFileUsage'  = @(
+                [PSCustomObject]@{ 'Name' = 'C:\pagefile.sys'; 'AllocatedBaseSize' = [uint32]0; 'CurrentUsage' = [uint32]0; }
+            );
+        };
+        Invoke-TestMemoryCheck -CimData $ZeroPageData -Arguments @{ 'PageFileWarning' = '80%'; 'PageFileCritical' = '90%'; } | Should -Be 0;
+    }
 }

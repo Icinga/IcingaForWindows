@@ -45,6 +45,8 @@ function ConvertTo-ModuleSecureString()
         return $InputObject;
     }
 
+    # Populate SecureString character-by-character and seal with MakeReadOnly() so empty strings work
+    # on Windows PowerShell 5.1 without triggering ConvertTo-SecureString -AsPlainText analyzer errors
     [string]$PlainText  = [string]$InputObject;
     $SecureStringResult = New-Object System.Security.SecureString;
 
@@ -56,6 +58,7 @@ function ConvertTo-ModuleSecureString()
         $SecureStringResult.MakeReadOnly();
         return $SecureStringResult;
     } catch {
+        # Dispose partially populated instance and log via Write-FunctionReturnValue without exposing the secret text
         $SecureStringResult.Dispose();
         return (Write-FunctionReturnValue -ReturnValue 'SecureStringConversionFailed' -Data @{ 'ExceptionMessage' = $_.Exception.Message; } -OverrideReturn $null);
     }

@@ -99,7 +99,7 @@ function Invoke-IcingaCheckUptime()
     ).AddCheck(
         (New-IcingaPlugin 'Last Boot').
             SetNoPerfData($true).
-            SetNotice([datetime]::Now.AddSeconds(-1 * [double]$Uptime).ToString('yyyy-MM-dd HH:mm:ss'))
+            SetNotice([datetime]::Now.AddSeconds(-1 * [double]$Uptime).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture))
     ).Commit();
 
     return $CheckPackage.Compile();

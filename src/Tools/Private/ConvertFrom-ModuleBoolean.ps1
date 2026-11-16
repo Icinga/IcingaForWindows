@@ -48,6 +48,8 @@ function ConvertFrom-ModuleBoolean()
         return [bool]$Value.IsPresent;
     }
 
+    # Handle numeric JSON/macro payloads strictly: only 1 and 0 are valid boolean numbers;
+    # any other number logs StringToBoolConversionInvalidValue and defaults safely to $false
     if ($Value -is [byte] -or $Value -is [sbyte] -or $Value -is [int16] -or $Value -is [uint16] -or $Value -is [int32] -or $Value -is [uint32] -or $Value -is [int64] -or $Value -is [uint64] -or $Value -is [single] -or $Value -is [double] -or $Value -is [decimal]) {
         if ($Value -eq 1) {
             return $true;
@@ -59,6 +61,7 @@ function ConvertFrom-ModuleBoolean()
         return (Write-FunctionReturnValue -ReturnValue 'StringToBoolConversionInvalidValue' -Data @{ 'Value' = $Value; } -OverrideReturn $false);
     }
 
+    # Normalize string tokens so 'False' / '0' / 'no' / '$false' evaluate to $false rather than PowerShell's non-empty truthiness
     [string]$Normalized = ([string]$Value).Trim().ToLowerInvariant();
 
     if ($Normalized.Length -eq 0) {

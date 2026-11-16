@@ -9,19 +9,23 @@ package containing checks for its State, Missed Runs, Last Task Result, Last Run
 Time and Next Run Time. State is compared against the allowed State list (when
 provided) using CheckNotIn, raising CRITICAL when the task is not in any of the
 expected states. Missed Runs is evaluated against WarningMissedRuns and
-CriticalMissedRuns using the Icinga range grammar. Last Task Result raises
-CRITICAL whenever the last exit code is non-zero, unless IgnoreLastRunTime is set
-or the exit code is listed in IgnoreExitCodes (decimal and hex representations
-such as '0x41301' are both accepted). Last Run Time and Next Run Time measure the
-offset in seconds between the current time and the timestamp (Last Run Time
-counts up since the last execution, Next Run Time counts down until the next
-scheduled execution, and 0s is rendered as 'Never' when unset) and are evaluated
-against their respective duration thresholds.
+CriticalMissedRuns using the Icinga range grammar. Last Task Result treats
+Windows Scheduler informational codes 267009 (0x41301, SCHED_S_TASK_RUNNING,
+while the task State is Running) and 267011 (0x41303, SCHED_S_TASK_HAS_NOT_RUN)
+as OK by default, and raises CRITICAL on any other non-zero exit code unless
+IgnoreLastRunTime (aliased to IgnoreLastResult and IgnoreExitCode) is set or the
+code is listed in IgnoreExitCodes (decimal, unsigned and 32-bit masked hex
+representations such as '0x80070005' or '0x41301' are all accepted). Last Run
+Time and Next Run Time measure the offset in seconds between the current time
+and the timestamp (Last Run Time counts up since the last execution, Next Run
+Time counts down until the next scheduled execution, and 0s is rendered as
+'Never' when unset) and are evaluated against their respective duration
+thresholds.
 
 Explicit task names in TaskName (without wildcards) that do not exist on the host
 are reported with the state chosen by OverrideNotFound (UNKNOWN by default). When
 no task matches the filter at all, the plugin returns UNKNOWN, or OK when
-MitigateUnknown is set.
+MitigateUnknown (aliased to IgnoreEmptyChecks) is set.
 
 Performance data uses the labels '<path_taskname>::ifw_scheduledtask::state',
 '::missedruns', '::lasttaskresult', '::lastruntime' and '::nextruntime'.
@@ -143,7 +147,9 @@ function Invoke-IcingaCheckScheduledTask()
         [string]$CriticalLastRunTime        = '',
         [string]$WarningNextRunTime         = '',
         [string]$CriticalNextRunTime        = '',
+        [Alias('IgnoreLastResult', 'IgnoreExitCode')]
         [switch]$IgnoreLastRunTime          = $false,
+        [Alias('IgnoreEmptyChecks')]
         [switch]$MitigateUnknown            = $false,
         [ValidateSet('Ok', 'Warning', 'Critical', 'Unknown')]
         [string]$OverrideNotFound           = 'Unknown',
@@ -191,14 +197,42 @@ function Invoke-IcingaCheckScheduledTask()
 
             [bool]$ExitCodeIgnored = [bool]$IgnoreLastRunTime;
 
+            # Windows Task Scheduler reports non-zero status codes that do not represent failed runs:
+            # - 267011 (0x00041303, SCHED_S_TASK_HAS_NOT_RUN): newly created task that has never executed yet
+            # - 267009 (0x00041301, SCHED_S_TASK_RUNNING): task is actively running right now
+            if (-not $ExitCodeIgnored) {
+                if ($Task.LastTaskResult -eq 267011) {
+                    $ExitCodeIgnored = $true;
+                } elseif ($Task.LastTaskResult -eq 267009 -and $Task.State -eq [IcingaScheduledTaskStatus]::Running) {
+                    $ExitCodeIgnored = $true;
+                }
+            }
+
             if (-not $ExitCodeIgnored -and $Task.LastTaskResult -ne 0) {
-                [string]$ExitDecimal = [string]$Task.LastTaskResult;
-                [string]$ExitHex     = [string]::Format('{0:X}', $Task.LastTaskResult);
-                [string]$ExitHex0x   = [string]::Format('0x{0:X}', $Task.LastTaskResult);
+                # Mask to unsigned 32-bit before hex formatting so negative HRESULTs stored in [int64]
+                # (e.g. -2147024891) format as '0x80070005' instead of 64-bit '0xFFFFFFFF80070005'
+                [int64]$MaskedResult  = ([int64]$Task.LastTaskResult -band 0xFFFFFFFFL);
+                [string]$ExitDecimal  = [string]$Task.LastTaskResult;
+                [string]$ExitUnsigned = [string]$MaskedResult;
+                [string]$ExitHex      = [string]::Format('{0:X}', $MaskedResult);
+                [string]$ExitHex0x    = [string]::Format('0x{0:X}', $MaskedResult);
+                [string]$ExitHex8     = [string]::Format('{0:X8}', $MaskedResult);
+                [string]$ExitHex80x   = [string]::Format('0x{0:X8}', $MaskedResult);
 
                 foreach ($IgnoredCode in $IgnoreExitCodes) {
-                    [string]$CodeText = [string]$IgnoredCode;
-                    if ($CodeText -ieq $ExitDecimal -or $CodeText -ieq $ExitHex -or $CodeText -ieq $ExitHex0x) {
+                    if ($null -eq $IgnoredCode) {
+                        continue;
+                    }
+
+                    [string]$CodeText = ([string]$IgnoredCode).Trim();
+                    if ('' -eq $CodeText) {
+                        continue;
+                    }
+
+                    [bool]$MatchesDec = ($CodeText -ieq $ExitDecimal -or $CodeText -ieq $ExitUnsigned);
+                    [bool]$MatchesHex = ($CodeText -ieq $ExitHex -or $CodeText -ieq $ExitHex0x -or $CodeText -ieq $ExitHex8 -or $CodeText -ieq $ExitHex80x);
+
+                    if ($MatchesDec -or $MatchesHex) {
                         $ExitCodeIgnored = $true;
                         break;
                     }
@@ -256,7 +290,7 @@ function Invoke-IcingaCheckScheduledTask()
     [array]$RequiredTasks = @();
 
     foreach ($Filter in $TaskName) {
-        if ([string]::IsNullOrEmpty([string]$Filter) -eq $false -and [System.Management.Automation.WildcardPattern]::ContainsWildcardCharacters([string]$Filter) -eq $false) {
+        if ($null -ne $Filter -and [string]::IsNullOrEmpty([string]$Filter) -eq $false -and [System.Management.Automation.WildcardPattern]::ContainsWildcardCharacters([string]$Filter) -eq $false) {
             $RequiredTasks += [string]$Filter;
         }
     }

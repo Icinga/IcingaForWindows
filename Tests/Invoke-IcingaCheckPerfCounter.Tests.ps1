@@ -174,6 +174,10 @@ Describe 'Invoke-IcingaCheckPerfCounter' {
 
         $Arguments['IgnoreEmptyChecks'] = $true;
         Invoke-TestPerfCounterCheck -StubData $script:Counters -Arguments $Arguments | Should -Be 0;
+
+        $Arguments.Remove('IgnoreEmptyChecks');
+        $Arguments['MitigateUnknown']   = $true;
+        Invoke-TestPerfCounterCheck -StubData $script:Counters -Arguments $Arguments | Should -Be 0;
     }
 
     It 'rejects a missing or invalid counter path and a timed out read' {

@@ -175,6 +175,7 @@ Describe 'Get-IcingaDirectoryInformation' {
         $Result.Message        | Should -Be 'The value "20MB" of -ChangeOlderThan is not a valid duration such as 20d, 12h or 30m';
 
         (Invoke-TestDirectory -Arguments @{ 'Path' = $script:Root; 'FileSizeGreaterThan' = 'abc'; }).ReturnCode | Should -Be 'DirectoryFilterInvalid';
+        (Invoke-TestDirectory -Arguments @{ 'Path' = $script:Root; 'FileNames' = @( '[unclosed' ); }).ReturnCode | Should -Be 'DirectoryFilterInvalid';
     }
 
     It 'reports a missing path, or an empty result with IgnoreMissingPath' {

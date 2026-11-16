@@ -3,11 +3,12 @@
 Create an IcingaPlugin node with the class type of the current runspace
 
 .DESCRIPTION
-New-IcingaPlugin is the factory every plugin and function uses instead of
-[IcingaPlugin]::new(). It resolves the IcingaPlugin type at runtime in the
-calling runspace and calls the matching constructor: with a name only it creates
-a container that aggregates child checks, with a value it creates a check, and
-with a unit the value and the thresholds of the check use that unit.
+New-IcingaPlugin is the public plugin SDK factory every check plugin, external
+script and helper function uses instead of [IcingaPlugin]::new(). It resolves
+the IcingaPlugin type at runtime in the calling runspace and calls the matching
+constructor: with a name only it creates a container that aggregates child
+checks, with a value it creates a check, and with a unit the value and the
+thresholds of the check use that unit.
 
 The returned node exposes the full fluent surface of IcingaPlugin. Wrap the call
 in parentheses to chain methods directly, for example

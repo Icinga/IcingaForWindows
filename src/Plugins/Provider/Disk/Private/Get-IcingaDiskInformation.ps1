@@ -31,6 +31,11 @@ DiskInformationDiskQueryFailed), so the log shows where the collection stopped.
 |------------|---------------|----------------------------------------------------------|--------------|
 | Entrypoint | System.String | View to return: 'PhysicalDisk', 'Partition' or 'Volume'. | PhysicalDisk |
 
+.PARAMETER SkipPartitionMapping
+| Name                 | Type                                         | Description                                                           | Default |
+|----------------------|----------------------------------------------|-----------------------------------------------------------------------|---------|
+| SkipPartitionMapping | System.Management.Automation.SwitchParameter | Skip querying MSFT_Partition when Entrypoint is set to 'Volume'.      | $false  |
+
 .OUTPUTS
 System.Collections.Hashtable -- The entries of the requested view, or an
 IcingaError when its main class could not be read. Entry fields per view:
@@ -72,7 +77,8 @@ function Get-IcingaDiskInformation()
 {
     param (
         [ValidateSet('PhysicalDisk', 'Partition', 'Volume')]
-        [string]$Entrypoint = 'PhysicalDisk'
+        [string]$Entrypoint           = 'PhysicalDisk',
+        [switch]$SkipPartitionMapping = $false
     );
 
     [string]$StorageNamespace = 'root/Microsoft/Windows/Storage';
@@ -119,6 +125,12 @@ function Get-IcingaDiskInformation()
             'PartitionNumber' = $null;
             'PartitionId'     = $null;
         };
+    }
+
+    # Callers that only need Win32_Volume capacity/freespace metrics (such as Invoke-IcingaCheckPartitionSpace)
+    # can skip MSFT_Partition so non-admin accounts without root/Microsoft/Windows/Storage rights do not log errors
+    if ($Entrypoint -eq 'Volume' -and $SkipPartitionMapping) {
+        return (Write-FunctionReturnValue -ReturnValue 'DiskInformationCollected' -Data @{ 'Entrypoint' = $Entrypoint; 'Count' = $VolumeData.Count; } -OverrideReturn $VolumeData);
     }
 
     $Partitions = Get-IcingaWindowsInformation -ClassName 'MSFT_Partition' -Namespace $StorageNamespace -Property 'DiskNumber', 'PartitionNumber', 'DriveLetter', 'AccessPaths', 'Size', 'Offset', 'GptType', 'MbrType', 'IsBoot', 'IsSystem', 'IsActive', 'IsHidden';

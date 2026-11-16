@@ -36,6 +36,13 @@ against the warning and critical thresholds, so the plugin reports
 CRITICAL/WARNING as soon as any core, node or the total breaches its threshold
 (the default 'all must be OK' aggregation).
 
+NodeFilter (aliased to SocketFilter for legacy compatibility) narrows evaluation
+to matching NUMA node IDs while preserving hardware core numbering. Core selects
+'*' (all cores, node totals and Overall Load), '_Total' / 'Total' (only Overall
+Load), or a specific core number/wildcard pattern. OverallOnly collects all NUMA
+node and core checks and performance data, while applying Warning and Critical
+thresholds exclusively to 'Overall Load'.
+
 'Node Total' and 'Overall Load' are the averages of the core values read in the
 same request. Windows' own '<node>,_Total' and '_Total' instances are not used,
 because they are sampled in a slightly different window and would not match the
@@ -68,6 +75,24 @@ This plugin is Windows-only because it relies on the Windows performance counter
 |----------|---------------|---------------------------------------------------------------------|---------|
 | Critical | System.String | Critical threshold in percent, using the Icinga threshold grammar.  |         |
 
+**`$Core`**
+
+| Name | Type          | Description                                                                   | Default |
+|------|---------------|-------------------------------------------------------------------------------|---------|
+| Core | System.String | Core selector: '*' for all cores + totals, '_Total'/'Total' or a core number. | *       |
+
+**`$NodeFilter`**
+
+| Name       | Type         | Description                                                               | Default |
+|------------|--------------|---------------------------------------------------------------------------|---------|
+| NodeFilter | System.Array | NUMA node IDs to include (wildcards allowed; aliased to SocketFilter).    | @()     |
+
+**`$OverallOnly`**
+
+| Name        | Type                                         | Description                                                                  | Default |
+|-------------|----------------------------------------------|------------------------------------------------------------------------------|---------|
+| OverallOnly | System.Management.Automation.SwitchParameter | Collect all cores/nodes, but evaluate Warning/Critical only on Overall Load. | False   |
+
 **`$Verbosity`**
 
 | Name      | Type         | Description                                                                        | Default |
@@ -93,10 +118,16 @@ Warns at 80% and goes critical at 90% load for any core, NUMA node or the total.
 ```
 
 ```powershell
-PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90 -Verbosity 2
+PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90 -OverallOnly
 
-Shows every NUMA node and core in the output, not only the ones that breach a
-threshold.
+Collects performance data for all cores and NUMA nodes, alerting only when
+Overall Load breaches 80% or 90%.
+```
+
+```powershell
+PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90 -Core '_Total'
+
+Evaluates and emits performance data exclusively for Overall Load.
 ```
 
 #### Notes
@@ -932,19 +963,23 @@ package containing checks for its State, Missed Runs, Last Task Result, Last Run
 Time and Next Run Time. State is compared against the allowed State list (when
 provided) using CheckNotIn, raising CRITICAL when the task is not in any of the
 expected states. Missed Runs is evaluated against WarningMissedRuns and
-CriticalMissedRuns using the Icinga range grammar. Last Task Result raises
-CRITICAL whenever the last exit code is non-zero, unless IgnoreLastRunTime is set
-or the exit code is listed in IgnoreExitCodes (decimal and hex representations
-such as '0x41301' are both accepted). Last Run Time and Next Run Time measure the
-offset in seconds between the current time and the timestamp (Last Run Time
-counts up since the last execution, Next Run Time counts down until the next
-scheduled execution, and 0s is rendered as 'Never' when unset) and are evaluated
-against their respective duration thresholds.
+CriticalMissedRuns using the Icinga range grammar. Last Task Result treats
+Windows Scheduler informational codes 267009 (0x41301, SCHED_S_TASK_RUNNING,
+while the task State is Running) and 267011 (0x41303, SCHED_S_TASK_HAS_NOT_RUN)
+as OK by default, and raises CRITICAL on any other non-zero exit code unless
+IgnoreLastRunTime (aliased to IgnoreLastResult and IgnoreExitCode) is set or the
+code is listed in IgnoreExitCodes (decimal, unsigned and 32-bit masked hex
+representations such as '0x80070005' or '0x41301' are all accepted). Last Run
+Time and Next Run Time measure the offset in seconds between the current time
+and the timestamp (Last Run Time counts up since the last execution, Next Run
+Time counts down until the next scheduled execution, and 0s is rendered as
+'Never' when unset) and are evaluated against their respective duration
+thresholds.
 
 Explicit task names in TaskName (without wildcards) that do not exist on the host
 are reported with the state chosen by OverrideNotFound (UNKNOWN by default). When
 no task matches the filter at all, the plugin returns UNKNOWN, or OK when
-MitigateUnknown is set.
+MitigateUnknown (aliased to IgnoreEmptyChecks) is set.
 
 Performance data uses the labels '<path_taskname>::ifw_scheduledtask::state',
 '::missedruns', '::lasttaskresult', '::lastruntime' and '::nextruntime'.
@@ -1084,22 +1119,23 @@ is the return value; an Icinga command wrapper is expected to exit with it.
 
 *Public function*
 
-**Synopsis:** Check the state of Windows services against an expected status
+**Synopsis:** Check the state of Windows services against one or more expected statuses
 
 #### Description
 
 Queries every service from the Win32_Service CIM class once and builds a single
 IcingaPlugin container named 'Services'. Each selected service becomes a child
-check comparing its current state with the expected status; a mismatch raises the
-state chosen with OverrideNotOk (CRITICAL by default).
+check comparing its current state with the expected Status list; a mismatch
+raises the state chosen with OverrideNotOk (CRITICAL by default).
 
 When no service is given, every service with the 'Automatic' start mode is
 checked: it is expected to be running, except when it is stopped with exit code
 0, which means it ended on purpose and is reported OK. When services are given
-by name or display name (wildcards allowed), they are compared against Status,
-optionally narrowed down by their startup type. Every given name without a
-wildcard that matches no service on the system is reported with the state chosen
-with OverrideNotFound (UNKNOWN by default).
+by name or display name (wildcards allowed), they are compared against Status
+(supporting both single statuses and multi-status lists), optionally narrowed
+down by their startup type. Every given name without a wildcard that matches no
+service on the system is reported with the state chosen with OverrideNotFound
+(UNKNOWN by default).
 
 Service states and startup types are resolved through the IcingaServiceStatus
 and IcingaServiceStartupType data types. Performance data contains the numeric
@@ -1125,9 +1161,9 @@ This plugin is Windows-only because it relies on the Win32_Service CIM class.
 
 **`$Status`**
 
-| Name   | Type                | Description                                                                                                                          | Default |
-|--------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------|---------|
-| Status | IcingaServiceStatus | Expected status of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused or Unknown.| Running |
+| Name   | Type                  | Description                                                                                                                            | Default    |
+|--------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------|------------|
+| Status | IcingaServiceStatus[] | Expected status(es) of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused, Unknown.| @(Running) |
 
 **`$FilterStartupType`**
 

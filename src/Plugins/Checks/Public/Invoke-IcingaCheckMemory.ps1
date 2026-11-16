@@ -123,6 +123,11 @@ function Invoke-IcingaCheckMemory()
         return $CheckPackage.SetError($ComputerSystem).Compile();
     }
 
+    # Guard against empty Win32_ComputerSystem result sets or invalid 0-byte physical memory totals
+    if ($null -eq $ComputerSystem -or $ComputerSystem.Count -eq 0 -or $null -eq $ComputerSystem[0] -or [uint64]$ComputerSystem[0].TotalPhysicalMemory -eq 0) {
+        return $CheckPackage.SetError('Failed to read installed physical memory from Win32_ComputerSystem').Compile();
+    }
+
     $PageFiles = Get-IcingaWindowsInformation -ClassName 'Win32_PageFileUsage' -Property 'Name', 'AllocatedBaseSize', 'CurrentUsage';
 
     if (Test-IcingaError -InputObject $PageFiles) {
@@ -140,7 +145,7 @@ function Invoke-IcingaCheckMemory()
         return $CheckPackage.SetError('Failed to read the performance counters of the category Memory').Compile();
     }
 
-    [uint64]$TotalMemory = $ComputerSystem[0].TotalPhysicalMemory;
+    [uint64]$TotalMemory = [uint64]$ComputerSystem[0].TotalPhysicalMemory;
     $Available           = Get-IcingaPerformanceCounterValue -InputObject $MemoryCounters['Available Bytes'];
 
     if ($null -eq $Available -or $Available -is [string]) {
@@ -184,33 +189,44 @@ function Invoke-IcingaCheckMemory()
     # page files on their allocated size, it is no reason to fail the check.
     [hashtable]$MaximumSizes = @{ };
 
-    if ($ComputerSystem[0].AutomaticManagedPagefile -eq $false) {
+    if ([bool]$ComputerSystem[0].AutomaticManagedPagefile -eq $false) {
         $PageFileSettings = Get-IcingaWindowsInformation -ClassName 'Win32_PageFileSetting' -Property 'Name', 'MaximumSize';
 
-        if ((Test-IcingaError -InputObject $PageFileSettings) -eq $false) {
+        if ((Test-IcingaError -InputObject $PageFileSettings) -eq $false -and $null -ne $PageFileSettings) {
             foreach ($Setting in $PageFileSettings) {
-                $MaximumSizes[[string]$Setting.Name] = [uint64]$Setting.MaximumSize;
+                if ($null -ne $Setting -and -not [string]::IsNullOrEmpty([string]$Setting.Name)) {
+                    $MaximumSizes[[string]$Setting.Name] = [uint64]$Setting.MaximumSize;
+                }
             }
         }
     }
 
     $PageFilePackage = New-IcingaPlugin 'PageFile Usage';
 
-    foreach ($PageFile in (ConvertTo-IcingaSortedArray -InputObject @($PageFiles) -Property 'Name')) {
-        [string]$PageFileName = $PageFile.Name;
+    foreach ($PageFile in (ConvertTo-IcingaSortedArray -InputObject $PageFiles -Property 'Name')) {
+        if ($null -eq $PageFile) {
+            continue;
+        }
+
+        [string]$PageFileName = [string]$PageFile.Name;
 
         if ((Test-IcingaArrayFilter -InputObject $PageFileName -Include $IncludePageFile -Exclude $ExcludePageFile) -eq $false) {
             continue;
         }
 
         # A maximum of 0 means the size of this page file is managed by Windows.
-        [uint64]$SizeMB = $PageFile.AllocatedBaseSize;
+        [uint64]$SizeMB = [uint64]$PageFile.AllocatedBaseSize;
 
         if ($MaximumSizes.ContainsKey($PageFileName) -and $MaximumSizes[$PageFileName] -gt 0) {
             $SizeMB = $MaximumSizes[$PageFileName];
         }
 
-        [uint64]$Size  = $SizeMB * 1MB;
+        # Skip unallocated 0-byte pagefile entries so percentage thresholds (BaseValue = 0) do not evaluate 0..0 bounds
+        [uint64]$Size = $SizeMB * 1MB;
+        if ($Size -eq 0) {
+            continue;
+        }
+
         [uint64]$Usage = [uint64]$PageFile.CurrentUsage * 1MB;
 
         # Perfdata label: <pagefile>::ifw_pagefile::used (own template instead of ifw_memory).

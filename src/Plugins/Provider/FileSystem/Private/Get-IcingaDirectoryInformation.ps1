@@ -252,7 +252,16 @@ function Get-IcingaDirectoryInformation()
             break;
         }
 
-        $Patterns += [System.Management.Automation.WildcardPattern]::new([string]$Name, [System.Management.Automation.WildcardOptions]::IgnoreCase);
+        # Eagerly evaluate IsMatch('') so malformed bracket patterns (such as '[unclosed') trigger
+        # WildcardPatternException immediately and return a structured DirectoryFilterInvalid IcingaError
+        try {
+            $CompiledPattern = [System.Management.Automation.WildcardPattern]::new([string]$Name, [System.Management.Automation.WildcardOptions]::IgnoreCase);
+            [void]$CompiledPattern.IsMatch('');
+            $Patterns       += $CompiledPattern;
+        } catch {
+            [hashtable]$PatternErrorData = @{ 'Path' = $Path; 'Filter' = 'FileNames'; 'Value' = [string]$Name; 'Error' = $_.Exception.Message; };
+            return (Write-FunctionReturnValue -ReturnValue 'DirectoryFilterInvalid' -Data $PatternErrorData -OverrideReturn (('IcingaError' -as [type])::new('DirectoryFilterInvalid', [string]::Format('The value "{0}" of -FileNames is not a valid wildcard pattern', $Name), $PatternErrorData)));
+        }
     }
 
     if (-not [System.IO.Path]::IsPathRooted($Path)) {

@@ -42,12 +42,16 @@ function Split-IcingaBinaryPluginOutput()
         };
     }
 
+    # Normalize CRLF/CR line endings so single-line and multi-line Nagios/Icinga outputs parse identically
     [string]$Normalized       = ($RawOutput -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n");
     [array]$Lines             = $Normalized -split "`n";
     [array]$OutputLines       = @();
     [array]$PerfChunks        = @();
     [bool]$InTrailingPerfMode = $false;
 
+    # Split status output from performance data at '|':
+    # - Line 0: 'STATUS OK - message | perf1 perf2'
+    # - Subsequent lines: additional human-readable output until a trailing '| perf...' block begins
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         [string]$CurrentLine = $Lines[$i];
         [int]$PipeIndex      = $CurrentLine.IndexOf('|');
@@ -68,6 +72,7 @@ function Split-IcingaBinaryPluginOutput()
                 $InTrailingPerfMode = $true;
             }
         } elseif ($InTrailingPerfMode -and $CurrentLine -match '=') {
+            # Continuation lines of a multi-line performance-data block
             $PerfChunks += $CurrentLine.Trim();
         } else {
             $OutputLines += $CurrentLine.TrimEnd();
@@ -78,6 +83,8 @@ function Split-IcingaBinaryPluginOutput()
     [array]$PerfMetrics   = @();
 
     if ($CombinedPerf.Length -gt 0) {
+        # Tokenize space-separated metrics while keeping single/double-quoted labels, scoped labels
+        # (check_disk::'C:\ Free Space'=12GB) and doubled quotes ('Label''s Space'=10%) intact as one token
         $MetricMatches = [regex]::Matches($CombinedPerf, '(?:''[^'']*''|"[^"]*"|\S)+');
         foreach ($MetricMatch in $MetricMatches) {
             if (-not [string]::IsNullOrWhiteSpace($MetricMatch.Value)) {

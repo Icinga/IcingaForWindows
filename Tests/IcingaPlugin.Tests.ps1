@@ -948,5 +948,64 @@ Describe 'IcingaPlugin' {
             $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Match '^\[WARNING\] Duration: 45m is greater than threshold 30m';
             $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0] | Should -Be 'default::ifw_check::duration=2700s;1800;3600;;';
         }
+
+        It 'caches Get-PSCallStack in O(1) via ActiveCheckCommand across pre-constructed and child nodes and resets on Compile' {
+            [hashtable]$ScaleOutcome = & $script:IcingaModule {
+                $script:StackLookups = 0;
+                $RealGetCallStack    = Get-Command -Name 'Get-PSCallStack' -CommandType Cmdlet;
+
+                function Get-PSCallStack()
+                {
+                    $script:StackLookups++;
+                    return (& $RealGetCallStack);
+                }
+
+                function Invoke-IcingaCheckCachedScale()
+                {
+                    $PreBuiltLeaf = (New-IcingaPlugin 'PreBuilt' 10 '%').MetricIndex('pre').MetricLabel('load').CheckRange();
+                    $RootPkg      = New-IcingaPlugin 'Scale Root';
+                    $RootPkg.AddCheck($PreBuiltLeaf).Commit();
+
+                    for ($idx = 0; $idx -lt 25; $idx++) {
+                        $RootPkg.AddCheck((New-IcingaPlugin "Item $idx" $idx '%').MetricIndex("i$idx").MetricLabel('load').CheckRange()).Commit();
+                    }
+
+                    return $RootPkg.Compile();
+                }
+
+                # Standalone check outside any Invoke-IcingaCheck* must not populate ActiveCheckCommand
+                [void](New-IcingaPlugin 'ScratchDangling' 42 '%').Warning('80').Critical('90').CheckRange();
+                $SlotBeforeScale        = (Get-GlobalRuntimeVariable).Private.Icinga.ActiveCheckCommand;
+                $script:StackLookups    = 0;
+
+                [int]$ExitScale         = Invoke-IcingaCheckCachedScale;
+                [int]$CallsDuringPlugin = $script:StackLookups;
+                [array]$ScalePerf       = @((Get-GlobalRuntimeVariable).Private.Icinga.CheckResult.PerformanceData);
+                $ActiveSlotAfterCompile = (Get-GlobalRuntimeVariable).Private.Icinga.ActiveCheckCommand;
+
+                [int]$ExitStandalone    = (New-IcingaPlugin 'Standalone' 5 '%').CheckRange().Compile();
+                [string]$StandalonePerf = [string]((Get-GlobalRuntimeVariable).Private.Icinga.CheckResult.PerformanceData[0]);
+
+                return @{
+                    'SlotBeforeScale'        = $SlotBeforeScale;
+                    'ExitScale'              = $ExitScale;
+                    'CallsDuringPlugin'      = $CallsDuringPlugin;
+                    'FirstPerf'              = [string]$ScalePerf[0];
+                    'LastPerf'               = [string]$ScalePerf[$ScalePerf.Count - 1];
+                    'ActiveSlotAfterCompile' = $ActiveSlotAfterCompile;
+                    'ExitStandalone'         = $ExitStandalone;
+                    'StandalonePerf'         = $StandalonePerf;
+                };
+            };
+
+            $ScaleOutcome['SlotBeforeScale']        | Should -BeNullOrEmpty;
+            $ScaleOutcome['ExitScale']              | Should -Be 0;
+            $ScaleOutcome['CallsDuringPlugin']      | Should -Be 1;
+            $ScaleOutcome['FirstPerf']              | Should -Be 'pre::ifw_cachedscale::load=10%;;;;';
+            $ScaleOutcome['LastPerf']               | Should -Be 'i24::ifw_cachedscale::load=24%;;;;';
+            $ScaleOutcome['ActiveSlotAfterCompile'] | Should -BeNullOrEmpty;
+            $ScaleOutcome['ExitStandalone']         | Should -Be 0;
+            $ScaleOutcome['StandalonePerf']         | Should -Be 'default::ifw_check::standalone=5%;;;;';
+        }
     }
 }

@@ -11,9 +11,11 @@ human-readable CommandLine string with SecureString secrets masked as '********'
 Two Icinga 2 delivery modes are supported seamlessly across Windows PowerShell
 5.1 (Dictionary[string, object]) and PowerShell 7+ (Hashtable):
 1. Active ifw-api template (macros.ifw_api_arguments present): resolves single
-   and embedded $macro$ references, evaluates set_if conditions, orders binary
-   arguments by order, honors skip_key and repeat_key, and rejects unknown
-   PowerShell parameters that carry a non-empty value with IWKB001001.
+   and embedded $macro$ references via Expand-IcingaProtocolMacroValue,
+   evaluates set_if conditions, orders binary arguments by order, honors
+   skip_key and repeat_key, and rejects unknown PowerShell parameters that carry
+   a non-empty value with IWKB001001 (skipping empty strings, empty lists and
+   empty dictionaries).
 2. Fallback without ifw-api (macros.ifw_api_arguments absent): ignores internal
    ifw_api_* and IcingaPowerShellBase_* variables, maps PowerShell parameters by
    exact parameter/alias name or the IcingaCheck<Name>_<Type>_<Param> convention
@@ -59,80 +61,26 @@ function ConvertFrom-IcingaProtocolMacros()
     [string]$BinaryPath            = [string]$ResolvedCommand['BinaryPath'];
     $CommandParameters             = $ResolvedCommand['Parameters'];
 
-    # Normalize Macros into an ordinal OrderedDictionary (preserving -p vs -P) plus case-insensitive lookup fallback
-    $MacroMap                      = New-Object System.Collections.Specialized.OrderedDictionary([System.StringComparer]::Ordinal);
+    # Normalize Macros into an ordinal OrderedDictionary (preserving -p vs -P) plus a case-insensitive fallback map
+    $MacroMap                      = ConvertTo-ModuleOrderedDictionary -InputObject $Macros -SkipEmptyKeys;
     [hashtable]$MacroMapIgnoreCase = @{ };
 
-    if ($Macros -is [System.Collections.IDictionary]) {
-        foreach ($Key in $Macros.Keys) {
-            [string]$MacroKeyStr = [string]$Key;
-            if ([string]::IsNullOrWhiteSpace($MacroKeyStr)) {
-                continue;
-            }
-
-            $MacroMap[$MacroKeyStr] = $Macros[$Key];
-            if (-not $MacroMapIgnoreCase.ContainsKey($MacroKeyStr) -or $null -eq $MacroMapIgnoreCase[$MacroKeyStr]) {
-                $MacroMapIgnoreCase[$MacroKeyStr] = $Macros[$Key];
-            }
-        }
-    } elseif ($null -ne $Macros) {
-        foreach ($Prop in $Macros.PSObject.Properties) {
-            [string]$PropKeyStr = [string]$Prop.Name;
-            if ([string]::IsNullOrWhiteSpace($PropKeyStr)) {
-                continue;
-            }
-
-            $MacroMap[$PropKeyStr] = $Prop.Value;
-            if (-not $MacroMapIgnoreCase.ContainsKey($PropKeyStr) -or $null -eq $MacroMapIgnoreCase[$PropKeyStr]) {
-                $MacroMapIgnoreCase[$PropKeyStr] = $Prop.Value;
-            }
+    foreach ($MacroKey in $MacroMap.Keys) {
+        [string]$MacroKeyText = [string]$MacroKey;
+        if (-not $MacroMapIgnoreCase.ContainsKey($MacroKeyText) -or $null -eq $MacroMapIgnoreCase[$MacroKeyText]) {
+            $MacroMapIgnoreCase[$MacroKeyText] = $MacroMap[$MacroKey];
         }
     }
 
     # Build case-insensitive parameter & alias lookup for PowerShell check commands
-    [hashtable]$ParamLookup      = @{ };
-    [hashtable]$ExcludedCommon   = @{ };
-    [array]$CommonParameterNames = @(
-        'Verbose', 'Debug', 'ErrorAction', 'WarningAction', 'InformationAction',
-        'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable',
-        'OutBuffer', 'PipelineVariable', 'ProgressAction', 'WhatIf', 'Confirm'
-    );
-
-    foreach ($CommonName in $CommonParameterNames) {
-        $ExcludedCommon[$CommonName] = $true;
-    }
-
+    [hashtable]$ParamLookup = @{ };
     if ($Kind -eq 'PowerShell' -and $null -ne $CommandParameters) {
-        foreach ($ParamEntry in $CommandParameters.GetEnumerator()) {
-            $ParamMeta = $ParamEntry.Value;
-            if ($ExcludedCommon.ContainsKey([string]$ParamMeta.Name)) {
-                continue;
-            }
-
-            $ParamLookup[[string]$ParamMeta.Name] = $ParamMeta;
-
-            if ($null -ne $ParamMeta.Aliases) {
-                foreach ($AliasName in $ParamMeta.Aliases) {
-                    if (-not [string]::IsNullOrWhiteSpace([string]$AliasName)) {
-                        $ParamLookup[[string]$AliasName] = $ParamMeta;
-                    }
-                }
-            }
-        }
+        [hashtable]$ParamBundle = Get-ModuleCommandParameterMap -Parameters $CommandParameters;
+        $ParamLookup            = $ParamBundle['Lookup'];
     }
 
-    [bool]$HasApiArguments = $false;
-    [object]$RawApiArgsObj = $null;
-
-    if ($MacroMap.Contains('ifw_api_arguments')) {
-        $RawApiArgsObj = $MacroMap['ifw_api_arguments'];
-    } elseif ($MacroMapIgnoreCase.ContainsKey('ifw_api_arguments')) {
-        $RawApiArgsObj = $MacroMapIgnoreCase['ifw_api_arguments'];
-    }
-
-    if ($null -ne $RawApiArgsObj -and ($RawApiArgsObj -is [System.Collections.IDictionary] -or $RawApiArgsObj -is [PSCustomObject])) {
-        $HasApiArguments = $true;
-    }
+    [object]$RawApiArgsObj            = Get-ModuleObjectValue -InputObject $MacroMap -Name 'ifw_api_arguments';
+    [bool]$HasApiArguments            = ($null -ne $RawApiArgsObj -and ($RawApiArgsObj -is [System.Collections.IDictionary] -or $RawApiArgsObj -is [PSCustomObject]));
 
     [hashtable]$PowerShellArguments   = @{ };
     [hashtable]$MaskedParameters      = @{ };
@@ -144,181 +92,51 @@ function ConvertFrom-IcingaProtocolMacros()
         # -------------------------------------------------------------------
         # Mode A: ifw-api active (macros.ifw_api_arguments present)
         # -------------------------------------------------------------------
-        $ApiArgEntries = New-Object System.Collections.Specialized.OrderedDictionary([System.StringComparer]::Ordinal);
-
-        if ($RawApiArgsObj -is [System.Collections.IDictionary]) {
-            foreach ($ArgKey in $RawApiArgsObj.Keys) {
-                $ApiArgEntries[[string]$ArgKey] = $RawApiArgsObj[$ArgKey];
-            }
-        } else {
-            foreach ($ArgProp in $RawApiArgsObj.PSObject.Properties) {
-                $ApiArgEntries[[string]$ArgProp.Name] = $ArgProp.Value;
-            }
-        }
-
+        $ApiArgEntries             = ConvertTo-ModuleOrderedDictionary -InputObject $RawApiArgsObj;
         [array]$OrderedBinarySpecs = @();
         [int]$OriginalIndex        = 0;
 
         foreach ($ArgName in $ApiArgEntries.Keys) {
             [object]$RawArgSpec     = $ApiArgEntries[$ArgName];
             [bool]$IsStructuredSpec = ($RawArgSpec -is [System.Collections.IDictionary] -or $RawArgSpec -is [PSCustomObject]);
-            $ArgSpec                = [ordered]@{ };
+            $ArgSpec                = $null;
 
-            if ($RawArgSpec -is [System.Collections.IDictionary]) {
-                foreach ($SpecKey in $RawArgSpec.Keys) {
-                    $ArgSpec[[string]$SpecKey] = $RawArgSpec[$SpecKey];
-                }
-            } elseif ($RawArgSpec -is [PSCustomObject]) {
-                foreach ($SpecProp in $RawArgSpec.PSObject.Properties) {
-                    $ArgSpec[[string]$SpecProp.Name] = $SpecProp.Value;
-                }
+            if ($IsStructuredSpec) {
+                $ArgSpec = ConvertTo-ModuleOrderedDictionary -InputObject $RawArgSpec;
             } else {
+                $ArgSpec          = New-Object System.Collections.Specialized.OrderedDictionary([System.StringComparer]::Ordinal);
                 $ArgSpec['value'] = $RawArgSpec;
             }
 
             [bool]$HasSetIf      = ($ArgSpec.Contains('set_if') -and $null -ne $ArgSpec['set_if']);
             [bool]$HasValueField = ($ArgSpec.Contains('value') -and $null -ne $ArgSpec['value']);
 
-            # Evaluate set_if when defined
+            # Evaluate set_if condition first when defined
             if ($HasSetIf) {
-                [object]$SetIfExpr  = $ArgSpec['set_if'];
-                [bool]$SetIfIsSet   = $false;
-                [object]$SetIfValue = $null;
-
-                if ($SetIfExpr -isnot [string]) {
-                    $SetIfIsSet = ($null -ne $SetIfExpr);
-                    $SetIfValue = $SetIfExpr;
-                } elseif ($SetIfExpr -match '^\$([A-Za-z0-9_.:-]+)\$$') {
-                    [string]$SetIfRef = $Matches[1];
-                    if ($MacroMap.Contains($SetIfRef) -and $null -ne $MacroMap[$SetIfRef]) {
-                        $SetIfIsSet = $true;
-                        $SetIfValue = $MacroMap[$SetIfRef];
-                    } elseif ($MacroMapIgnoreCase.ContainsKey($SetIfRef) -and $null -ne $MacroMapIgnoreCase[$SetIfRef]) {
-                        $SetIfIsSet = $true;
-                        $SetIfValue = $MacroMapIgnoreCase[$SetIfRef];
-                    }
-                } else {
-                    $TokenMatches = [regex]::Matches($SetIfExpr, '\$\$|\$([A-Za-z0-9_.:-]+)\$');
-                    if ($TokenMatches.Count -gt 0) {
-                        [bool]$AllTokensFound = $true;
-                        $SetIfBuilder         = New-Object System.Text.StringBuilder;
-                        [int]$SetIfPos        = 0;
-
-                        foreach ($TokenMatch in $TokenMatches) {
-                            if ($TokenMatch.Index -gt $SetIfPos) {
-                                [void]$SetIfBuilder.Append($SetIfExpr.Substring($SetIfPos, ($TokenMatch.Index - $SetIfPos)));
-                            }
-
-                            if ($TokenMatch.Value -eq '$$') {
-                                [void]$SetIfBuilder.Append('$');
-                            } else {
-                                [string]$TokenName = $TokenMatch.Groups[1].Value;
-                                [object]$TokenVal  = $null;
-                                if ($MacroMap.Contains($TokenName)) {
-                                    $TokenVal = $MacroMap[$TokenName];
-                                } elseif ($MacroMapIgnoreCase.ContainsKey($TokenName)) {
-                                    $TokenVal = $MacroMapIgnoreCase[$TokenName];
-                                }
-
-                                if ($null -eq $TokenVal) {
-                                    $AllTokensFound = $false;
-                                    break;
-                                }
-                                [void]$SetIfBuilder.Append([string]$TokenVal);
-                            }
-
-                            $SetIfPos = $TokenMatch.Index + $TokenMatch.Length;
-                        }
-
-                        if ($AllTokensFound) {
-                            if ($SetIfPos -lt $SetIfExpr.Length) {
-                                [void]$SetIfBuilder.Append($SetIfExpr.Substring($SetIfPos));
-                            }
-                            $SetIfIsSet = $true;
-                            $SetIfValue = $SetIfBuilder.ToString();
-                        }
-                    } else {
-                        $SetIfIsSet = $true;
-                        $SetIfValue = $SetIfExpr;
-                    }
-                }
-
-                if (-not $SetIfIsSet) {
+                [hashtable]$ExpandedSetIf = Expand-IcingaProtocolMacroValue -Expression $ArgSpec['set_if'] -MacroMap $MacroMap -MacroIgnoreCase $MacroMapIgnoreCase;
+                if (-not $ExpandedSetIf['IsSet']) {
                     $OriginalIndex++;
                     continue;
                 }
 
-                [bool]$SetIfActive = ConvertFrom-ModuleBoolean -Value $SetIfValue;
+                [bool]$SetIfActive = ConvertFrom-ModuleBoolean -Value $ExpandedSetIf['Value'];
                 if (-not $SetIfActive) {
                     $OriginalIndex++;
                     continue;
                 }
             }
 
+            # Evaluate value field or handle valueless CLI flags / PowerShell switches
             [bool]$ValueIsSet      = $false;
             [object]$ResolvedValue = $null;
 
             if ($HasValueField) {
-                [object]$ValExpr = $ArgSpec['value'];
-
-                if ($ValExpr -isnot [string]) {
-                    $ValueIsSet    = ($null -ne $ValExpr);
-                    $ResolvedValue = $ValExpr;
-                } elseif ($ValExpr -match '^\$([A-Za-z0-9_.:-]+)\$$') {
-                    [string]$MacroRef = $Matches[1];
-                    if ($MacroMap.Contains($MacroRef) -and $null -ne $MacroMap[$MacroRef]) {
-                        $ValueIsSet    = $true;
-                        $ResolvedValue = $MacroMap[$MacroRef];
-                    } elseif ($MacroMapIgnoreCase.ContainsKey($MacroRef) -and $null -ne $MacroMapIgnoreCase[$MacroRef]) {
-                        $ValueIsSet    = $true;
-                        $ResolvedValue = $MacroMapIgnoreCase[$MacroRef];
-                    }
-                } else {
-                    $ValTokens = [regex]::Matches($ValExpr, '\$\$|\$([A-Za-z0-9_.:-]+)\$');
-                    if ($ValTokens.Count -gt 0) {
-                        [bool]$AllValTokensFound = $true;
-                        $InterpBuilder           = New-Object System.Text.StringBuilder;
-                        [int]$LastPos            = 0;
-
-                        foreach ($ValToken in $ValTokens) {
-                            if ($ValToken.Index -gt $LastPos) {
-                                [void]$InterpBuilder.Append($ValExpr.Substring($LastPos, ($ValToken.Index - $LastPos)));
-                            }
-
-                            if ($ValToken.Value -eq '$$') {
-                                [void]$InterpBuilder.Append('$');
-                            } else {
-                                [string]$RefName = $ValToken.Groups[1].Value;
-                                [object]$RefVal  = $null;
-                                if ($MacroMap.Contains($RefName)) {
-                                    $RefVal = $MacroMap[$RefName];
-                                } elseif ($MacroMapIgnoreCase.ContainsKey($RefName)) {
-                                    $RefVal = $MacroMapIgnoreCase[$RefName];
-                                }
-
-                                if ($null -eq $RefVal) {
-                                    $AllValTokensFound = $false;
-                                    break;
-                                }
-                                [void]$InterpBuilder.Append([string]$RefVal);
-                            }
-
-                            $LastPos = $ValToken.Index + $ValToken.Length;
-                        }
-
-                        if ($AllValTokensFound) {
-                            if ($LastPos -lt $ValExpr.Length) {
-                                [void]$InterpBuilder.Append($ValExpr.Substring($LastPos));
-                            }
-                            $ValueIsSet    = $true;
-                            $ResolvedValue = $InterpBuilder.ToString();
-                        }
-                    } else {
-                        $ValueIsSet    = $true;
-                        $ResolvedValue = $ValExpr;
-                    }
-                }
+                [hashtable]$ExpandedVal = Expand-IcingaProtocolMacroValue -Expression $ArgSpec['value'] -MacroMap $MacroMap -MacroIgnoreCase $MacroMapIgnoreCase;
+                $ValueIsSet             = [bool]$ExpandedVal['IsSet'];
+                $ResolvedValue          = $ExpandedVal['Value'];
             } elseif ($IsStructuredSpec) {
+                # Structured entry with omitted 'value' or serialized '"value": null' (e.g. '-4' = {} or '-NoPerfData' = { set_if = ... }):
+                # treat as a valueless CLI flag on binaries or as $true on PowerShell [switch] parameters
                 if ($Kind -eq 'Binary') {
                     $ValueIsSet    = $true;
                     $ResolvedValue = $true;
@@ -341,8 +159,15 @@ function ConvertFrom-IcingaProtocolMacros()
             if ($Kind -eq 'PowerShell') {
                 [string]$CleanParamName = ([string]$ArgName) -replace '^-', '';
 
+                # Unknown parameter in ifw_api_arguments: skip unpopulated empty values ("", [], {}),
+                # but raise IWKB001001 if the user actively populated a non-empty value for a non-existent parameter
                 if (-not $ParamLookup.ContainsKey($CleanParamName)) {
-                    if ($ResolvedValue -is [string] -and $ResolvedValue.Length -eq 0) {
+                    [bool]$IsEmptyStr = ($ResolvedValue -is [string] -and $ResolvedValue.Length -eq 0);
+                    [bool]$IsEmptyArr = ($ResolvedValue -is [System.Collections.IList] -and $ResolvedValue -isnot [string] -and $ResolvedValue.Count -eq 0);
+                    [bool]$IsEmptyMap = ($ResolvedValue -is [System.Collections.IDictionary] -and $ResolvedValue.Count -eq 0);
+                    [bool]$IsEmptyObj = ($ResolvedValue -is [PSCustomObject] -and @($ResolvedValue.PSObject.Properties).Count -eq 0);
+
+                    if ($IsEmptyStr -or $IsEmptyArr -or $IsEmptyMap -or $IsEmptyObj) {
                         $OriginalIndex++;
                         continue;
                     }
@@ -364,6 +189,7 @@ function ConvertFrom-IcingaProtocolMacros()
                     'Value' = $ResolvedValue;
                 };
             } else {
+                # Binary argument specification: parse 'order' (InvariantCulture), 'skip_key' and 'repeat_key'
                 [double]$OrderValue = 0.0;
                 if ($ArgSpec.Contains('order') -and $null -ne $ArgSpec['order']) {
                     if ($ArgSpec['order'] -is [int] -or $ArgSpec['order'] -is [long] -or $ArgSpec['order'] -is [double] -or $ArgSpec['order'] -is [single] -or $ArgSpec['order'] -is [decimal]) {
@@ -376,6 +202,8 @@ function ConvertFrom-IcingaProtocolMacros()
                     }
                 }
 
+                $OrderValue    = [System.Math]::Max(-1e15, [System.Math]::Min(1e15, $OrderValue));
+
                 [bool]$SkipKey = $false;
                 if ($ArgSpec.Contains('skip_key') -and $null -ne $ArgSpec['skip_key']) {
                     $SkipKey = ConvertFrom-ModuleBoolean -Value $ArgSpec['skip_key'];
@@ -386,7 +214,7 @@ function ConvertFrom-IcingaProtocolMacros()
                     $RepeatKey = ConvertFrom-ModuleBoolean -Value $ArgSpec['repeat_key'];
                 }
 
-                $OrderedBinarySpecs += [PSCustomObject]@{
+                $OrderedBinarySpecs += @{
                     'Key'           = [string]$ArgName;
                     'Order'         = $OrderValue;
                     'Index'         = $OriginalIndex;
@@ -400,41 +228,44 @@ function ConvertFrom-IcingaProtocolMacros()
             $OriginalIndex++;
         }
 
+        # Sort binary arguments stably by (Order, OriginalIndex) and expand CLI tokens according to skip_key / repeat_key
         if ($Kind -eq 'Binary' -and $OrderedBinarySpecs.Count -gt 0) {
-            [array]$SortedSpecs = @($OrderedBinarySpecs | Sort-Object -Property 'Order', 'Index');
+            [array]$SortedSpecs = ConvertTo-IcingaSortedArray -InputObject $OrderedBinarySpecs -Property @( 'Order', 'Index' );
             [array]$BuiltArgs   = @();
 
             foreach ($Spec in $SortedSpecs) {
-                if (-not $Spec.HasValueField) {
-                    if (-not $Spec.SkipKey) {
-                        $BuiltArgs += [string]$Spec.Key;
+                if (-not $Spec['HasValueField']) {
+                    if (-not $Spec['SkipKey']) {
+                        $BuiltArgs += [string]$Spec['Key'];
                     }
                     continue;
                 }
 
-                if ($Spec.Value -is [System.Collections.IList] -and $Spec.Value -isnot [string]) {
-                    if ($Spec.Value.Count -gt 0) {
-                        if ($Spec.SkipKey) {
-                            foreach ($Item in $Spec.Value) {
+                [object]$SpecValue = $Spec['Value'];
+
+                if ($SpecValue -is [System.Collections.IList] -and $SpecValue -isnot [string]) {
+                    if ($SpecValue.Count -gt 0) {
+                        if ($Spec['SkipKey']) {
+                            foreach ($Item in $SpecValue) {
                                 $BuiltArgs += [string]$Item;
                             }
-                        } elseif ($Spec.RepeatKey) {
-                            foreach ($Item in $Spec.Value) {
-                                $BuiltArgs += [string]$Spec.Key;
+                        } elseif ($Spec['RepeatKey']) {
+                            foreach ($Item in $SpecValue) {
+                                $BuiltArgs += [string]$Spec['Key'];
                                 $BuiltArgs += [string]$Item;
                             }
                         } else {
-                            $BuiltArgs += [string]$Spec.Key;
-                            foreach ($Item in $Spec.Value) {
+                            $BuiltArgs += [string]$Spec['Key'];
+                            foreach ($Item in $SpecValue) {
                                 $BuiltArgs += [string]$Item;
                             }
                         }
                     }
                 } else {
-                    if (-not $Spec.SkipKey) {
-                        $BuiltArgs += [string]$Spec.Key;
+                    if (-not $Spec['SkipKey']) {
+                        $BuiltArgs += [string]$Spec['Key'];
                     }
-                    $BuiltArgs += [string]$Spec.Value;
+                    $BuiltArgs += [string]$SpecValue;
                 }
             }
 
@@ -445,21 +276,23 @@ function ConvertFrom-IcingaProtocolMacros()
         # Mode B: Fallback mode without ifw-api (macros.ifw_api_arguments absent)
         # -------------------------------------------------------------------
         if ($Kind -eq 'PowerShell') {
+            # Match either direct parameter/alias names or IcingaCheck<Name>_<DataType>_<ParamName>
             [string]$PluginNamespace  = ($CommandName -replace '^Invoke-', '');
             [string]$NamespacePattern = ('^{0}_[A-Za-z0-9]+_(?<ParamName>.+)$' -f [regex]::Escape($PluginNamespace));
             [array]$UnmappedVariables = @();
 
             foreach ($MacroKey in $MacroMap.Keys) {
-                if ($MacroKey.StartsWith('ifw_api_', [System.StringComparison]::OrdinalIgnoreCase) -or $MacroKey.StartsWith('IcingaPowerShellBase_', [System.StringComparison]::OrdinalIgnoreCase)) {
+                [string]$MacroKeyStr = [string]$MacroKey;
+                if ($MacroKeyStr.StartsWith('ifw_api_', [System.StringComparison]::OrdinalIgnoreCase) -or $MacroKeyStr.StartsWith('IcingaPowerShellBase_', [System.StringComparison]::OrdinalIgnoreCase)) {
                     continue;
                 }
 
-                [string]$DirectCandidate = $MacroKey -replace '^-', '';
+                [string]$DirectCandidate = $MacroKeyStr -replace '^-', '';
                 $MatchedMeta             = $null;
 
                 if ($ParamLookup.ContainsKey($DirectCandidate)) {
                     $MatchedMeta = $ParamLookup[$DirectCandidate];
-                } elseif ($MacroKey -match $NamespacePattern) {
+                } elseif ($MacroKeyStr -match $NamespacePattern) {
                     [string]$ExtractedParam = $Matches['ParamName'];
                     if ($ParamLookup.ContainsKey($ExtractedParam)) {
                         $MatchedMeta = $ParamLookup[$ExtractedParam];
@@ -467,7 +300,7 @@ function ConvertFrom-IcingaProtocolMacros()
                 }
 
                 if ($null -eq $MatchedMeta) {
-                    $UnmappedVariables += [string]$MacroKey;
+                    $UnmappedVariables += $MacroKeyStr;
                     continue;
                 }
 
@@ -493,16 +326,18 @@ function ConvertFrom-IcingaProtocolMacros()
                 };
             }
         } else {
+            # Without ifw_api_arguments, binary custom variables must start with '-' or '/' (IWKB001002)
             [array]$InvalidBinaryVars = @();
             [array]$FallbackBinArgs   = @();
 
             foreach ($MacroKey in $MacroMap.Keys) {
-                if ($MacroKey.StartsWith('ifw_api_', [System.StringComparison]::OrdinalIgnoreCase) -or $MacroKey.StartsWith('IcingaPowerShellBase_', [System.StringComparison]::OrdinalIgnoreCase)) {
+                [string]$BinKeyStr = [string]$MacroKey;
+                if ($BinKeyStr.StartsWith('ifw_api_', [System.StringComparison]::OrdinalIgnoreCase) -or $BinKeyStr.StartsWith('IcingaPowerShellBase_', [System.StringComparison]::OrdinalIgnoreCase)) {
                     continue;
                 }
 
-                if (-not ($MacroKey.StartsWith('-') -or $MacroKey.StartsWith('/'))) {
-                    $InvalidBinaryVars += [string]$MacroKey;
+                if (-not ($BinKeyStr.StartsWith('-') -or $BinKeyStr.StartsWith('/'))) {
+                    $InvalidBinaryVars += $BinKeyStr;
                     continue;
                 }
 
@@ -513,15 +348,15 @@ function ConvertFrom-IcingaProtocolMacros()
 
                 if ($BinVal -is [bool]) {
                     if ($BinVal) {
-                        $FallbackBinArgs += [string]$MacroKey;
+                        $FallbackBinArgs += $BinKeyStr;
                     }
                 } elseif ($BinVal -is [System.Collections.IList] -and $BinVal -isnot [string]) {
                     foreach ($Elem in $BinVal) {
-                        $FallbackBinArgs += [string]$MacroKey;
+                        $FallbackBinArgs += $BinKeyStr;
                         $FallbackBinArgs += [string]$Elem;
                     }
                 } else {
-                    $FallbackBinArgs += [string]$MacroKey;
+                    $FallbackBinArgs += $BinKeyStr;
                     $FallbackBinArgs += [string]$BinVal;
                 }
             }
@@ -553,142 +388,46 @@ function ConvertFrom-IcingaProtocolMacros()
             foreach ($Binding in $PendingPowerShellBindings) {
                 $ParamMeta             = $Binding['Meta'];
                 [string]$CanonicalName = [string]$ParamMeta.Name;
-                [type]$ParamType       = $ParamMeta.ParameterType;
-                [object]$RawValue      = $Binding['Value'];
+                [hashtable]$Coerced    = ConvertTo-ModuleParameterValue -ParameterMetadata $ParamMeta -RawValue $Binding['Value'];
 
-                [bool]$IsSwitchOrBool  = ($ParamType -eq [switch] -or $ParamType -eq [System.Management.Automation.SwitchParameter] -or $ParamType -eq [bool]);
-                [bool]$IsSecureString  = ($ParamType -eq [System.Security.SecureString]);
-                [bool]$IsArrayParam    = ($ParamType.IsArray -or $ParamType -eq [array]);
-                [bool]$IsNumericOrEnum = ($ParamType.IsEnum -or $ParamType -eq [int] -or $ParamType -eq [long] -or $ParamType -eq [double] -or $ParamType -eq [decimal] -or $ParamType -eq [single] -or $ParamType -eq [int16] -or $ParamType -eq [byte] -or $ParamType -eq [uint32] -or $ParamType -eq [uint64] -or $ParamType -eq [sbyte] -or $ParamType -eq [uint16]);
-
-                if ($IsSwitchOrBool) {
-                    $PowerShellArguments[$CanonicalName] = (ConvertFrom-ModuleBoolean -Value $RawValue);
-                } elseif ($IsSecureString) {
-                    $SecureInstance = $null;
-                    if ($RawValue -is [System.Security.SecureString]) {
-                        $SecureInstance = $RawValue.Copy();
-                    } else {
-                        $SecureInstance = ConvertTo-ModuleSecureString -InputObject $RawValue;
-                    }
-
-                    if ($null -eq $SecureInstance) {
-                        foreach ($AllocatedSecret in $AllocatedSecureStrings) {
-                            if ($null -ne $AllocatedSecret -and $AllocatedSecret -is [System.IDisposable]) {
-                                $AllocatedSecret.Dispose();
-                            }
-                        }
-
-                        return @{
-                            'Status'                 = 'CoercionFailed';
-                            'PowerShellArguments'    = @{ };
-                            'BinaryArguments'        = [string[]]@();
-                            'AllocatedSecureStrings' = @();
-                            'CommandLine'            = $CommandName;
-                            'Message'                = ('[UNKNOWN] Failed to convert secret parameter "-{0}" for check "{1}" to SecureString' -f $CanonicalName, $CommandName);
-                            'KnowledgeBaseId'        = '';
-                            'ReturnCodeKey'          = 'IcingaProtocolMacroMappingFailed';
-                        };
-                    }
-
-                    $AllocatedSecureStrings             += $SecureInstance;
-                    $PowerShellArguments[$CanonicalName] = $SecureInstance;
-                    $MaskedParameters[$CanonicalName]    = $true;
-                } elseif ($IsArrayParam) {
-                    if ($RawValue -is [string] -and $RawValue.Length -eq 0) {
-                        continue;
-                    }
-
-                    [type]$ElemType = $null;
-                    if ($ParamType.IsArray) {
-                        $ElemType = $ParamType.GetElementType();
-                    }
-
-                    [bool]$FilterBlankItems = ($null -ne $ElemType -and ($ElemType.IsEnum -or $ElemType.IsValueType));
-
-                    if ($RawValue -is [System.Collections.IList] -and $RawValue -isnot [string]) {
-                        if ($FilterBlankItems) {
-                            [array]$FilteredItems = @();
-                            foreach ($RawElem in $RawValue) {
-                                if ($null -eq $RawElem) {
-                                    continue;
-                                }
-                                if ($RawElem -is [string] -and [string]::IsNullOrWhiteSpace($RawElem)) {
-                                    continue;
-                                }
-                                if ($ElemType -eq [bool]) {
-                                    $FilteredItems += (ConvertFrom-ModuleBoolean -Value $RawElem);
-                                } else {
-                                    $ConvertedElem = $RawElem -as $ElemType;
-                                    if ($null -ne $ConvertedElem) {
-                                        $FilteredItems += $ConvertedElem;
-                                    } else {
-                                        $FilteredItems += $RawElem;
-                                    }
-                                }
-                            }
-                            if ($FilteredItems.Count -eq 0 -and $RawValue.Count -gt 0) {
-                                continue;
-                            }
-                            $PowerShellArguments[$CanonicalName] = $FilteredItems;
-                        } else {
-                            $PowerShellArguments[$CanonicalName] = @($RawValue);
-                        }
-                    } else {
-                        if ($FilterBlankItems -and $RawValue -is [string] -and [string]::IsNullOrWhiteSpace($RawValue)) {
-                            continue;
-                        }
-                        if ($FilterBlankItems) {
-                            if ($ElemType -eq [bool]) {
-                                $PowerShellArguments[$CanonicalName] = @( (ConvertFrom-ModuleBoolean -Value $RawValue) );
-                            } else {
-                                $ConvertedSingleElem = $RawValue -as $ElemType;
-                                if ($null -ne $ConvertedSingleElem) {
-                                    $PowerShellArguments[$CanonicalName] = @( $ConvertedSingleElem );
-                                } else {
-                                    $PowerShellArguments[$CanonicalName] = @( $RawValue );
-                                }
-                            }
-                        } else {
-                            $PowerShellArguments[$CanonicalName] = @( $RawValue );
-                        }
-                    }
-                } elseif ($IsNumericOrEnum) {
-                    if ($RawValue -is [string] -and [string]::IsNullOrWhiteSpace($RawValue)) {
-                        continue;
-                    }
-
-                    $ConvertedNumeric = $RawValue -as $ParamType;
-                    if ($null -ne $ConvertedNumeric) {
-                        $PowerShellArguments[$CanonicalName] = $ConvertedNumeric;
-                    } else {
-                        $PowerShellArguments[$CanonicalName] = $RawValue;
-                    }
-                } else {
-                    # Skip empty strings on ValidateSet parameters whose valid set does not include ''
-                    if ($RawValue -is [string] -and $RawValue.Length -eq 0 -and $null -ne $ParamMeta.Attributes) {
-                        [bool]$SkipEmptyValidateSet = $false;
-                        foreach ($Attr in $ParamMeta.Attributes) {
-                            if ($Attr -is [System.Management.Automation.ValidateSetAttribute] -and ($Attr.ValidValues -notcontains '')) {
-                                $SkipEmptyValidateSet = $true;
-                                break;
-                            }
-                        }
-
-                        if ($SkipEmptyValidateSet) {
-                            continue;
+                if ($Coerced['Status'] -eq 'Error') {
+                    foreach ($AllocatedSecret in $AllocatedSecureStrings) {
+                        if ($null -ne $AllocatedSecret -and $AllocatedSecret -is [System.IDisposable]) {
+                            $AllocatedSecret.Dispose();
                         }
                     }
 
-                    if ($ParamType -eq [string] -and $RawValue -isnot [string]) {
-                        $PowerShellArguments[$CanonicalName] = [string]$RawValue;
-                    } else {
-                        $PowerShellArguments[$CanonicalName] = $RawValue;
-                    }
+                    return @{
+                        'Status'                 = 'CoercionFailed';
+                        'PowerShellArguments'    = @{ };
+                        'BinaryArguments'        = [string[]]@();
+                        'AllocatedSecureStrings' = @();
+                        'CommandLine'            = $CommandName;
+                        'Message'                = ('[UNKNOWN] Failed to convert secret parameter "-{0}" for check "{1}" to SecureString' -f $CanonicalName, $CommandName);
+                        'KnowledgeBaseId'        = '';
+                        'ReturnCodeKey'          = 'IcingaProtocolMacroMappingFailed';
+                    };
+                }
+
+                if ($Coerced['Status'] -eq 'Skipped') {
+                    continue;
+                }
+
+                if ($null -ne $Coerced['AllocatedSecret']) {
+                    $AllocatedSecureStrings += $Coerced['AllocatedSecret'];
+                }
+
+                $PowerShellArguments[$CanonicalName] = $Coerced['Value'];
+
+                if ($Coerced['IsSecret']) {
+                    $MaskedParameters[$CanonicalName] = $true;
                 }
             }
 
+            # Render a deterministic, human-readable PowerShell invocation string for CheckResult.command
+            # and debug logs while masking all SecureString values as '********'
             [array]$CmdParts  = @( $CommandName );
-            [array]$ParamKeys = @($PowerShellArguments.Keys | Sort-Object);
+            [array]$ParamKeys = ConvertTo-IcingaSortedArray -InputObject @($PowerShellArguments.Keys);
 
             foreach ($BoundKey in $ParamKeys) {
                 [object]$BoundVal = $PowerShellArguments[$BoundKey];
@@ -727,47 +466,7 @@ function ConvertFrom-IcingaProtocolMacros()
 
             $RenderedCommandLine = ($CmdParts -join ' ');
         } else {
-            [array]$AllBinaryTokens = @( $BinaryPath ) + $BinaryArguments;
-            [array]$QuotedTokens    = @();
-
-            foreach ($Token in $AllBinaryTokens) {
-                [string]$TextToken = [string]$Token;
-                if ($TextToken.Length -eq 0) {
-                    $QuotedTokens += '""';
-                } elseif ($TextToken -notmatch '[\s"]') {
-                    $QuotedTokens += $TextToken;
-                } else {
-                    $Builder             = New-Object System.Text.StringBuilder;
-                    [void]$Builder.Append('"');
-                    [int]$BackslashCount = 0;
-
-                    for ($cIdx = 0; $cIdx -lt $TextToken.Length; $cIdx++) {
-                        [char]$CurrentChar = $TextToken[$cIdx];
-                        if ($CurrentChar -eq '\') {
-                            $BackslashCount++;
-                        } elseif ($CurrentChar -eq '"') {
-                            [void]$Builder.Append('\', ($BackslashCount * 2 + 1));
-                            [void]$Builder.Append('"');
-                            $BackslashCount = 0;
-                        } else {
-                            if ($BackslashCount -gt 0) {
-                                [void]$Builder.Append('\', $BackslashCount);
-                                $BackslashCount = 0;
-                            }
-                            [void]$Builder.Append($CurrentChar);
-                        }
-                    }
-
-                    if ($BackslashCount -gt 0) {
-                        [void]$Builder.Append('\', ($BackslashCount * 2));
-                    }
-
-                    [void]$Builder.Append('"');
-                    $QuotedTokens += $Builder.ToString();
-                }
-            }
-
-            $RenderedCommandLine = ($QuotedTokens -join ' ');
+            $RenderedCommandLine = Format-ModuleCommandLineArguments -Arguments (@( $BinaryPath ) + $BinaryArguments);
         }
     } catch {
         foreach ($AllocatedSecret in $AllocatedSecureStrings) {

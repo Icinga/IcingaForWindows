@@ -4556,12 +4556,22 @@ class IcingaPlugin
     PS> $this.DetectCheckCommand()
 
     .NOTES
-    Internal helper called once at construction.
+    Internal helper called at construction; caches the resolved command in
+    (Get-GlobalRuntimeVariable).Private.Icinga.ActiveCheckCommand until Compile resets it.
     #>
     hidden [string] DetectCheckCommand()
     {
+        $GlobalVariable = Get-GlobalRuntimeVariable;
+
+        # Reuse the cached command name across all child/metric nodes built during the current check run
+        # so Get-PSCallStack is walked only once on the very first node instead of O(N) times per plugin
+        if (-not [string]::IsNullOrEmpty($GlobalVariable.Private.Icinga.ActiveCheckCommand)) {
+            return $GlobalVariable.Private.Icinga.ActiveCheckCommand;
+        }
+
         foreach ($Frame in (Get-PSCallStack)) {
             if (([string]$Frame.Command).ToLower() -like 'invoke-icingacheck*') {
+                $GlobalVariable.Private.Icinga.ActiveCheckCommand = [string]$Frame.Command;
                 return [string]$Frame.Command;
             }
         }
@@ -4825,44 +4835,6 @@ class IcingaPlugin
 
     <#
     .SYNOPSIS
-    Ensure the thread-local check-result slot exists
-
-    .DESCRIPTION
-    Guarantees that the supplied Private runtime object has an Icinga sub-object with
-    a CheckResult property before Compile writes to it. New-ModuleBaseEnvironment
-    creates this slot for fresh sessions and worker runspaces, but a session that was
-    already warm when the module was updated keeps an older Private object without it;
-    this makes Compile self-sufficient in that case too, adding the missing members
-    on demand.
-
-    .PARAMETER Private
-    | Name    | Type          | Description                                   | Default |
-    |---------|---------------|-----------------------------------------------|---------|
-    | Private | System.Object | The Private runtime object to normalise.      |         |
-
-    .OUTPUTS
-    None -- Adds the Icinga.CheckResult slot when it is missing.
-
-    .EXAMPLE
-    PS> $this.EnsureResultSlot((Get-GlobalRuntimeVariable).Private)
-
-    .NOTES
-    Internal helper used by Compile.
-    #>
-    hidden [void] EnsureResultSlot([object]$Private)
-    {
-        if ($null -eq $Private.PSObject.Properties['Icinga'] -or $null -eq $Private.Icinga) {
-            $Private | Add-Member -MemberType NoteProperty -Name 'Icinga' -Value ([PSCustomObject]@{ 'CheckResult' = $null }) -Force;
-            return;
-        }
-
-        if ($null -eq $Private.Icinga.PSObject.Properties['CheckResult']) {
-            $Private.Icinga | Add-Member -MemberType NoteProperty -Name 'CheckResult' -Value $null;
-        }
-    }
-
-    <#
-    .SYNOPSIS
     Terminate a configuration chain without producing output
 
     .DESCRIPTION
@@ -4909,20 +4881,25 @@ class IcingaPlugin
     #>
     [int] Compile()
     {
-        $this.ResolveState();
-        $this.PropagateVerbose($this.Verbose);
+        $GlobalVariable = Get-GlobalRuntimeVariable;
 
-        [string]$Output                            = $this.RenderOutput();
-        [array]$Perf                               = $this.CollectPerfData();
+        try {
+            $this.ResolveState();
+            $this.PropagateVerbose($this.Verbose);
 
-        $GlobalVariable                            = Get-GlobalRuntimeVariable;
-        $this.EnsureResultSlot($GlobalVariable.Private);
-        $GlobalVariable.Private.Icinga.CheckResult = [IcingaCheckResult]::new($this.State, $Output, $Perf);
+            [string]$Output                            = $this.RenderOutput();
+            [array]$Perf                               = $this.CollectPerfData();
+            $GlobalVariable.Private.Icinga.CheckResult = [IcingaCheckResult]::new($this.State, $Output, $Perf);
 
-        if (-not $GlobalVariable.Protected.IsBackgroundDaemon) {
-            $this.WriteConsoleOutput($Output, $Perf);
+            if (-not $GlobalVariable.Protected.IsBackgroundDaemon) {
+                $this.WriteConsoleOutput($Output, $Perf);
+            }
+
+            return $this.State;
+        } finally {
+            # Always clear the cached check command when root compilation finishes so the next check
+            # executed in the same session or worker thread resolves its own Invoke-IcingaCheck* frame
+            $GlobalVariable.Private.Icinga.ActiveCheckCommand = $null;
         }
-
-        return $this.State;
     }
 }

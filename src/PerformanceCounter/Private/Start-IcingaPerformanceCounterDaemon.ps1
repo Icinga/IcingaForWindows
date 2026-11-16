@@ -6,10 +6,10 @@ Background daemon that serves performance counter requests and maintains the reg
 `Start-IcingaPerformanceCounterDaemon` initializes the performance-counter environment and
 then runs the request/refresh loop while `Test-ThreadRunning` is true. Each cycle it blocks
 briefly on the request queue; when a request arrives it resolves the requested counters
-through the central manager and pushes the result into the caller's pending response queue,
-keyed by the request id. When idle (and on a throttled interval) it runs the maintenance
-step which refreshes the heartbeat, reconciles transient instances, evicts unused counters
-and persists the cache.
+through the central manager and atomically claims the caller's pending response queue via
+`TryRemove` before pushing the result, preventing disposal races when a caller times out.
+When idle (and on a throttled interval) it runs the maintenance step which refreshes the
+heartbeat, reconciles transient instances, evicts unused counters and persists the cache.
 
 Because every performance counter handle is created, sampled and disposed here on this one
 thread, callers never touch the non-thread-safe counter objects directly -- they exchange
@@ -37,29 +37,43 @@ function Start-IcingaPerformanceCounterDaemon()
     $Manager = $Store.Manager;
 
     while (Test-ThreadRunning) {
-        $Request  = $null;
-        $Response = $null;
+        $Request      = $null;
+        $Response     = $null;
+        $PendingQueue = $null;
 
-        # This is a WaitForJobs thread, so its state must be refreshed on every cycle,
-        # whether a request is processed or the thread is idle waiting on the queue.
-        # Skipping it on idle cycles trips the ThreadWaitForJobMisconfiguration warning
-        # (mirrors the Set-ThreadProcessing call in Start-LoggingDaemon's timeout branch).
-        Set-ThreadProcessing;
+        try {
+            # This is a WaitForJobs thread, so its state must be refreshed on every cycle,
+            # whether a request is processed or the thread is idle waiting on the queue.
+            # Skipping it on idle cycles trips the ThreadWaitForJobMisconfiguration warning
+            # (mirrors the Set-ThreadProcessing call in Start-LoggingDaemon's timeout branch).
+            Set-ThreadProcessing;
 
-        if ($Store.RequestQueue.TryTake([ref]$Request, 500)) {
-            if ($null -ne $Manager -and $null -ne $Request) {
-                $Response = $Manager.Resolve([string[]]$Request.Counter);
+            if ($Store.RequestQueue.TryTake([ref]$Request, 500)) {
+                if ($null -ne $Manager -and $null -ne $Request) {
+                    $Response = $Manager.Resolve([string[]]$Request.Counter);
+                }
+
+                if ($null -ne $Request -and -not [string]::IsNullOrEmpty([string]$Request.RequestId)) {
+                    if ($Store.PendingRequests.TryRemove([string]$Request.RequestId, [ref]$PendingQueue) -and $null -ne $PendingQueue) {
+                        try {
+                            [void]$PendingQueue.TryAdd($Response);
+                        } catch {
+                            [void]$_;
+                        }
+                    }
+                }
             }
 
-            if ($null -ne $Request -and $Store.PendingRequests.ContainsKey($Request.RequestId)) {
-                $Store.PendingRequests[$Request.RequestId].Add($Response);
-            }
+            # Periodic maintenance: heartbeat, refresh, reconcile, eviction and cache persistence.
+            Update-IcingaPerformanceCounterState -Store $Store;
+        } catch {
+            Write-LoggingEntry -Message 'An error occurred in Icinga PerformanceCounter Daemon' -Level 'Error' -Data @{
+                'ExceptionMessage' = $_.Exception.Message;
+            };
+        } finally {
+            $Request      = $null;
+            $Response     = $null;
+            $PendingQueue = $null;
         }
-
-        # Periodic maintenance: heartbeat, refresh, reconcile, eviction and cache persistence.
-        Update-IcingaPerformanceCounterState -Store $Store;
-
-        $Request  = $null;
-        $Response = $null;
     }
 }

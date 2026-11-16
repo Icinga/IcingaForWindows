@@ -115,14 +115,20 @@ Describe 'ConvertFrom-IcingaProtocolMacros' {
             $ObjParsed['PowerShellArguments'].ContainsKey('Critical')   | Should -BeFalse;
         }
 
-        It 'skips empty string "" on unknown parameters in ifw_api_arguments and raises IWKB001001 on non-empty values' {
+        It 'skips empty string "", empty [] and empty {} on unknown parameters in ifw_api_arguments and raises IWKB001001 on non-empty values' {
             [hashtable]$EmptyUnknown     = @{
                 'ifw_api_command'   = 'Invoke-IcingaCheckDirectory';
                 'Path'              = 'C:\Temp';
                 'ObsoleteEmpty'     = '';
+                'ObsoleteList'      = @();
+                'ObsoleteDict'      = @{ };
+                'EmptyFileNames'    = @();
                 'ifw_api_arguments' = @{
                     '-Path'              = @{ 'value' = '$Path$'; };
+                    '-FileNames'         = @{ 'value' = '$EmptyFileNames$'; };
                     '-ThresholdInterval' = @{ 'value' = '$ObsoleteEmpty$'; };
+                    '-LegacyArrayParam'  = @{ 'value' = '$ObsoleteList$'; };
+                    '-LegacyMapParam'    = @{ 'value' = '$ObsoleteDict$'; };
                     '-NullRemovedParam'  = @{ 'value' = $null; };
                 };
             };
@@ -135,16 +141,29 @@ Describe 'ConvertFrom-IcingaProtocolMacros' {
                 };
             };
 
+            [hashtable]$PopulatedListUnk = @{
+                'ifw_api_command'   = 'Invoke-IcingaCheckDirectory';
+                'ObsoleteArr'       = @( '10s' );
+                'ifw_api_arguments' = @{
+                    '-ThresholdInterval' = @{ 'value' = '$ObsoleteArr$'; };
+                };
+            };
+
             [hashtable]$EmptyRes         = Invoke-TestMacroParser -CommandName 'Invoke-IcingaCheckDirectory' -Macros $EmptyUnknown;
             [hashtable]$PopRes           = Invoke-TestMacroParser -CommandName 'Invoke-IcingaCheckDirectory' -Macros $PopulatedUnknown;
+            [hashtable]$PopListRes       = Invoke-TestMacroParser -CommandName 'Invoke-IcingaCheckDirectory' -Macros $PopulatedListUnk;
 
-            $EmptyRes['Status']                        | Should -Be 'Ok';
-            $EmptyRes['PowerShellArguments']['Path']   | Should -Be 'C:\Temp';
+            $EmptyRes['Status']                                        | Should -Be 'Ok';
+            $EmptyRes['PowerShellArguments']['Path']                   | Should -Be 'C:\Temp';
+            $EmptyRes['PowerShellArguments'].ContainsKey('FileNames')  | Should -BeFalse;
 
-            $PopRes['Status']                          | Should -Be 'UnknownParameter';
-            $PopRes['KnowledgeBaseId']                 | Should -Be 'IWKB001001';
-            $PopRes['Message']                         | Should -Match 'ThresholdInterval';
-            $PopRes['Message']                         | Should -Match 'IWKB001001';
+            $PopRes['Status']                                          | Should -Be 'UnknownParameter';
+            $PopRes['KnowledgeBaseId']                                 | Should -Be 'IWKB001001';
+            $PopRes['Message']                                         | Should -Match 'ThresholdInterval';
+            $PopRes['Message']                                         | Should -Match 'IWKB001001';
+
+            $PopListRes['Status']                                      | Should -Be 'UnknownParameter';
+            $PopListRes['KnowledgeBaseId']                             | Should -Be 'IWKB001001';
         }
 
         It 'handles Windows dollar-sign paths, escaped $$ literals, single-pass substitution and empty array macros' {

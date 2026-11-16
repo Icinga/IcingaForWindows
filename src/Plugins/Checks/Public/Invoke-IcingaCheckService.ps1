@@ -1,20 +1,21 @@
 <#
 .SYNOPSIS
-Check the state of Windows services against an expected status
+Check the state of Windows services against one or more expected statuses
 
 .DESCRIPTION
 Queries every service from the Win32_Service CIM class once and builds a single
 IcingaPlugin container named 'Services'. Each selected service becomes a child
-check comparing its current state with the expected status; a mismatch raises the
-state chosen with OverrideNotOk (CRITICAL by default).
+check comparing its current state with the expected Status list; a mismatch
+raises the state chosen with OverrideNotOk (CRITICAL by default).
 
 When no service is given, every service with the 'Automatic' start mode is
 checked: it is expected to be running, except when it is stopped with exit code
 0, which means it ended on purpose and is reported OK. When services are given
-by name or display name (wildcards allowed), they are compared against Status,
-optionally narrowed down by their startup type. Every given name without a
-wildcard that matches no service on the system is reported with the state chosen
-with OverrideNotFound (UNKNOWN by default).
+by name or display name (wildcards allowed), they are compared against Status
+(supporting both single statuses and multi-status lists), optionally narrowed
+down by their startup type. Every given name without a wildcard that matches no
+service on the system is reported with the state chosen with OverrideNotFound
+(UNKNOWN by default).
 
 Service states and startup types are resolved through the IcingaServiceStatus
 and IcingaServiceStartupType data types. Performance data contains the numeric
@@ -35,9 +36,9 @@ This plugin is Windows-only because it relies on the Win32_Service CIM class.
 | Exclude | System.Array | Service names or display names to skip, wildcards allowed. | @()     |
 
 .PARAMETER Status
-| Name   | Type                | Description                                                                                                                          | Default |
-|--------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------|---------|
-| Status | IcingaServiceStatus | Expected status of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused or Unknown.| Running |
+| Name   | Type                  | Description                                                                                                                            | Default    |
+|--------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------|------------|
+| Status | IcingaServiceStatus[] | Expected status(es) of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused, Unknown.| @(Running) |
 
 .PARAMETER FilterStartupType
 | Name              | Type                       | Description                                                                                                    | Default |
@@ -99,8 +100,9 @@ function Invoke-IcingaCheckService()
     param (
         [array]$Service                                = @(),
         [array]$Exclude                                = @(),
-        [IcingaServiceStatus]$Status                   = 'Running',
+        [IcingaServiceStatus[]]$Status                 = @( [IcingaServiceStatus]::Running ),
         [IcingaServiceStartupType[]]$FilterStartupType = @(),
+        [Alias('IgnoreEmptyChecks')]
         [switch]$MitigateUnknown                       = $false,
         [ValidateSet('Ok', 'Warning', 'Critical', 'Unknown')]
         [string]$OverrideNotOk                         = 'Critical',
@@ -109,6 +111,12 @@ function Invoke-IcingaCheckService()
         [int]$Verbosity                                = 0,
         [switch]$NoPerfData                            = $false
     );
+
+    # Fall back to @(Running) when an unpopulated Icinga array variable passes @() for -Status
+    [IcingaServiceStatus[]]$EffectiveStatus = $Status;
+    if ($null -eq $EffectiveStatus -or $EffectiveStatus.Count -eq 0) {
+        $EffectiveStatus = @( [IcingaServiceStatus]::Running );
+    }
 
     [hashtable]$SummaryLabels = @{
         ([IcingaServiceStatus]::Stopped)         = 'stopped';
@@ -154,11 +162,11 @@ function Invoke-IcingaCheckService()
     $StartupTypeMap    = 'IcingaServiceStartupTypeMap' -as [type];
 
     foreach ($ServiceEntry in (ConvertTo-IcingaSortedArray -InputObject $AllServices -Property 'Name')) {
-        [string]$ServiceName                   = $ServiceEntry.Name;
-        [string]$DisplayName                   = $ServiceEntry.DisplayName;
-        [IcingaServiceStatus]$State            = $StatusMap::Resolve($ServiceEntry.State);
-        [IcingaServiceStartupType]$StartupType = $StartupTypeMap::Resolve($ServiceEntry.StartMode);
-        [IcingaServiceStatus]$Expected         = $Status;
+        [string]$ServiceName                     = $ServiceEntry.Name;
+        [string]$DisplayName                     = $ServiceEntry.DisplayName;
+        [IcingaServiceStatus]$State              = $StatusMap::Resolve($ServiceEntry.State);
+        [IcingaServiceStartupType]$StartupType   = $StartupTypeMap::Resolve($ServiceEntry.StartMode);
+        [IcingaServiceStatus[]]$ExpectedStatuses = $EffectiveStatus;
 
         if ((Test-IcingaArrayFilter -InputObject $ServiceName -Exclude $Exclude) -eq $false -or (Test-IcingaArrayFilter -InputObject $DisplayName -Exclude $Exclude) -eq $false) {
             continue;
@@ -169,12 +177,12 @@ function Invoke-IcingaCheckService()
                 continue;
             }
 
-            $Expected = [IcingaServiceStatus]::Running;
+            $ExpectedStatuses = @( [IcingaServiceStatus]::Running );
 
             # A stopped automatic service with exit code 0 ended on purpose (for
             # example a trigger-start service) and is not a failure.
             if ($State -ne [IcingaServiceStatus]::Running -and $ServiceEntry.ExitCode -eq 0) {
-                $Expected = $State;
+                $ExpectedStatuses = @( $State );
             }
         } else {
             if ((Test-IcingaArrayFilter -InputObject $ServiceName -Include $Service) -eq $false -and (Test-IcingaArrayFilter -InputObject $DisplayName -Include $Service) -eq $false) {
@@ -186,16 +194,30 @@ function Invoke-IcingaCheckService()
             }
         }
 
-        $ServiceCheck = (New-IcingaPlugin ([string]::Format('Service "{0} ({1})"', $DisplayName, $ServiceName)) $State).
+        $ServiceCheck          = (New-IcingaPlugin ([string]::Format('Service "{0} ({1})"', $DisplayName, $ServiceName)) $State).
             MetricIndex($ServiceName).
             MetricLabel('state').
-            SetNoPerfData($AutoMode).
-            Critical([string]$Expected).
-            CheckNotEqual();
+            SetNoPerfData($AutoMode);
+
+        # Compare against a single expected status via CheckNotEqual or against multiple allowed statuses via CheckNotIn
+        [bool]$IsStateMismatch = $false;
+
+        if ($ExpectedStatuses.Count -le 1) {
+            [IcingaServiceStatus]$SingleExpected = $ExpectedStatuses[0];
+            $ServiceCheck.Critical([string]$SingleExpected).CheckNotEqual().Commit();
+            $IsStateMismatch                     = ($State -ne $SingleExpected);
+        } else {
+            [array]$ExpectedNames = @();
+            foreach ($ExpectedStatus in $ExpectedStatuses) {
+                $ExpectedNames += [string]$ExpectedStatus;
+            }
+            $ServiceCheck.Critical($ExpectedNames).CheckNotIn().Commit();
+            $IsStateMismatch = ($ExpectedStatuses -notcontains $State);
+        }
 
         # An empty message keeps the comparison text; the lock stops the critical
         # comparison result from escalating the overridden state again.
-        if ($State -ne $Expected -and $OverrideNotOk -ne 'Critical') {
+        if ($IsStateMismatch -and $OverrideNotOk -ne 'Critical') {
             $ServiceCheck.SetState($OverrideNotOk, '', $true).Commit();
         }
 

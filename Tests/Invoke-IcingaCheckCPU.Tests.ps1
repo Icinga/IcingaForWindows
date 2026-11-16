@@ -168,4 +168,42 @@ Describe 'Invoke-IcingaCheckCPU' {
         Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'NoPerfData' = $true; } | Should -Be 0;
         @($Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData).Count | Should -Be 0;
     }
+
+    It 'evaluates thresholds exclusively on Overall Load when OverallOnly is enabled while keeping all core perfdata' {
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'Warning' = '80'; 'Critical' = '90'; 'OverallOnly' = $true; } | Should -Be 0;
+
+        $OkResult = $Global:IcingaForWindows.Private.Icinga.CheckResult;
+        $OkResult.PerformanceData | Should -Be @(
+            '0_0::ifw_cpu::load=5%;;;0;100',
+            '0_1::ifw_cpu::load=95%;;;0;100',
+            '0_total::ifw_cpu::load=50%;;;0;100',
+            '1_2::ifw_cpu::load=10%;;;0;100',
+            '1_total::ifw_cpu::load=10%;;;0;100',
+            'totalload::ifw_cpu::load=36.67%;80;90;0;100'
+        );
+
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'Warning' = '20'; 'Critical' = '30'; 'OverallOnly' = $true; } | Should -Be 2;
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Match ([regex]::Escape('[CRITICAL] Overall Load: 36.67% is greater than threshold 30%'));
+    }
+
+    It 'supports Core "_Total", "Total" and specific core numbers as well as NodeFilter / SocketFilter' {
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'Core' = '_Total'; 'Warning' = '80'; 'Critical' = '90'; } | Should -Be 0;
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData | Should -Be @( 'totalload::ifw_cpu::load=36.67%;80;90;0;100' );
+
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'Core' = '1'; 'Warning' = '80'; 'Critical' = '90'; } | Should -Be 2;
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData | Should -Be @( '0_1::ifw_cpu::load=95%;80;90;0;100' );
+
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'Core' = '1'; 'OverallOnly' = $true; 'Warning' = '80'; 'Critical' = '90'; } | Should -Be 2;
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData | Should -Be @( '0_1::ifw_cpu::load=95%;80;90;0;100' );
+
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'SocketFilter' = @( '1' ); 'Warning' = '80'; 'Critical' = '90'; } | Should -Be 0;
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData | Should -Be @(
+            '1_2::ifw_cpu::load=10%;80;90;0;100',
+            '1_total::ifw_cpu::load=10%;80;90;0;100',
+            'totalload::ifw_cpu::load=10%;80;90;0;100'
+        );
+
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'Core' = '99'; }           | Should -Be 3;
+        Invoke-TestCpuCheck -StubData $script:TwoNodes -Arguments @{ 'NodeFilter' = @( '9' ); } | Should -Be 3;
+    }
 }

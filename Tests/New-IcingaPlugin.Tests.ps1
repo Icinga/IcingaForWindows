@@ -80,4 +80,18 @@ Describe 'New-IcingaPlugin' {
 
         $CheckPackage.Compile() | Should -Be 1;
     }
+
+    It 'is publicly exported for external SDK plugins outside module scope' {
+        $ExportedCmd  = Get-Command -Name 'New-IcingaPlugin' -Module 'IcingaForWindows' -ErrorAction Stop;
+        $SdkContainer = New-IcingaPlugin 'Custom SDK Package';
+        $SdkLeaf      = (New-IcingaPlugin 'Queue Depth' 12).MetricIndex('queue0').MetricName('customsdk').Warning('10').Critical('20').CheckRange();
+        $SdkContainer.AddCheck($SdkLeaf).Commit();
+
+        [int]$SdkExit = $SdkContainer.Compile();
+
+        $ExportedCmd.Name                                                        | Should -Be 'New-IcingaPlugin';
+        $SdkExit                                                                 | Should -Be 1;
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.Output               | Should -Match '^\[WARNING\] Custom SDK Package';
+        $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData[0]   | Should -Be 'queue0::ifw_customsdk::queuedepth=12;10;20;;';
+    }
 }

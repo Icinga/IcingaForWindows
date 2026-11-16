@@ -267,5 +267,71 @@ Describe 'Get-IcingaPerformanceCounter' {
             };
             $err | Should -Not -BeNullOrEmpty;
         }
+
+        It 'skips registering malformed counter paths, writes BOM-less UTF-8 cache files, and survives daemon timeout disposal races' {
+            $MockCacheDir            = Join-Path -Path $TestDrive -ChildPath ('PerfCache_' + [System.Guid]::NewGuid().ToString('N'));
+            New-Item -Path $MockCacheDir -ItemType Directory -Force | Out-Null;
+
+            [hashtable]$DaemonSafety = & $script:IcingaModule {
+                param ($CacheDir);
+
+                $Store                = (Get-GlobalRuntimeVariable).Public.PerformanceCounter;
+                [datetime]$RemovedAt  = [datetime]::MinValue;
+                [void]$Store.Registered.TryRemove('not_a_valid_counter', [ref]$RemovedAt);
+                Get-IcingaPerformanceCounter -Counter 'not_a_valid_counter' | Out-Null;
+                [bool]$InvalidRegistered = $Store.Registered.ContainsKey('not_a_valid_counter');
+
+                $Store.Registered['\Memory\Available Bytes'] = (Get-Date);
+
+                function Get-ModuleCacheDirectory()
+                {
+                    return $CacheDir;
+                }
+
+                Write-IcingaPerformanceCounterCache;
+                [string]$CacheFile = Join-Path -Path $CacheDir -ChildPath 'PerformanceCounter.json';
+                [byte[]]$RawBytes  = [System.IO.File]::ReadAllBytes($CacheFile);
+                [bool]$HasUtf8Bom  = ($RawBytes.Length -ge 3 -and $RawBytes[0] -eq 0xEF -and $RawBytes[1] -eq 0xBB -and $RawBytes[2] -eq 0xBF);
+
+                # Simulate a timed-out caller whose response BlockingCollection was already disposed
+                [string]$StaleId   = [System.Guid]::NewGuid().ToString();
+                $DisposedQueue     = [System.Collections.Concurrent.BlockingCollection[PSObject]]::new(1);
+                $DisposedQueue.Dispose();
+                $Store.PendingRequests[$StaleId] = $DisposedQueue;
+                $Store.RequestQueue.Add([PSCustomObject]@{
+                    'RequestId' = $StaleId;
+                    'Counter'   = [string[]]@( '\Memory\Available Bytes' );
+                });
+
+                $script:LoopCount  = 0;
+                function Test-ThreadRunning()
+                {
+                    $script:LoopCount++;
+                    return ($script:LoopCount -le 1);
+                }
+                function Set-ThreadProcessing()
+                {
+                }
+                function Update-IcingaPerformanceCounterState()
+                {
+                    param ($Store = $null);
+                }
+
+                Start-IcingaPerformanceCounterDaemon;
+                [bool]$StaleRemoved = (-not $Store.PendingRequests.ContainsKey($StaleId));
+
+                return @{
+                    'InvalidRegistered' = $InvalidRegistered;
+                    'CacheExists'       = (Test-Path -Path $CacheFile);
+                    'HasUtf8Bom'        = $HasUtf8Bom;
+                    'StaleRemoved'      = $StaleRemoved;
+                };
+            } $MockCacheDir;
+
+            $DaemonSafety['InvalidRegistered'] | Should -BeFalse;
+            $DaemonSafety['CacheExists']       | Should -BeTrue;
+            $DaemonSafety['HasUtf8Bom']        | Should -BeFalse;
+            $DaemonSafety['StaleRemoved']      | Should -BeTrue;
+        }
     }
 }

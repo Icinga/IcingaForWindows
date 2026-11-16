@@ -115,6 +115,38 @@ Describe 'Get-IcingaDiskInformation' {
             $Result.IsError       | Should -BeTrue;
             $Result.Value.Message | Should -Be 'Simulated failure of Win32_Volume';
         }
+
+        It 'skips querying MSFT_Partition when SkipPartitionMapping is enabled on Volume entrypoint' {
+            $Outcome = & $script:IcingaModule {
+                param ($StubData);
+
+                $script:QueriedClasses = @();
+
+                function Get-IcingaWindowsInformation()
+                {
+                    param (
+                        [string]$ClassName = '',
+                        [string]$Namespace = '',
+                        [string]$Filter    = '',
+                        [array]$Property   = @()
+                    );
+
+                    $script:QueriedClasses += $ClassName;
+                    return ,@($StubData[$ClassName]);
+                }
+
+                $Vols = Get-IcingaDiskInformation -Entrypoint 'Volume' -SkipPartitionMapping;
+
+                return @{
+                    'Queried' = $script:QueriedClasses;
+                    'Volumes' = $Vols;
+                };
+            } $script:StubData;
+
+            $Outcome['Queried']                             | Should -Be @( 'Win32_Volume' );
+            $Outcome['Volumes'].Count                       | Should -Be 3;
+            $Outcome['Volumes']['\\?\Volume{c}\'].DiskNumber | Should -BeNullOrEmpty;
+        }
     }
 
     Context 'Partition entrypoint' {

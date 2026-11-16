@@ -102,11 +102,16 @@ Describe 'Invoke-IcingaCheckService' {
             Invoke-TestServiceCheck -StubData @($Stopped) -Arguments @{ 'Service' = 'Spooler'; 'OverrideNotOk' = 'Ok'; }      | Should -Be 0;
         }
 
-        It 'compares against the expected Status' {
+        It 'compares against the expected Status, including multi-status arrays and empty @()' {
             $Stopped = New-TestService -Name 'Spooler' -DisplayName 'Print Spooler' -State 'Stopped';
+            $Paused  = New-TestService -Name 'Spooler' -DisplayName 'Print Spooler' -State 'Paused';
 
-            Invoke-TestServiceCheck -StubData @($Stopped) -Arguments @{ 'Service' = 'Spooler'; 'Status' = 'Stopped'; } | Should -Be 0;
-            Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Spooler'; 'Status' = 'Stopped'; } | Should -Be 2;
+            Invoke-TestServiceCheck -StubData @($Stopped) -Arguments @{ 'Service' = 'Spooler'; 'Status' = 'Stopped'; }                    | Should -Be 0;
+            Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Spooler'; 'Status' = 'Stopped'; }             | Should -Be 2;
+            Invoke-TestServiceCheck -StubData @($Stopped) -Arguments @{ 'Service' = 'Spooler'; 'Status' = @('Running', 'Stopped'); }      | Should -Be 0;
+            Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Spooler'; 'Status' = @('Running', 'Stopped'); } | Should -Be 0;
+            Invoke-TestServiceCheck -StubData @($Paused) -Arguments @{ 'Service' = 'Spooler'; 'Status' = @('Running', 'Stopped'); }       | Should -Be 2;
+            Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Spooler'; 'Status' = @(); }                   | Should -Be 0;
         }
 
         It 'maps pending states to their status code and summary counter' {
@@ -173,7 +178,8 @@ Describe 'Invoke-IcingaCheckService' {
             Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Nope*'; } | Should -Be 3;
             $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[UNKNOWN] Services: No service matches the given filter';
 
-            Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Nope*'; 'MitigateUnknown' = $true; } | Should -Be 0;
+            Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Nope*'; 'MitigateUnknown' = $true; }   | Should -Be 0;
+            Invoke-TestServiceCheck -StubData @($script:Spooler) -Arguments @{ 'Service' = 'Nope*'; 'IgnoreEmptyChecks' = $true; } | Should -Be 0;
         }
     }
 

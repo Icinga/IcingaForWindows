@@ -1,35 +1,32 @@
 <#
 .SYNOPSIS
-Adds a serialized RPC message to a worker queue using a round-robin assignment.
+Add a serialized Icinga 2 JSON-RPC message to a worker queue in round-robin order
 
 .DESCRIPTION
-Add-IcingaRPCMessageToWorker accepts a serialized JSON-RPC message string and enqueues
-a message object for processing by one of the module's worker threads. The function
-performs round-robin worker selection by incrementing the global LastWorkerId and
-wrapping it when it reaches the configured WorkerCount. If the message is null or empty,
-the function returns immediately via Write-FunctionReturnValue. The message is first
-deserialized with ConvertFrom-ModuleJson and only forwarded when its method is icinga::Hello
-or event::ExecuteCommand; all other methods are dropped. The enqueued object contains
-the parsed message, the current global TCP client and the global stream. This function
-mutates $Global:IcingaForWindows.Private.TCP.LastWorkerId as a side effect.
+Add-IcingaRPCMessageToWorker accepts a serialized JSON-RPC message string,
+strips Icinga empty-key placeholder entries ('"":"$"') for Windows PowerShell
+5.1 JavaScriptSerializer compatibility, deserializes the payload via
+ConvertFrom-ModuleJson, and enqueues the parsed message together with the
+current socket client and TLS stream into the next worker queue via round-robin
+selection. Null, empty or malformed JSON payloads emit structured return values
+and are dropped without throwing.
 
 .PARAMETER Message
-| Name    | Type          | Description                                                                      | Default |
-|---------|---------------|----------------------------------------------------------------------------------|---------|
-| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty.      | $null   |
+| Name    | Type          | Description                                                                  | Default |
+|---------|---------------|------------------------------------------------------------------------------|---------|
+| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty.  | $null   |
+
+.OUTPUTS
+None -- Enqueues the parsed message object into WorkerQueue and returns nothing.
 
 .EXAMPLE
 PS> Add-IcingaRPCMessageToWorker -Message '{"jsonrpc":"2.0","method":"event::ExecuteCommand","params":{}}'
 
-.OUTPUTS
-None — The function enqueues the message object and returns no pipeline output.
+Parses the JSON-RPC message and dispatches it to the next protocol worker queue.
 
 .NOTES
-Caller must ensure the module-global WorkerCount and WorkerQueue are initialized before
-use. The function is not explicitly synchronized; the caller must ensure appropriate
-concurrency guarantees. Only messages with methods icinga::Hello and event::ExecuteCommand
-are forwarded; all other methods are silently dropped.
-
+Caller must ensure WorkerCount and WorkerQueue are initialized in
+Public.IcingaProtocol before invoking this helper.
 #>
 function Add-IcingaRPCMessageToWorker()
 {
@@ -41,27 +38,34 @@ function Add-IcingaRPCMessageToWorker()
         return (Write-FunctionReturnValue -ReturnValue 'IcingaClientRPCMessageNull');
     }
 
-    # Get the real JSON message
+    $RPCMessage = $null;
+
+    # Parse the JSON-RPC frame while stripping empty-key placeholder pairs ("":"$") sent by Icinga 2
     try {
         $RPCMessage = ConvertFrom-ModuleJson -InputObject $Message.Replace('"":"$",', '').Replace(',"":"$"', '');
     } catch {
         return (Write-FunctionReturnValue -ReturnValue 'IcingaClientRPCMessageParseError' -Data @{ 'Message' = $Message; 'Exception' = $_.Exception; } -OverrideReturn $null);
     }
 
-    # Determine which worker should receive this message based on a round-robin approach
-    $Global:IcingaForWindows.Private.TCP.LastWorkerId++;
-
-    if ($Global:IcingaForWindows.Private.TCP.LastWorkerId -ge $Global:IcingaForWindows.Public.IcingaProtocol.Config.WorkerCount) {
-        $Global:IcingaForWindows.Private.TCP.LastWorkerId = 0;
+    if ($null -eq $RPCMessage) {
+        return (Write-FunctionReturnValue -ReturnValue 'IcingaClientRPCMessageParseError' -Data @{ 'Message' = $Message; } -OverrideReturn $null);
     }
 
-    # Create the message object to send to the worker
+    # Determine which worker should receive this message based on a round-robin approach
+    $GlobalVariable = Get-GlobalRuntimeVariable;
+    $GlobalVariable.Private.TCP.LastWorkerId++;
+
+    if ($GlobalVariable.Private.TCP.LastWorkerId -ge $GlobalVariable.Public.IcingaProtocol.Config.WorkerCount) {
+        $GlobalVariable.Private.TCP.LastWorkerId = 0;
+    }
+
+    # Create the message object with socket context to hand over to the worker
     $MessageObject = [PSCustomObject]@{
-        'Message'  = $RPCMessage;
-        'Client'   = $Global:IcingaForWindows.Private.TCP.Client;
-        'Stream'   = $Global:IcingaForWindows.Private.TCP.Stream;
+        'Message' = $RPCMessage;
+        'Client'  = $GlobalVariable.Private.TCP.Client;
+        'Stream'  = $GlobalVariable.Private.TCP.Stream;
     };
 
     # Add the message to the appropriate worker queue
-    $Global:IcingaForWindows.Public.IcingaProtocol.WorkerQueue[$Global:IcingaForWindows.Private.TCP.LastWorkerId].Add($MessageObject) | Out-Null;
+    $GlobalVariable.Public.IcingaProtocol.WorkerQueue[$GlobalVariable.Private.TCP.LastWorkerId].Add($MessageObject) | Out-Null;
 }

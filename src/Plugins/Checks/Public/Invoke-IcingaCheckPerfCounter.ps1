@@ -101,6 +101,7 @@ function Invoke-IcingaCheckPerfCounter()
         [string]$Critical          = '',
         [array]$IncludeCounter     = @(),
         [array]$ExcludeCounter     = @(),
+        [Alias('MitigateUnknown')]
         [switch]$IgnoreEmptyChecks = $false,
         [int]$Verbosity            = 0,
         [switch]$NoPerfData        = $false

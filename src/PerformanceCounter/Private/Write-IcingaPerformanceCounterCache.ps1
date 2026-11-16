@@ -4,10 +4,11 @@ Persist the registered performance counters to the cache file
 
 .DESCRIPTION
 `Write-IcingaPerformanceCounterCache` serializes the registered counter paths and their
-last-seen timestamps to a JSON file in the module cache directory. The daemon calls this
-each refresh cycle so the warm counter set survives restarts and self-maintains -- new
-counters are added and stale ones drop out over time. The file is written atomically by
-writing to a temporary file and renaming it into place.
+last-seen timestamps to a JSON file in the module cache directory using UTF-8 without BOM.
+The daemon calls this each refresh cycle so the warm counter set survives restarts and
+self-maintains -- new counters are added and stale ones drop out over time. The file is
+written atomically via a temporary file and guarded with try/catch so transient file locks
+or permission issues never interrupt the daemon.
 
 .OUTPUTS
 None -- Writes the cache file to disk.
@@ -28,14 +29,9 @@ function Write-IcingaPerformanceCounterCache()
         return;
     }
 
-    [string]$CacheDir = Get-ModuleCacheDirectory;
-
-    if (-not (Test-Path -Path $CacheDir)) {
-        New-Item -Path $CacheDir -ItemType Directory -Force | Out-Null;
-    }
-
+    [string]$CacheDir  = Get-ModuleCacheDirectory;
     [string]$CacheFile = Join-Path -Path $CacheDir -ChildPath 'PerformanceCounter.json';
-    [string]$TempFile  = Join-Path -Path $CacheDir -ChildPath 'PerformanceCounter.json.tmp';
+    [string]$TempFile  = Join-Path -Path $CacheDir -ChildPath ('PerformanceCounter.{0}.tmp' -f [System.Guid]::NewGuid().ToString('N'));
     [hashtable]$Data   = @{ };
 
     foreach ($Key in @($Store.Registered.Keys)) {
@@ -46,8 +42,27 @@ function Write-IcingaPerformanceCounterCache()
         }
     }
 
-    [string]$Json = ConvertTo-Json -InputObject $Data -Depth 5;
+    try {
+        if (-not (Test-Path -Path $CacheDir)) {
+            New-Item -Path $CacheDir -ItemType Directory -Force -ErrorAction Stop | Out-Null;
+        }
 
-    Set-Content -Path $TempFile -Value $Json -Encoding UTF8;
-    Move-Item -Path $TempFile -Destination $CacheFile -Force;
+        # Write UTF-8 without BOM to a unique temporary file first, then atomically replace the cache file
+        [string]$Json = ConvertTo-ModuleJson -InputObject $Data;
+        [System.IO.File]::WriteAllText($TempFile, $Json, (New-Object System.Text.UTF8Encoding($false)));
+        Move-Item -Path $TempFile -Destination $CacheFile -Force -ErrorAction Stop;
+    } catch {
+        if (Test-Path -Path $TempFile) {
+            try {
+                Remove-Item -Path $TempFile -Force -ErrorAction Stop;
+            } catch {
+                [void]$_;
+            }
+        }
+
+        Write-LoggingEntry -Message 'Failed to persist PerformanceCounter cache file' -Level 'Warning' -Data @{
+            'CacheFile'        = $CacheFile;
+            'ExceptionMessage' = $_.Exception.Message;
+        };
+    }
 }

@@ -2,43 +2,33 @@
 
 ## Completed Tasks
 
-- [x] **Core Plugins & Providers Layout (Committed Earlier on Branch)**
-  - Structured `src/Plugins/Checks/Public/` (`Invoke-IcingaCheckCPU`, `Invoke-IcingaCheckDirectory`, `Invoke-IcingaCheckMemory`, `Invoke-IcingaCheckPartitionSpace`, `Invoke-IcingaCheckPerfCounter`, `Invoke-IcingaCheckProcess`, `Invoke-IcingaCheckScheduledTask`, `Invoke-IcingaCheckService`, `Invoke-IcingaCheckUptime`), `src/Plugins/Lib/`, and `src/Plugins/Provider/`.
-- [x] **Environment, Security & Type Conversion Helpers**
-  - Added `Get-ModuleBinaryDirectory()` with full comment-based help in `IcingaForWindows.psm1`.
-  - Updated `src/Config/Private/New-ModuleConfigEnvironment.ps1` to create the `Binaries` directory on startup and aligned `.DESCRIPTION`/`.OUTPUTS` (`System.Int32`).
-  - Added `(Get-ModuleBinaryDirectory)` to `src/Security/Private/Get-SecureChildItem.ps1`, cached `$AccessCheck` to prevent duplicate `Test-SecureApprovedPath` evaluations, formatted `{0}` in debug logs, and aligned `.OUTPUTS`.
-  - Fixed local timezone offset in `src/Tools/Public/Get-IcingaUnixTime.ps1` using `[System.DateTimeOffset]::UtcNow`.
-  - Implemented `src/Tools/Private/ConvertTo-ModuleSecureString.ps1` (`AppendChar` + `MakeReadOnly`, `0` `PSScriptAnalyzer` errors, emitting `SecureStringConversionFailed` via `Write-FunctionReturnValue` and returning `$null` without throwing) and `src/Tools/Private/ConvertFrom-ModuleBoolean.ps1`.
-  - Registered internal return codes `4004` (`SecureStringConversionFailed`) and `50020`–`50025` in `src/Core/ErrorHandling/Private/Set-InternalExitCodes.ps1` (aligned `50024` wording to non-empty value).
-- [x] **IcingaProtocol Command Resolution, Macro Parser & Check Runner**
-  - Implemented `src/IcingaProtocol/Private/Resolve-IcingaProtocolCommand.ps1` (mandatory `ifw_api_command`, control-character / cross-platform invalid character / drive-relative / NTFS ADS colon / pre-`GetFullPath` wildcard rejection, dotted base-name probing, shorthand expansion, strict `Binaries` boundary check without `$env:PATH`).
-  - Implemented `src/IcingaProtocol/Private/ConvertFrom-IcingaProtocolMacros.ps1` (ordinal `OrderedDictionary` preserving `-p` vs `-P` with non-null case-insensitive fallback, empty `""` macro-key filtering, serialized `"value": null` flag handling, empty-string skip on unknown parameters for `IWKB001001`, typed value-array coercion, `SecureString` masking & exception cleanup, PS 5.1 `Dictionary` + PS 7 `Hashtable` + `PSCustomObject` support).
-  - Implemented `src/IcingaProtocol/Private/Split-IcingaBinaryPluginOutput.ps1` (single/multi-line Nagios/Icinga `|` perfdata splitter supporting quoted, scoped `pkg::'Label'=val`, and doubled-quote labels).
-  - Implemented `src/IcingaProtocol/Private/Invoke-IcingaProtocolCheckCommand.ps1` (in-process `&` execution without custom timeout for `Invoke-IcingaCheck*` and `.ps1` scripts in `Binaries` including `New-IcingaPlugin` support unaffected by inner `$LASTEXITCODE`, named/colon-bound/positional `[securestring]` `CommandLine` masking, and non-trailing valueless flag guards; `System.Diagnostics.Process` execution for `.exe`/`.cmd`/`.bat`/`.com` with `.cmd`/`.bat` metacharacter & `%...%` substitution protection, clamped `check_timeout`, and deterministic multi-pass kill-first descendant process-tree termination via `Win32_Process` on Windows and `Kill($true)` + `pgrep -P` on Unix).
-  - Integrated monotonic `Stopwatch` timing, Host check support (`'service'` omitted when empty), `'check_source'` fallback, and dictionary-safe RPC access in `src/IcingaProtocol/Private/Start-IcingaProtocolWorker.ps1`.
-- [x] **Knowledgebase (`IWKB001000`–`IWKB001003`) & Developer Documentation**
-  - Created and aligned `docs/Developer/IcingaProtocol/01-Check-and-Binary-Execution.md`.
-  - Created and aligned `docs/Knowledgebase/index.md` and `IWKB001000.md` through `IWKB001003.md`.
-  - Regenerated API reference docs (`docs/Icinga.*.md`) with `0` documentation violations.
-- [x] **Automated Unit & Static-Analysis Tests**
-  - Added cross-platform `Join-Path` tests across `Tests/ConvertTo-ModuleSecureString.Tests.ps1`, `Tests/ConvertFrom-ModuleBoolean.Tests.ps1`, `Tests/Resolve-IcingaProtocolCommand.Tests.ps1`, `Tests/ConvertFrom-IcingaProtocolMacros.Tests.ps1`, and `Tests/Invoke-IcingaProtocolCheckCommand.Tests.ps1` (including Windows `check_bgpipe.cmd` without `>nul`).
-  - Verified `0` violations across all `88` target files in `Tests/CodeStyling.Tests.ps1` (`build/Test-ModuleCodeStyling.ps1 -Path ...`), `Invoke-ScriptAnalyzer` (`PSScriptAnalyzerSettings.psd1`), `Tests/ClassLiteral.Tests.ps1`, and `build/Test-ModuleDaemonMemoryLeak.ps1`.
+- [x] **Shared Module Helpers (`src/Tools/Private/`)**
+  - Created `Get-ModuleObjectValue.ps1`, `ConvertTo-ModuleOrderedDictionary.ps1`, `Format-ModuleCommandLineArguments.ps1`, `Get-ModuleCommandParameterMap.ps1`, `ConvertTo-ModuleParameterValue.ps1`, `Invoke-ModulePowerShellCommand.ps1`, `ConvertTo-ModuleSecureString.ps1`, and `ConvertFrom-ModuleBoolean.ps1`.
+- [x] **Modular IcingaProtocol Execution Pipeline (`src/IcingaProtocol/Private/`)**
+  - Created `Resolve-IcingaProtocolCommand.ps1`, `Expand-IcingaProtocolMacroValue.ps1`, `ConvertFrom-IcingaProtocolMacros.ps1`, `Split-IcingaBinaryPluginOutput.ps1`, `Invoke-IcingaProtocolExternalScript.ps1`, `Stop-IcingaProtocolProcessTree.ps1`, `Invoke-IcingaProtocolBinaryProcess.ps1`, and `Invoke-IcingaProtocolCheckCommand.ps1`.
+  - Updated `Start-IcingaProtocolWorker.ps1` (`Get-ModuleObjectValue`, monotonic `Stopwatch` timing, `ActiveCheckCommand` reset in `finally`) and `Add-IcingaRPCMessageToWorker.ps1` (retained PS 5.1 empty-key `"": "$"` stripping + added `$null -eq $RPCMessage` guard).
+  - Updated `ConvertFrom-IcingaProtocolMacros.ps1` to skip empty `IList` (`[]`) and empty `IDictionary`/`PSCustomObject` (`{}`) alongside `""` on unknown `ifw_api_arguments` parameters (`IWKB001001`).
+- [x] **Plugin SDK, `O(1)` CallStack Caching & Core Plugin Parity**
+  - Promoted `src/Plugins/Lib/Private/New-IcingaPlugin.ps1` -> `src/Plugins/Lib/Public/New-IcingaPlugin.ps1` (keeping `Get-Icinga*` providers in `Private/`).
+  - Implemented `O(1)` `Get-PSCallStack` caching in `IcingaPlugin.ps1` via `$GlobalVariable.Private.Icinga.ActiveCheckCommand` with deterministic reset in `Compile()` `finally`, `Invoke-ModulePowerShellCommand`, and `Start-IcingaProtocolWorker`.
+  - Added legacy parity to `Invoke-IcingaCheckCPU.ps1` (`-Core`, `-OverallOnly`, `[Alias('SocketFilter')] -NodeFilter`), `Invoke-IcingaCheckScheduledTask.ps1` (`267009` on `Running` tasks & `267011` as `OK`, `0xFFFFFFFFL` HRESULT hex masking, `[Alias('IgnoreLastResult', 'IgnoreExitCode')]`), and `Invoke-IcingaCheckService.ps1` (`[IcingaServiceStatus[]]$Status` multi-status array + single-string compatibility).
+  - Hardened `Get-IcingaDirectoryInformation.ps1`, `Get-IcingaDiskInformation.ps1` (`-SkipPartitionMapping`), `Invoke-IcingaCheckMemory.ps1`, `Invoke-IcingaCheckPartitionSpace.ps1`, `Invoke-IcingaCheckPerfCounter.ps1`, and `Invoke-IcingaCheckUptime.ps1`.
+- [x] **`PerformanceCounter` Daemon Concurrency & Cache Safety**
+  - Wrapped `Start-IcingaPerformanceCounterDaemon.ps1` loop in `try / catch / finally` and coordinated `PendingRequests` handoff via atomic `TryRemove` + `ObjectDisposedException` safety.
+  - Validated counter paths via `ParsePath` before adding to `Store.Registered` in `Get-IcingaPerformanceCounter.ps1`.
+  - Guarded `Write-IcingaPerformanceCounterCache.ps1` with `try / catch` and BOM-less UTF-8 `[System.IO.File]::WriteAllText`.
+- [x] **Documentation, Tests & Follow-Up Task Tracking**
+  - Regenerated `docs/Icinga.*.md` (`198` functions, `0` violations) and updated `docs/Developer/Plugins/{02-IcingaPlugin-Reference,04-Custom-Plugin-Developer-Guide}.md` + `docs/Developer/IcingaProtocol/01-Check-and-Binary-Execution.md`.
+  - Added `Tests/ModuleToolsHelpers.Tests.ps1` and expanded `15` existing Pester test suites; validated `0` violations in `Test-ModuleCodeStyling.ps1`, `Invoke-ScriptAnalyzer`, `ClassLiteral.Tests.ps1`, and `Test-ModuleDaemonMemoryLeak.ps1`.
+  - Created persistent follow-up plans under `docs/Agents/tasks/fix-restapi-and-security/` and `docs/Agents/tasks/fix-icingaprotocol-transport/`.
+- [x] **Live Windows PowerShell 5.1 Daemon & Icinga 2 End-to-End Verification**
+  - Verified live daemon and check execution under Windows PowerShell 5.1 against Icinga 2 (`event::ExecuteCommand` checks running cleanly end-to-end).
 
 ---
 
-## Open Points & Known Limitations
+## Follow-Up Branches After Merge to `main`
 
-- [ ] **Live Windows Agent End-to-End Verification against Icinga 2 Master / Director:**
-  Unit and process-level tests run offline against mocked `Get-ModuleBinaryDirectory()` paths; live TLS JSON-RPC verification with an Icinga 2 master (`ifw-api` active/inactive and `check_load.exe` in `C:\ProgramData\IcingaForWindows\Binaries`) should be executed on a Windows test host.
-- [ ] **Windows PowerShell 5.1 Native Runtime Pass:**
-  Static checks (`ClassLiteral.Tests.ps1`, `Test-ModuleCodeStyling.ps1`, `Dictionary[string, object]` unit tests, empty-string `SecureString` guards) cover PS 5.1 constraints, and CI / Windows verification should confirm runtime execution under `powershell.exe` 5.1.
-- [ ] **Remaining Monitoring Check Plugins (Future Branches):**
-  Additional plugins from the legacy plugin catalog (network interfaces, certificates, event logs, updates, HTTP/ICMP checks) remain scheduled for subsequent feature branches.
-
----
-
-## Next Steps
-
-1. Stage and commit the `feature/plugins-cpu-service-partition` files cleanly (keeping `update-code-styling` files unstaged for the follow-up branch).
-2. Run live Windows verification against an Icinga 2 master with both PowerShell checks and external binaries in `C:\ProgramData\IcingaForWindows\Binaries`.
+- [ ] **RestApi, Security & Manifest Follow-Up (`docs/Agents/tasks/fix-restapi-and-security/`):**
+  Implement shared helper integration in `RestApi`, boundary normalization in `Test-SecureApprovedPath.ps1`, certificate disposal fix in `Get-TlsCertificate.ps1`, and optional static `FunctionsToExport` sync in `IcingaForWindows.psd1`.
+- [ ] **IcingaProtocol Socket & Netstring Transport Follow-Up (`docs/Agents/tasks/fix-icingaprotocol-transport/`):**
+  Implement UTF-8 byte-accurate netstring framing, `WriterQueue` startup synchronization, thread-safe `Connections` tracking, and cluster lifecycle handlers in a dedicated branch.

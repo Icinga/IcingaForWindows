@@ -47,6 +47,12 @@ DiskInformationDiskQueryFailed), so the log shows where the collection stopped.
 |------------|---------------|----------------------------------------------------------|--------------|
 | Entrypoint | System.String | View to return: 'PhysicalDisk', 'Partition' or 'Volume'. | PhysicalDisk |
 
+**`$SkipPartitionMapping`**
+
+| Name                 | Type                                         | Description                                                           | Default |
+|----------------------|----------------------------------------------|-----------------------------------------------------------------------|---------|
+| SkipPartitionMapping | System.Management.Automation.SwitchParameter | Skip querying MSFT_Partition when Entrypoint is set to 'Volume'.      | $false  |
+
 #### Outputs
 
 System.Collections.Hashtable -- The entries of the requested view, or an

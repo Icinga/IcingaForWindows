@@ -11,7 +11,7 @@ This document is the complete technical reference for **[`New-IcingaPlugin`](#1-
 
 ## 1. `New-IcingaPlugin` Factory Cmdlet
 
-Defined in [`src/Plugins/Lib/Private/New-IcingaPlugin.ps1`](../../../src/Plugins/Lib/Private/New-IcingaPlugin.ps1), `New-IcingaPlugin` is the runspace-safe factory function that every plugin and helper function outside `src/Classes` must use instead of `[IcingaPlugin]::new()`. It resolves the `IcingaPlugin` class in the calling runspace (`'IcingaPlugin' -as [type]`) and invokes either `$PluginType::new($Name)` (when neither `-Value` nor `-Unit` is bound) or `$PluginType::new($Name, $Value, $Unit)`.
+Defined in [`src/Plugins/Lib/Public/New-IcingaPlugin.ps1`](../../../src/Plugins/Lib/Public/New-IcingaPlugin.ps1) and exported publicly as the Icinga for Windows Plugin SDK entrypoint, `New-IcingaPlugin` is the runspace-safe factory function that every built-in check, external custom plugin repository, and helper function outside `src/Classes` must use instead of `[IcingaPlugin]::new()`. It resolves the `IcingaPlugin` class in the calling runspace (`'IcingaPlugin' -as [type]`) and invokes either `$PluginType::new($Name)` (when neither `-Value` nor `-Unit` is bound) or `$PluginType::new($Name, $Value, $Unit)`.
 
 ### Syntax
 
@@ -104,7 +104,7 @@ These properties hold the internal configuration, evaluation state, and tree poi
 | `MetricIndexValue` | `System.String` | `''` | `MetricIndex([string])` | Custom `index` segment for the `check_multi` performance-data label. |
 | `MetricNameValue` | `System.String` | `''` | `MetricName([string])` | Custom `template` segment for the `check_multi` performance-data label. |
 | `MetricLabelValue` | `System.String` | `''` | `MetricLabel([string])` | Custom `label` segment for the `check_multi` performance-data label. |
-| `CheckCommand` | `System.String` | `''` | `Initialize()` -> `DetectCheckCommand()` | Calling `Invoke-IcingaCheck*` command detected from the PowerShell call stack at construction time. |
+| `CheckCommand` | `System.String` | `''` | `Initialize()` -> `DetectCheckCommand()` | Calling `Invoke-IcingaCheck*` command detected on the first node and cached in `Private.Icinga.ActiveCheckCommand` for `O(1)` reuse until `Compile()` resets it. |
 | `Translation` | `System.Collections.Hashtable` | `@{}` | `Translate([hashtable])` | Lookup table mapping raw values (such as integer status codes) to human-readable strings. |
 | `TranslatedText` | `System.String` | `''` | `Translate()`, `Translate([string])` | Explicit display string for `Value` set by `.Translate()` or `.Translate([string])`. |
 
@@ -135,7 +135,7 @@ All three constructors delegate to `hidden [void] Initialize([string]$Name, [obj
 * Stores `$this.Name = $Name`.
 * If `$Value -is [TimeSpan]`, converts `$Value` to `([TimeSpan]$Value).TotalSeconds` and sets `$this.Unit = 's'` when `$Unit` is `''` (otherwise keeps `$Unit`).
 * For all other values, stores `$this.Value = $Value` and `$this.Unit = $Unit` verbatim.
-* Walks the PowerShell call stack via `DetectCheckCommand()` and stores the first `Invoke-IcingaCheck*` frame name in `$this.CheckCommand`.
+* Resolves the calling `Invoke-IcingaCheck*` frame via `DetectCheckCommand()` (reading `Private.Icinga.ActiveCheckCommand` in `O(1)` after the first node caches it) and stores it in `$this.CheckCommand`.
 
 ---
 
@@ -421,7 +421,7 @@ $CheckPackage.AddMissingChecks(
 | Method | Return Type | Description |
 |--------|-------------|-------------|
 | `Commit()` | `void` | No-op method with `[void]` return type that consumes the fluent chain return value so nothing leaks to the PowerShell pipeline. |
-| `Compile()` | `System.Int32` | Executes `$this.ResolveState()`, `$this.PropagateVerbose($this.Verbose)`, renders output via `$this.RenderOutput()`, collects deduplicated metrics via `$this.CollectPerfData()`, ensures `$GlobalVariable.Private.Icinga.CheckResult` exists via `EnsureResultSlot()`, stores `[IcingaCheckResult]::new($this.State, $Output, $Perf)` in `Private.Icinga.CheckResult`, calls `WriteConsoleOutput($Output, $Perf)` when `-not $GlobalVariable.Protected.IsBackgroundDaemon`, and returns `$this.State` (`0`..`3`). |
+| `Compile()` | `System.Int32` | Executes `$this.ResolveState()`, `$this.PropagateVerbose($this.Verbose)`, renders output via `$this.RenderOutput()`, collects deduplicated metrics via `$this.CollectPerfData()`, stores `[IcingaCheckResult]::new($this.State, $Output, $Perf)` in `Private.Icinga.CheckResult`, calls `WriteConsoleOutput($Output, $Perf)` when `-not $GlobalVariable.Protected.IsBackgroundDaemon`, resets `Private.Icinga.ActiveCheckCommand = $null` in a `finally` block, and returns `$this.State` (`0`..`3`). |
 
 ---
 
@@ -470,11 +470,10 @@ For framework maintainers extending `IcingaPlugin.ps1` itself, the table below l
 | `ResolveNumericValue([object]$Item)` | `System.Object` | Converts enums to `[int]` and maps translated strings back to their numeric key in `Translation` for performance data. |
 | `ResolvePerfDataThreshold([string]$Threshold, [string]$Resolved)` | `System.String` | Returns a valid numeric/range Icinga perfdata threshold string (mapping translated threshold names to numeric keys and omitting non-numeric regex/wildcard patterns). |
 | `BuildPerfData()` | `void` | Formats `index::ifw_template::label=value<unit>;warn;crit;min;max` and stores it in `PerfData`. |
-| `DetectCheckCommand()` | `System.String` | Walks `Get-PSCallStack` to find the first `Invoke-IcingaCheck*` command name. |
+| `DetectCheckCommand()` | `System.String` | Resolves the calling `Invoke-IcingaCheck*` command name via `Get-PSCallStack` on the first node and caches it in `Private.Icinga.ActiveCheckCommand` until `Compile()` resets it. |
 | `SanitizeMetric([string]$Value)` | `System.String` | Strips non-word characters (`[\W]`) and lower-cases a metric label segment. |
 | `BuildPerfDataLabel()` | `System.String` | Builds the sanitized `index::ifw_template::label` identifier with `'default'`, `'ifw_check'`, and `'value'` fallbacks. |
 | `CollectPerfData()` | `System.Array` | Recursively gathers and deduplicates performance-data metrics across the subtree (returning `@()` when `NoPerfData` is `$true`). |
 | `IsNumeric([object]$Value)` | `System.Boolean` | Tests whether `$Value` is non-null, not a `[bool]`, and parses as a `[double]` under `InvariantCulture`. |
 | `FormatNumber([object]$Value)` | `System.String` | Formats `[decimal]` / `[double]` values with `'0.##########'` under `InvariantCulture` without scientific notation. |
 | `WriteConsoleOutput([string]$Output, [array]$Perf)` | `void` | Writes `$Output` and the `\| <perfdata>` line directly via `[System.Console]::WriteLine()`. |
-| `EnsureResultSlot([object]$Private)` | `void` | Ensures `$Private.Icinga.CheckResult` exists on the thread-local runtime state before `Compile()` writes to it. |

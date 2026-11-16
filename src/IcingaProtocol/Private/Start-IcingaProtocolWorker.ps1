@@ -59,21 +59,12 @@ function Start-IcingaProtocolWorker()
             $RPCMessage = $RPCObject.Message;
             Set-TCPClientAndStream -TcpClient $RPCObject.Client -SslStream $RPCObject.Stream;
 
+            $RawMethod  = Get-ModuleObjectValue -InputObject $RPCMessage -Name 'method';
             $MethodName = $null;
-            $RPCParams  = $null;
-
-            if ($RPCMessage -is [System.Collections.IDictionary]) {
-                foreach ($MsgKey in $RPCMessage.Keys) {
-                    if ([string]::Equals([string]$MsgKey, 'method', [System.StringComparison]::OrdinalIgnoreCase)) {
-                        $MethodName = [string]$RPCMessage[$MsgKey];
-                    } elseif ([string]::Equals([string]$MsgKey, 'params', [System.StringComparison]::OrdinalIgnoreCase)) {
-                        $RPCParams = $RPCMessage[$MsgKey];
-                    }
-                }
-            } else {
-                $MethodName = [string]$RPCMessage.method;
-                $RPCParams  = $RPCMessage.params;
+            if ($null -ne $RawMethod) {
+                $MethodName = [string]$RawMethod;
             }
+            $RPCParams = Get-ModuleObjectValue -InputObject $RPCMessage -Name 'params';
 
             switch ($MethodName) {
                 'icinga::Hello' {
@@ -93,22 +84,9 @@ function Start-IcingaProtocolWorker()
                     [double]$ElapsedSeconds = $Stopwatch.Elapsed.TotalSeconds;
                     [double]$CheckFinished  = [System.Math]::Round(($CheckStarted + $ElapsedSeconds), 6);
 
-                    # 4. Log telemetry and send CheckResult back to Icinga 2
-                    $HostName               = $null;
-                    $ServiceName            = $null;
-
-                    if ($RPCParams -is [System.Collections.IDictionary]) {
-                        foreach ($ParamKey in $RPCParams.Keys) {
-                            if ([string]::Equals([string]$ParamKey, 'host', [System.StringComparison]::OrdinalIgnoreCase)) {
-                                $HostName = $RPCParams[$ParamKey];
-                            } elseif ([string]::Equals([string]$ParamKey, 'service', [System.StringComparison]::OrdinalIgnoreCase)) {
-                                $ServiceName = $RPCParams[$ParamKey];
-                            }
-                        }
-                    } elseif ($null -ne $RPCParams) {
-                        $HostName    = $RPCParams.host;
-                        $ServiceName = $RPCParams.service;
-                    }
+                    # 4. Log telemetry and send CheckResult back to Icinga 2 (omitting 'service' on Host checks)
+                    $HostName               = Get-ModuleObjectValue -InputObject $RPCParams -Name 'host';
+                    $ServiceName            = Get-ModuleObjectValue -InputObject $RPCParams -Name 'service';
 
                     Write-LoggingEntry -Message 'Executed check command' -Level 'Debug' -Data @{
                         'Command'       = $ExecutionResult['CommandLine'];
@@ -163,18 +141,7 @@ function Start-IcingaProtocolWorker()
                     break;
                 };
                 'pki::UpdateCertificate' {
-                    $SignedCert = $null;
-                    if ($RPCParams -is [System.Collections.IDictionary]) {
-                        foreach ($CertKey in $RPCParams.Keys) {
-                            if ([string]::Equals([string]$CertKey, 'cert', [System.StringComparison]::OrdinalIgnoreCase)) {
-                                $SignedCert = $RPCParams[$CertKey];
-                                break;
-                            }
-                        }
-                    } elseif ($null -ne $RPCParams) {
-                        $SignedCert = $RPCParams.cert;
-                    }
-
+                    $SignedCert = Get-ModuleObjectValue -InputObject $RPCParams -Name 'cert';
                     New-IcingaProtocolCertificate -CommonName $GlobalVariable.Public.IcingaProtocol.Config.Hostname -SignedCert $SignedCert;
                     Close-TcpConnection;
                     Close-TcpSocket;
@@ -188,21 +155,20 @@ function Start-IcingaProtocolWorker()
         } catch {
             Write-LoggingEntry -Message 'An error occurred in Icinga Protocol Worker' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; };
         } finally {
-            $RPCObject                                 = $null;
-            $RPCMessage                                = $null;
-            $MsgKey                                    = $null;
-            $MethodName                                = $null;
-            $RPCParams                                 = $null;
-            $ParamKey                                  = $null;
-            $Stopwatch                                 = $null;
-            $ExecutionResult                           = $null;
-            $HostName                                  = $null;
-            $ServiceName                               = $null;
-            $CheckSource                               = $null;
-            $CheckResultData                           = $null;
-            $CertKey                                   = $null;
-            $SignedCert                                = $null;
-            $GlobalVariable.Private.Icinga.CheckResult = $null;
+            $RPCObject                                        = $null;
+            $RPCMessage                                       = $null;
+            $RawMethod                                        = $null;
+            $MethodName                                       = $null;
+            $RPCParams                                        = $null;
+            $Stopwatch                                        = $null;
+            $ExecutionResult                                  = $null;
+            $HostName                                         = $null;
+            $ServiceName                                      = $null;
+            $CheckSource                                      = $null;
+            $CheckResultData                                  = $null;
+            $SignedCert                                       = $null;
+            $GlobalVariable.Private.Icinga.CheckResult        = $null;
+            $GlobalVariable.Private.Icinga.ActiveCheckCommand = $null;
         }
     }
 }

@@ -23,7 +23,7 @@ By the end of this tutorial, you will have built a realistic **Print Spooler Que
 
 In Icinga for Windows, the plugin subsystem under `src/Plugins/` is organized into three areas:
 
-* **Plugin Library (`src/Plugins/Lib/Private/`)**: Internal plugin helper functions such as [`New-IcingaPlugin`](02-IcingaPlugin-Reference.md#1-new-icingaplugin-factory-cmdlet) for creating runspace-safe `IcingaPlugin` nodes.
+* **Plugin SDK (`src/Plugins/Lib/Public/`)**: Public SDK factory functions such as [`New-IcingaPlugin`](02-IcingaPlugin-Reference.md#1-new-icingaplugin-factory-cmdlet) for creating runspace-safe `IcingaPlugin` nodes in both built-in checks and external custom plugin repositories.
 * **Provider (`src/Plugins/Provider/<Topic>/Private/Get-Icinga<Topic>.ps1`)**: Queries the operating system (CIM/WMI, Performance Counters, Services, Task Scheduler, Registry), filters the raw objects, and returns either a clean collection/hashtable of data objects or an [`IcingaError`](03-Result-and-Error-Objects.md#2-icingaerror-class) when collection fails.
 * **Plugin (`src/Plugins/Checks/Public/Invoke-IcingaCheck<Topic>.ps1`)**: Accepts user threshold parameters (`-Warning`, `-Critical`, `-State`, `-NoPerfData`, `-Verbosity`), calls the provider, builds the `IcingaPlugin` check tree with `New-IcingaPlugin`, and returns `$CheckPackage.Compile()`.
 
@@ -34,7 +34,7 @@ src
   |         |_ IcingaSpoolerState.ps1       # Optional enum for status codes
   |_ Plugins
        |_ Lib
-       |    |_ Private
+       |    |_ Public
        |         |_ New-IcingaPlugin.ps1
        |_ Provider
        |    |_ Spooler
@@ -45,7 +45,7 @@ src
                  |_ Invoke-IcingaCheckSpoolerTutorial.ps1
 ```
 
-> **Naming Rule:** Every check plugin function **must** begin with the prefix `Invoke-IcingaCheck`. `IcingaPlugin` inspects the call stack at construction time (`DetectCheckCommand()`) and uses the suffix after `Invoke-IcingaCheck` as the default `ifw_<template>` namespace in performance data (for example `Invoke-IcingaCheckSpoolerTutorial` -> `ifw_spoolertutorial`).
+> **Naming Rule:** Every check plugin function **must** begin with the prefix `Invoke-IcingaCheck`. `IcingaPlugin` resolves the calling check command (`DetectCheckCommand()`) once on the first node and caches it in `Private.Icinga.ActiveCheckCommand` until `Compile()` resets it, using the suffix after `Invoke-IcingaCheck` as the default `ifw_<template>` namespace in performance data (for example `Invoke-IcingaCheckSpoolerTutorial` -> `ifw_spoolertutorial`).
 
 ---
 

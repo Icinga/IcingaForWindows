@@ -15,6 +15,13 @@ against the warning and critical thresholds, so the plugin reports
 CRITICAL/WARNING as soon as any core, node or the total breaches its threshold
 (the default 'all must be OK' aggregation).
 
+NodeFilter (aliased to SocketFilter for legacy compatibility) narrows evaluation
+to matching NUMA node IDs while preserving hardware core numbering. Core selects
+'*' (all cores, node totals and Overall Load), '_Total' / 'Total' (only Overall
+Load), or a specific core number/wildcard pattern. OverallOnly collects all NUMA
+node and core checks and performance data, while applying Warning and Critical
+thresholds exclusively to 'Overall Load'.
+
 'Node Total' and 'Overall Load' are the averages of the core values read in the
 same request. Windows' own '<node>,_Total' and '_Total' instances are not used,
 because they are sampled in a slightly different window and would not match the
@@ -43,6 +50,21 @@ This plugin is Windows-only because it relies on the Windows performance counter
 |----------|---------------|---------------------------------------------------------------------|---------|
 | Critical | System.String | Critical threshold in percent, using the Icinga threshold grammar.  |         |
 
+.PARAMETER Core
+| Name | Type          | Description                                                                   | Default |
+|------|---------------|-------------------------------------------------------------------------------|---------|
+| Core | System.String | Core selector: '*' for all cores + totals, '_Total'/'Total' or a core number. | *       |
+
+.PARAMETER NodeFilter
+| Name       | Type         | Description                                                               | Default |
+|------------|--------------|---------------------------------------------------------------------------|---------|
+| NodeFilter | System.Array | NUMA node IDs to include (wildcards allowed; aliased to SocketFilter).    | @()     |
+
+.PARAMETER OverallOnly
+| Name        | Type                                         | Description                                                                  | Default |
+|-------------|----------------------------------------------|------------------------------------------------------------------------------|---------|
+| OverallOnly | System.Management.Automation.SwitchParameter | Collect all cores/nodes, but evaluate Warning/Critical only on Overall Load. | False   |
+
 .PARAMETER Verbosity
 | Name      | Type         | Description                                                                        | Default |
 |-----------|--------------|------------------------------------------------------------------------------------|---------|
@@ -62,10 +84,15 @@ PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90
 Warns at 80% and goes critical at 90% load for any core, NUMA node or the total.
 
 .EXAMPLE
-PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90 -Verbosity 2
+PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90 -OverallOnly
 
-Shows every NUMA node and core in the output, not only the ones that breach a
-threshold.
+Collects performance data for all cores and NUMA nodes, alerting only when
+Overall Load breaches 80% or 90%.
+
+.EXAMPLE
+PS> Invoke-IcingaCheckCPU -Warning 80 -Critical 90 -Core '_Total'
+
+Evaluates and emits performance data exclusively for Overall Load.
 
 .NOTES
 Windows-only. Reads the '\Processor Information(*)\% Processor Time' performance
@@ -78,10 +105,14 @@ command wrapper is expected to exit with it.
 function Invoke-IcingaCheckCPU()
 {
     param (
-        [string]$Warning    = '',
-        [string]$Critical   = '',
-        [int]$Verbosity     = 0,
-        [switch]$NoPerfData = $false
+        [string]$Warning     = '',
+        [string]$Critical    = '',
+        [string]$Core        = '*',
+        [Alias('SocketFilter')]
+        [array]$NodeFilter   = @(),
+        [switch]$OverallOnly = $false,
+        [int]$Verbosity      = 0,
+        [switch]$NoPerfData  = $false
     );
 
     [string]$CounterPath     = '\Processor Information(*)\% Processor Time';
@@ -121,31 +152,67 @@ function Invoke-IcingaCheckCPU()
         return $CheckPackage.SetError('Failed to read the performance counter {0}: no processor instance available', $CounterPath).Compile();
     }
 
+    # Normalize -Core so '*' selects all cores + Overall Load, '_Total' / 'Total' selects only Overall Load,
+    # and '0' or 'Core #0' selects matching logical core numbers.
+    [string]$NormalizedCore = '*';
+    if (-not [string]::IsNullOrWhiteSpace($Core)) {
+        $NormalizedCore = $Core.Trim().Replace('_', '');
+    }
+
+    [bool]$IsAllCores        = ($NormalizedCore -eq '*');
+    [bool]$IsTotalOnly       = ($NormalizedCore -ieq 'Total');
+    [string]$SpecificPattern = ($NormalizedCore -replace '(?i)^core\s*#?', '').Trim();
+
     # The node and overall averages need every core value, so all checks are collected
     # first and created afterwards in output order.
-    [array]$Entries     = @();
-    [int]$CoreNumber    = 0;
-    [double]$OverallSum = 0;
-    [int]$OverallCount  = 0;
+    [array]$Entries          = @();
+    [int]$CoreNumber         = 0;
+    [double]$OverallSum      = 0;
+    [int]$OverallCount       = 0;
+    [int]$MatchedNodes       = 0;
+    [int]$MatchedCores       = 0;
 
     foreach ($Node in $Nodes) {
-        $NodePackage     = New-IcingaPlugin ([string]::Format('NUMA Node #{0}', $Node));
-        $CheckPackage.AddCheck($NodePackage).Commit();
+        # Advance CoreNumber across skipped NUMA nodes so logical hardware core IDs stay globally aligned
+        if ((Test-IcingaArrayFilter -InputObject $Node -Include $NodeFilter) -eq $false) {
+            $CoreNumber += $NodeCores[$Node].Count;
+            continue;
+        }
 
-        [double]$NodeSum = 0;
-        [int]$NodeCount  = 0;
+        $MatchedNodes++;
+        $NodePackage        = $null;
+        [double]$NodeSum    = 0;
+        [int]$NodeCount     = 0;
+        [array]$NodeEntries = @();
+
+        # Skip creating per-node containers when only Overall Load ('_Total' / 'Total') was requested
+        if (-not $IsTotalOnly) {
+            $NodePackage = New-IcingaPlugin ([string]::Format('NUMA Node #{0}', $Node));
+        }
 
         foreach ($Instance in $NodeCores[$Node]) {
-            $Value      = Get-IcingaPerformanceCounterValue -InputObject $Counters[$Instance]['Processor Information']['% Processor Time'];
-            $Entry      = @{
-                'Parent' = $NodePackage;
-                'Name'   = [string]::Format('Core #{0}', $CoreNumber);
-                'Index'  = [string]::Format('{0}_{1}', $Node, $CoreNumber);
-                'Value'  = $null;
-                'Error'  = $null;
-            };
+            [int]$CurrentCoreIndex = $CoreNumber;
+            $CoreNumber            = $CoreNumber + 1;
 
-            $CoreNumber = $CoreNumber + 1;
+            [bool]$CoreSelected    = ($IsAllCores -or $IsTotalOnly);
+            if (-not $CoreSelected) {
+                $CoreSelected = [bool](Test-IcingaArrayFilter -InputObject ([string]$CurrentCoreIndex) -Include @( $SpecificPattern ));
+            }
+
+            if (-not $CoreSelected) {
+                continue;
+            }
+
+            $MatchedCores++;
+            $Value = Get-IcingaPerformanceCounterValue -InputObject $Counters[$Instance]['Processor Information']['% Processor Time'];
+            $Entry = @{
+                'Parent'    = $NodePackage;
+                'Name'      = [string]::Format('Core #{0}', $CurrentCoreIndex);
+                'Index'     = [string]::Format('{0}_{1}', $Node, $CurrentCoreIndex);
+                'Value'     = $null;
+                'Error'     = $null;
+                'IsOverall' = $false;
+            };
 
             if ($null -eq $Value -or $Value -is [string]) {
                 $Entry['Error'] = [string]$Value;
@@ -155,41 +222,63 @@ function Invoke-IcingaCheckCPU()
                 $NodeCount     += 1;
             }
 
-            $Entries += $Entry;
+            if (-not $IsTotalOnly) {
+                $NodeEntries += $Entry;
+            }
         }
 
-        $NodeTotal = @{
-            'Parent' = $NodePackage;
-            'Name'   = 'Node Total';
-            'Index'  = [string]::Format('{0}_total', $Node);
-            'Value'  = $null;
-            'Error'  = 'no core of this NUMA node could be read';
-        };
+        if ($IsAllCores) {
+            $NodeTotal = @{
+                'Parent'    = $NodePackage;
+                'Name'      = 'Node Total';
+                'Index'     = [string]::Format('{0}_total', $Node);
+                'Value'     = $null;
+                'Error'     = 'no core of this NUMA node could be read';
+                'IsOverall' = $false;
+            };
 
-        if ($NodeCount -ne 0) {
-            $NodeTotal['Value'] = $NodeSum / $NodeCount;
-            $NodeTotal['Error'] = $null;
+            if ($NodeCount -ne 0) {
+                $NodeTotal['Value'] = $NodeSum / $NodeCount;
+                $NodeTotal['Error'] = $null;
+            }
+
+            $NodeEntries += $NodeTotal;
         }
 
-        $Entries      += $NodeTotal;
+        if ($null -ne $NodePackage -and $NodeEntries.Count -gt 0) {
+            $CheckPackage.AddCheck($NodePackage).Commit();
+            $Entries += $NodeEntries;
+        }
+
         $OverallSum   += $NodeSum;
         $OverallCount += $NodeCount;
     }
 
-    $OverallLoad = @{
-        'Parent' = $CheckPackage;
-        'Name'   = 'Overall Load';
-        'Index'  = 'totalload';
-        'Value'  = $null;
-        'Error'  = 'no processor core could be read';
-    };
-
-    if ($OverallCount -ne 0) {
-        $OverallLoad['Value'] = $OverallSum / $OverallCount;
-        $OverallLoad['Error'] = $null;
+    if ($MatchedNodes -eq 0) {
+        return $CheckPackage.SetError('No NUMA node matches the given filter').Compile();
     }
 
-    $Entries += $OverallLoad;
+    if (-not $IsAllCores -and -not $IsTotalOnly -and $MatchedCores -eq 0) {
+        return $CheckPackage.SetError('No processor core matches the given filter "{0}"', $Core).Compile();
+    }
+
+    if ($IsAllCores -or $IsTotalOnly) {
+        $OverallLoad = @{
+            'Parent'    = $CheckPackage;
+            'Name'      = 'Overall Load';
+            'Index'     = 'totalload';
+            'Value'     = $null;
+            'Error'     = 'no processor core could be read';
+            'IsOverall' = $true;
+        };
+
+        if ($OverallCount -ne 0) {
+            $OverallLoad['Value'] = $OverallSum / $OverallCount;
+            $OverallLoad['Error'] = $null;
+        }
+
+        $Entries += $OverallLoad;
+    }
 
     foreach ($Entry in $Entries) {
         if ($null -eq $Entry['Value']) {
@@ -199,12 +288,22 @@ function Invoke-IcingaCheckCPU()
             continue;
         }
 
+        [string]$EntryWarn = $Warning;
+        [string]$EntryCrit = $Critical;
+
+        # When -OverallOnly is set alongside -Core '*', keep individual core and node metrics for
+        # performance data, but apply Warning/Critical thresholds exclusively to 'Overall Load'.
+        if ($OverallOnly -and $IsAllCores -and -not [bool]$Entry['IsOverall']) {
+            $EntryWarn = '';
+            $EntryCrit = '';
+        }
+
         $Entry['Parent'].AddCheck(
             (New-IcingaPlugin $Entry['Name'] ([System.Math]::Round([double]$Entry['Value'], 2)) '%').
                 MetricIndex($Entry['Index']).
                 MetricLabel('load').
-                Warning($Warning).
-                Critical($Critical).
+                Warning($EntryWarn).
+                Critical($EntryCrit).
                 Minimum('0').
                 Maximum('100').
                 CheckRange()

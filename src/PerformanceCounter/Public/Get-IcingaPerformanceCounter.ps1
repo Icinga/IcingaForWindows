@@ -20,8 +20,8 @@ so there are no races on the underlying counter handles. When no daemon is runni
 persistent per-runspace manager kept in module scope, so repeated reads stay warm and only the first
 read of a new counter pays the warm-up sleep.
 
-Requesting a counter also refreshes its last-seen timestamp in the registry, keeping actively used
-counters warm and out of the eviction path.
+Requesting a valid counter path also refreshes its last-seen timestamp in the registry, keeping
+actively used counters warm and out of the eviction path.
 
 .PARAMETER Counter
 | Name    | Type         | Description                                                  | Default |
@@ -84,12 +84,16 @@ function Get-IcingaPerformanceCounter()
         # The environment is not initialized at all; do a fully transient read.
         $Result = ('IcingaPerformanceCounter' -as [type])::ResolveOnce([string[]]$Counter, 250);
     } else {
-        # Keep the requested counters alive in the registry and cache.
+        # Keep valid requested counter paths alive in the registry and cache.
         [datetime]$Now = (Get-Date);
+        $CounterType   = 'IcingaPerformanceCounter' -as [type];
 
         foreach ($Path in $Counter) {
-            if (-not [string]::IsNullOrEmpty($Path)) {
-                $Store.Registered[$Path] = $Now;
+            if (-not [string]::IsNullOrEmpty([string]$Path)) {
+                $ParsedPath = $CounterType::ParsePath([string]$Path);
+                if ($ParsedPath.Valid) {
+                    $Store.Registered[[string]$Path] = $Now;
+                }
             }
         }
 
@@ -97,6 +101,7 @@ function Get-IcingaPerformanceCounter()
             # Daemon is alive: dispatch through the request/response queue.
             [string]$RequestId                 = (New-Guid).ToString();
             $ResponseQueue                     = [System.Collections.Concurrent.BlockingCollection[PSObject]]::new(1);
+            [bool]$TookResponse                = $false;
             $Store.PendingRequests[$RequestId] = $ResponseQueue;
 
             try {
@@ -110,7 +115,8 @@ function Get-IcingaPerformanceCounter()
                 $Response = $null;
 
                 if ($ResponseQueue.TryTake([ref]$Response, $TimeoutMs)) {
-                    $Result = $Response;
+                    $TookResponse = $true;
+                    $Result       = $Response;
                 } else {
                     Write-LoggingEntry -Message 'Get-IcingaPerformanceCounter: Request timed out' -Level 'Warning' -Data @{
                         'RequestId' = $RequestId;
@@ -121,9 +127,26 @@ function Get-IcingaPerformanceCounter()
                     return $null;
                 }
             } finally {
+                # Coordinate ownership of $ResponseQueue on timeout: if $CallerRemoved is $false and
+                # $TookResponse is $false, the daemon thread already popped $RequestId via TryRemove and
+                # may still be inside $PendingQueue.TryAdd($Response), so briefly drain before Dispose().
                 [System.Collections.Concurrent.BlockingCollection[PSObject]]$RemovedQueue = $null;
-                [void]$Store.PendingRequests.TryRemove($RequestId, [ref]$RemovedQueue);
-                $ResponseQueue.Dispose();
+                [bool]$CallerRemoved                                                      = $Store.PendingRequests.TryRemove($RequestId, [ref]$RemovedQueue);
+
+                if (-not $TookResponse -and -not $CallerRemoved) {
+                    $DiscardResponse = $null;
+                    try {
+                        [void]$ResponseQueue.TryTake([ref]$DiscardResponse, 100);
+                    } catch {
+                        [void]$_;
+                    }
+                }
+
+                try {
+                    $ResponseQueue.Dispose();
+                } catch {
+                    [void]$_;
+                }
             }
         } else {
             # Inline fallback: no live daemon. Keep a persistent per-runspace manager in module scope

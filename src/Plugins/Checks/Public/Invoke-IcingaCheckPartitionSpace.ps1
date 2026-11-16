@@ -107,6 +107,7 @@ function Invoke-IcingaCheckPartitionSpace()
         [array]$Exclude            = @(),
         [array]$RequiredPartition  = @(),
         [switch]$CheckFreeSpace    = $false,
+        [Alias('MitigateUnknown')]
         [switch]$IgnoreEmptyChecks = $false,
         [switch]$SkipUnknown       = $false,
         [int]$Verbosity            = 0,
@@ -125,30 +126,36 @@ function Invoke-IcingaCheckPartitionSpace()
     $CheckPackage.Verbose    = $Verbosity;
     $CheckPackage.NoPerfData = $NoPerfData;
 
-    $Volumes                 = Get-IcingaDiskInformation -Entrypoint 'Volume';
+    # Skip MSFT_Partition mapping because partition space checks only read Win32_Volume capacity and free space
+    $Volumes                 = Get-IcingaDiskInformation -Entrypoint 'Volume' -SkipPartitionMapping;
 
     if (Test-IcingaError -InputObject $Volumes) {
         return $CheckPackage.SetError($Volumes).Compile();
     }
 
-    # Drive letters are matched without ':', '\' and '/', so 'C', 'C:' and 'C:\' all
-    # select drive C; the unchanged pattern keeps labels and volume paths matchable.
-    [array]$IncludeFilter = @();
-    [array]$ExcludeFilter = @();
+    # Normalize forward slashes to '\' and strip trailing ':', '\' and '/' on both filters and partition names
+    # so 'C', 'C:', 'C:\' and NTFS mount points ('C:\Mount\Vol1', 'C:\Mount\Vol1\', 'C:/Mount/Vol1/') match cleanly.
+    [array]$IncludeFilter      = @();
+    [array]$ExcludeFilter      = @();
+    [array]$RequiredNormalized = @();
 
     foreach ($Pattern in $Include) {
-        $IncludeFilter += [string]$Pattern;
-        $IncludeFilter += ([string]$Pattern -replace '[:\\/]', '');
+        $IncludeFilter += ([string]$Pattern).Replace('/', '\').TrimEnd(':', '\', '/');
     }
 
     foreach ($Pattern in $Exclude) {
-        $ExcludeFilter += [string]$Pattern;
-        $ExcludeFilter += ([string]$Pattern -replace '[:\\/]', '');
+        $ExcludeFilter += ([string]$Pattern).Replace('/', '\').TrimEnd(':', '\', '/');
+    }
+
+    foreach ($ReqEntry in $RequiredPartition) {
+        $RequiredNormalized += ([string]$ReqEntry).Replace('/', '\');
     }
 
     [array]$KnownPartitions = @();
 
     foreach ($Volume in (ConvertTo-IcingaSortedArray -InputObject @($Volumes.Values) -Property 'Name')) {
+        # Prefer the drive letter (without ':'), fall back to the volume label, or use the Win32_Volume Name
+        # (such as 'C:\ClusterStorage\Volume1\' for NTFS folder mount points without a drive letter)
         [string]$PartitionName = $Volume.Name;
 
         if ([string]::IsNullOrEmpty($Volume.DriveLetter) -eq $false) {
@@ -157,9 +164,10 @@ function Invoke-IcingaCheckPartitionSpace()
             $PartitionName = $Volume.Label;
         }
 
-        $KnownPartitions += $PartitionName;
+        [string]$FilterName = $PartitionName.TrimEnd(':', '\', '/');
+        $KnownPartitions   += $FilterName;
 
-        if ((Test-IcingaArrayFilter -InputObject $PartitionName -Include $IncludeFilter -Exclude $ExcludeFilter) -eq $false) {
+        if ((Test-IcingaArrayFilter -InputObject $FilterName -Include $IncludeFilter -Exclude $ExcludeFilter) -eq $false) {
             continue;
         }
 
@@ -198,7 +206,7 @@ function Invoke-IcingaCheckPartitionSpace()
         ).Commit();
     }
 
-    $CheckPackage.AddMissingChecks($RequiredPartition, $KnownPartitions, 'Partition {0}', 'Mandatory partition not found on host', 'Critical', '[:\\/]+$').Commit();
+    $CheckPackage.AddMissingChecks($RequiredNormalized, $KnownPartitions, 'Partition {0}', 'Mandatory partition not found on host', 'Critical', '[:\\/]+$').Commit();
 
     if ($CheckPackage.HasChecks() -eq $false) {
         if ($IgnoreEmptyChecks) {

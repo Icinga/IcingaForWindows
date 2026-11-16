@@ -56,7 +56,8 @@ Describe 'Invoke-IcingaCheckPartitionSpace' {
                 function Get-IcingaDiskInformation()
                 {
                     param (
-                        [string]$Entrypoint = 'PhysicalDisk'
+                        [string]$Entrypoint           = 'PhysicalDisk',
+                        [switch]$SkipPartitionMapping = $false
                     );
 
                     if ($Fail) {
@@ -157,11 +158,29 @@ Describe 'Invoke-IcingaCheckPartitionSpace' {
             $Result.Output | Should -Not -Match 'Partition D: Mandatory';
         }
 
-        It 'returns UNKNOWN when no partition matches, OK with IgnoreEmptyChecks' {
-            Invoke-TestPartitionCheck -StubData @($script:DriveC) -Arguments @{ 'Include' = 'Q'; } | Should -Be 3;
+        It 'returns UNKNOWN when no partition matches, OK with IgnoreEmptyChecks or MitigateUnknown' {
+            Invoke-TestPartitionCheck -StubData @($script:DriveC) -Arguments @{ 'Include' = 'Q'; }     | Should -Be 3;
             $Global:IcingaForWindows.Private.Icinga.CheckResult.Output | Should -Be '[UNKNOWN] Used Partition Space: No partition matches the given filter';
 
+            Invoke-TestPartitionCheck -StubData @($script:DriveC) -Arguments @{ 'Include' = @( '' ); } | Should -Be 3;
             Invoke-TestPartitionCheck -StubData @($script:DriveC) -Arguments @{ 'Include' = 'Q'; 'IgnoreEmptyChecks' = $true; } | Should -Be 0;
+            Invoke-TestPartitionCheck -StubData @($script:DriveC) -Arguments @{ 'Include' = 'Q'; 'MitigateUnknown' = $true; }   | Should -Be 0;
+        }
+
+        It 'matches folder mount points with or without a trailing backslash in Include, Exclude and RequiredPartition' {
+            $MountVol = New-TestVolume -Name 'C:\ClusterStorage\Volume1\' -Capacity ([uint64]100000000000) -FreeSpace ([uint64]80000000000);
+
+            Invoke-TestPartitionCheck -StubData @($script:DriveC, $MountVol) -Arguments @{ 'Include' = 'C:\ClusterStorage\Volume1'; 'RequiredPartition' = 'C:\ClusterStorage\Volume1'; } | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData.Count | Should -Be 1;
+
+            Invoke-TestPartitionCheck -StubData @($script:DriveC, $MountVol) -Arguments @{ 'Exclude' = 'C:\ClusterStorage\Volume1'; } | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData.Count | Should -Be 1;
+
+            Invoke-TestPartitionCheck -StubData @($script:DriveC, $MountVol) -Arguments @{ 'Include' = 'C:/ClusterStorage/Volume1/'; 'RequiredPartition' = 'C:/ClusterStorage/Volume1/'; } | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData.Count | Should -Be 1;
+
+            Invoke-TestPartitionCheck -StubData @($script:DriveC, $MountVol) -Arguments @{ 'Exclude' = 'C:/ClusterStorage/Volume1/'; } | Should -Be 0;
+            $Global:IcingaForWindows.Private.Icinga.CheckResult.PerformanceData.Count | Should -Be 1;
         }
     }
 

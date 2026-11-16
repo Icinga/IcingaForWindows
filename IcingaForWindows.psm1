@@ -193,7 +193,8 @@ function New-ModuleBaseEnvironment()
                 'CurrentLoggingId' = (New-Guid);
             };
             'Icinga' = [PSCustomObject]@{
-                'CheckResult' = $null;
+                'CheckResult'        = $null;
+                'ActiveCheckCommand' = $null;
             };
         };
         'Protected' = [PSCustomObject]@{
