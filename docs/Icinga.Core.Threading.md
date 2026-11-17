@@ -43,33 +43,33 @@ with the supplied parameters.
 
 **`$PublicSpace`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| PublicSpace | System.Object | Shared public runtime object to attach to the thread | $null |
+| Name        | Type          | Description                                          | Default |
+|-------------|---------------|------------------------------------------------------|---------|
+| PublicSpace | System.Object | Shared public runtime object to attach to the thread | $null   |
 
 **`$AccessControl`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AccessControl | System.Object | Access control descriptor to attach to protected runtime area | $null |
+| Name          | Type          | Description                                                   | Default |
+|---------------|---------------|---------------------------------------------------------------|---------|
+| AccessControl | System.Object | Access control descriptor to attach to protected runtime area | $null   |
 
 **`$ThreadId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ThreadId | System.String | The thread id assigned by the creator | $null |
+| Name     | Type          | Description                           | Default |
+|----------|---------------|---------------------------------------|---------|
+| ThreadId | System.String | The thread id assigned by the creator | $null   |
 
 **`$Command`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Command | System.String | The command/function name to execute in the thread | $null |
+| Name    | Type          | Description                                        | Default |
+|---------|---------------|----------------------------------------------------|---------|
+| Command | System.String | The command/function name to execute in the thread | $null   |
 
 **`$Parameters`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Parameters | System.Hashtable | Named parameters to pass to `Command` | @{} |
+| Name       | Type             | Description                           | Default |
+|------------|------------------|---------------------------------------|---------|
+| Parameters | System.Hashtable | Named parameters to pass to `Command` | @{}     |
 
 #### Outputs
 
@@ -88,7 +88,7 @@ up the runspace and sets (Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemo
 that downstream functions know they are executing in a background context. Thread identity is
 tracked via Update-LoggingThreadLoggingId for log correlation.
 
-*Source: [src/Core/Threading/Public/Set-ThreadData.ps1](../../src/Core/Threading/Public/Set-ThreadData.ps1)*
+*Source: [src/Core/Threading/Public/Set-ThreadData.ps1](../src/Core/Threading/Public/Set-ThreadData.ps1)*
 
 ---
 
@@ -107,9 +107,9 @@ thread hierarchy for the Icinga application by delegating to `Show-Threads`.
 
 **`$AsObject`**
 
-| Name     | Type                    | Description                                        | Default |
-|----------|-------------------------|----------------------------------------------------|---------|
-| AsObject | System.SwitchParameter  | Return the tree as PSObjects instead of rendering  | $false  |
+| Name     | Type                   | Description                                       | Default |
+|----------|------------------------|---------------------------------------------------|---------|
+| AsObject | System.SwitchParameter | Return the tree as PSObjects instead of rendering | $false  |
 
 #### Outputs
 
@@ -134,7 +134,7 @@ PS> $tree | Select-Object Name, State, LastSeen
 This wrapper calls `Show-Threads` and exists to provide a user-facing
 command name for convenience.
 
-*Source: [src/Core/Threading/Public/Show-IcingaThreads.ps1](../../src/Core/Threading/Public/Show-IcingaThreads.ps1)*
+*Source: [src/Core/Threading/Public/Show-IcingaThreads.ps1](../src/Core/Threading/Public/Show-IcingaThreads.ps1)*
 
 ---
 
@@ -152,7 +152,7 @@ scriptblock entries and removes internal `Set-ThreadData` frames.
 
 #### Outputs
 
-System.String — A single-line thread name derived from the call stack.
+System.String -- A single-line thread name derived from the call stack.
 
 #### Examples
 
@@ -164,7 +164,7 @@ PS> Get-ThreadCallStack
 
 Used for naming threads created with `New-Thread` to aid diagnostics and tracing.
 
-*Source: [src/Core/Threading/Private/Get-ThreadCallStack.ps1](../../src/Core/Threading/Private/Get-ThreadCallStack.ps1)*
+*Source: [src/Core/Threading/Private/Get-ThreadCallStack.ps1](../src/Core/Threading/Private/Get-ThreadCallStack.ps1)*
 
 ---
 
@@ -181,7 +181,7 @@ container. It is a convenience helper to avoid repeating the global variable pat
 
 #### Outputs
 
-System.String — The current thread GUID string, or $null if not set.
+System.String -- The current thread GUID string, or $null if not set.
 
 #### Examples
 
@@ -193,7 +193,7 @@ PS> Get-ThreadId
 
 The value is read from `(Get-GlobalRuntimeVariable).Private.Threading.ThreadId`.
 
-*Source: [src/Core/Threading/Private/Get-ThreadId.ps1](../../src/Core/Threading/Private/Get-ThreadId.ps1)*
+*Source: [src/Core/Threading/Private/Get-ThreadId.ps1](../src/Core/Threading/Private/Get-ThreadId.ps1)*
 
 ---
 
@@ -213,13 +213,13 @@ If the thread or timestamp is missing, `$null` is returned.
 
 **`$ThreadId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name     | Type          | Description                                         | Default        |
+|----------|---------------|-----------------------------------------------------|----------------|
 | ThreadId | System.String | The thread id to query. Defaults to current thread. | (Get-ThreadId) |
 
 #### Outputs
 
-System.Double — Seconds since the last heartbeat, or $null if the thread is unknown.
+System.Double -- Seconds since the last heartbeat, or $null if the thread is unknown.
 
 #### Examples
 
@@ -231,7 +231,7 @@ PS> Get-ThreadLastSeen -ThreadId $tid
 
 Used by health checks and thread state transitions in the housekeeper.
 
-*Source: [src/Core/Threading/Private/Get-ThreadLastSeen.ps1](../../src/Core/Threading/Private/Get-ThreadLastSeen.ps1)*
+*Source: [src/Core/Threading/Private/Get-ThreadLastSeen.ps1](../src/Core/Threading/Private/Get-ThreadLastSeen.ps1)*
 
 ---
 
@@ -252,13 +252,13 @@ differentiate between active and idle conditions.
 
 **`$ThreadId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name     | Type          | Description                                            | Default        |
+|----------|---------------|--------------------------------------------------------|----------------|
 | ThreadId | System.String | The thread id to evaluate. Defaults to current thread. | (Get-ThreadId) |
 
 #### Outputs
 
-System.String — Normalisierter Thread-State (z.B. RUNNING, IDLE, BLOCKED).
+System.String -- Normalisierter Thread-State (z.B. RUNNING, IDLE, BLOCKED).
 
 #### Examples
 
@@ -270,7 +270,7 @@ PS> Get-ThreadState -ThreadId $tid
 
 Relies on configuration values such as `(Get-GlobalRuntimeVariable).Public.Threading.IdleTime`.
 
-*Source: [src/Core/Threading/Private/Get-ThreadState.ps1](../../src/Core/Threading/Private/Get-ThreadState.ps1)*
+*Source: [src/Core/Threading/Private/Get-ThreadState.ps1](../src/Core/Threading/Private/Get-ThreadState.ps1)*
 
 ---
 
@@ -285,7 +285,7 @@ Relies on configuration values such as `(Get-GlobalRuntimeVariable).Public.Threa
 `Get-ThreadTree` collects every thread from the global thread registry and
 assembles it into a list of root-level tree nodes. Each node holds the
 resolved thread state, last-seen age, parameters and a `Children` array that
-contains the child nodes in the same format — forming a complete, self-contained
+contains the child nodes in the same format -- forming a complete, self-contained
 representation of the thread hierarchy without requiring further registry
 lookups.
 
@@ -299,7 +299,7 @@ PSObject with the following properties:
 | Id         | System.String    | Unique thread GUID                   |
 | Name       | System.String    | Display name of the thread           |
 | Command    | System.String    | Entry-point command name             |
-| State      | System.String    | Resolved state (RUNNING, IDLE, …)   |
+| State      | System.String    | Resolved state (RUNNING, IDLE, ...)  |
 | LastSeen   | System.Double    | Seconds since last heartbeat         |
 | KeepAlive  | System.Boolean   | Whether the thread is kept alive     |
 | Parameters | System.Hashtable | Parameters passed to the command     |
@@ -318,7 +318,7 @@ PS> $tree[0].Children
 The function resolves state and last-seen values at call time via
 `Get-ThreadState` and `Get-ThreadLastSeen`.
 
-*Source: [src/Core/Threading/Private/Get-ThreadTree.ps1](../../src/Core/Threading/Private/Get-ThreadTree.ps1)*
+*Source: [src/Core/Threading/Private/Get-ThreadTree.ps1](../src/Core/Threading/Private/Get-ThreadTree.ps1)*
 
 ---
 
@@ -338,45 +338,45 @@ The function supports keep-alive semantics and parent/child relationships.
 
 **`$Command`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Command | System.String | The command (function) name to execute in the thread | |
+| Name    | Type          | Description                                          | Default |
+|---------|---------------|------------------------------------------------------|---------|
+| Command | System.String | The command (function) name to execute in the thread |         |
 
 **`$Parameters`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Parameters | System.Hashtable | Named parameters passed to the command | @{} |
+| Name       | Type             | Description                            | Default |
+|------------|------------------|----------------------------------------|---------|
+| Parameters | System.Hashtable | Named parameters passed to the command | @{}     |
 
 **`$ParentThread`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ParentThread | System.String | Optional parent thread id (defaults to current thread) | $null |
+| Name         | Type          | Description                                            | Default |
+|--------------|---------------|--------------------------------------------------------|---------|
+| ParentThread | System.String | Optional parent thread id (defaults to current thread) | $null   |
 
 **`$OverrideName`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| OverrideName | System.String | Optional explicit display name for the created thread | $null |
+| Name         | Type          | Description                                           | Default |
+|--------------|---------------|-------------------------------------------------------|---------|
+| OverrideName | System.String | Optional explicit display name for the created thread | $null   |
 
 **`$Start`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Start | System.SwitchParameter | When set, start the thread immediately after creation | $false |
+| Name  | Type                   | Description                                           | Default |
+|-------|------------------------|-------------------------------------------------------|---------|
+| Start | System.SwitchParameter | When set, start the thread immediately after creation | $false  |
 
 **`$KeepAlive`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| KeepAlive | System.SwitchParameter | When set, the housekeeper may restart the thread on failure | $false |
+| Name      | Type                   | Description                                                 | Default |
+|-----------|------------------------|-------------------------------------------------------------|---------|
+| KeepAlive | System.SwitchParameter | When set, the housekeeper may restart the thread on failure | $false  |
 
 **`$WaitForJobs`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WaitForJobs | System.SwitchParameter | When set the thread is expected to wait for queued jobs | $false |
+| Name        | Type                   | Description                                             | Default |
+|-------------|------------------------|---------------------------------------------------------|---------|
+| WaitForJobs | System.SwitchParameter | When set the thread is expected to wait for queued jobs | $false  |
 
 #### Outputs
 
@@ -392,7 +392,7 @@ PS> New-Thread -Command 'Start-Worker' -Parameters @{ 'Queue' = $q } -Start
 
 This helper uses `Set-ThreadData` in the created runspace to initialize thread-local state.
 
-*Source: [src/Core/Threading/Private/New-Thread.ps1](../../src/Core/Threading/Private/New-Thread.ps1)*
+*Source: [src/Core/Threading/Private/New-Thread.ps1](../src/Core/Threading/Private/New-Thread.ps1)*
 
 ---
 
@@ -412,19 +412,19 @@ exists, the cached instance is returned.
 
 **`$MinInstances`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| MinInstances | System.Int32 | Minimum number of runspaces in the pool | 1 |
+| Name         | Type         | Description                             | Default |
+|--------------|--------------|-----------------------------------------|---------|
+| MinInstances | System.Int32 | Minimum number of runspaces in the pool | 1       |
 
 **`$MaxInstances`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name         | Type         | Description                             | Default                                                   |
+|--------------|--------------|-----------------------------------------|-----------------------------------------------------------|
 | MaxInstances | System.Int32 | Maximum number of runspaces in the pool | `(Get-GlobalRuntimeVariable).Public.Threading.MaxThreads` |
 
 #### Outputs
 
-System.Management.Automation.Runspaces.RunspacePool — The newly created or cached runspace pool.
+System.Management.Automation.Runspaces.RunspacePool -- The newly created or cached runspace pool.
 
 #### Examples
 
@@ -436,7 +436,7 @@ PS> New-ThreadPool -MinInstances 2 -MaxInstances 8
 
 The function currently uses the default `InitialSessionState`. Future work may enable JEA.
 
-*Source: [src/Core/Threading/Private/New-ThreadPool.ps1](../../src/Core/Threading/Private/New-ThreadPool.ps1)*
+*Source: [src/Core/Threading/Private/New-ThreadPool.ps1](../src/Core/Threading/Private/New-ThreadPool.ps1)*
 
 ---
 
@@ -456,13 +456,13 @@ it exceeds the configured keep-alive threshold, sets the thread state to
 
 **`$ThreadId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name     | Type          | Description                                           | Default        |
+|----------|---------------|-------------------------------------------------------|----------------|
 | ThreadId | System.String | The thread id to inspect. Defaults to current thread. | (Get-ThreadId) |
 
 #### Outputs
 
-None — Updates the thread state in the global registry and emits a warning log entry when frozen.
+None -- Updates the thread state in the global registry and emits a warning log entry when frozen.
 
 #### Examples
 
@@ -474,7 +474,7 @@ PS> Set-ThreadFrozen -ThreadId $tid
 
 This helper is used by the housekeeper loop to detect and flag unresponsive threads.
 
-*Source: [src/Core/Threading/Private/Set-ThreadFrozen.ps1](../../src/Core/Threading/Private/Set-ThreadFrozen.ps1)*
+*Source: [src/Core/Threading/Private/Set-ThreadFrozen.ps1](../src/Core/Threading/Private/Set-ThreadFrozen.ps1)*
 
 ---
 
@@ -491,7 +491,7 @@ and records the current timestamp in `LastSeen` to indicate activity.
 
 #### Outputs
 
-None — Modifies `(Get-GlobalRuntimeVariable).Public.Threading.Threads` for the current thread.
+None -- Modifies `(Get-GlobalRuntimeVariable).Public.Threading.Threads` for the current thread.
 
 #### Examples
 
@@ -503,7 +503,7 @@ PS> Set-ThreadProcessing
 
 Typically called by worker loops when they start handling a job.
 
-*Source: [src/Core/Threading/Private/Set-ThreadProcessing.ps1](../../src/Core/Threading/Private/Set-ThreadProcessing.ps1)*
+*Source: [src/Core/Threading/Private/Set-ThreadProcessing.ps1](../src/Core/Threading/Private/Set-ThreadProcessing.ps1)*
 
 ---
 
@@ -517,16 +517,16 @@ Typically called by worker loops when they start handling a job.
 
 `Show-Threads` builds a complete thread tree via `Get-ThreadTree` and either
 returns the structured tree objects or renders them as a formatted hierarchy
-string and emits it to the logging system — depending on the `-AsObject`
+string and emits it to the logging system -- depending on the `-AsObject`
 switch.
 
 #### Parameters
 
 **`$AsObject`**
 
-| Name     | Type                    | Description                                        | Default |
-|----------|-------------------------|----------------------------------------------------|---------|
-| AsObject | System.SwitchParameter  | Return the tree as PSObjects instead of rendering  | $false  |
+| Name     | Type                   | Description                                       | Default |
+|----------|------------------------|---------------------------------------------------|---------|
+| AsObject | System.SwitchParameter | Return the tree as PSObjects instead of rendering | $false  |
 
 #### Outputs
 
@@ -553,7 +553,7 @@ PS> $tree[0].Children
 Relies on `Get-ThreadTree` to build the hierarchy and `Write-ThreadTree` to
 render individual branches.
 
-*Source: [src/Core/Threading/Private/Show-Threads.ps1](../../src/Core/Threading/Private/Show-Threads.ps1)*
+*Source: [src/Core/Threading/Private/Show-Threads.ps1](../src/Core/Threading/Private/Show-Threads.ps1)*
 
 ---
 
@@ -572,7 +572,7 @@ reduce resource usage.
 
 #### Outputs
 
-None — Performs side-effect operations on the global thread registry and logs actions.
+None -- Performs side-effect operations on the global thread registry and logs actions.
 
 #### Examples
 
@@ -584,7 +584,7 @@ PS> Start-ThreadHouseKeeper
 
 This function is intended to run as a background supervisory thread.
 
-*Source: [src/Core/Threading/Private/Start-ThreadHouseKeeper.ps1](../../src/Core/Threading/Private/Start-ThreadHouseKeeper.ps1)*
+*Source: [src/Core/Threading/Private/Start-ThreadHouseKeeper.ps1](../src/Core/Threading/Private/Start-ThreadHouseKeeper.ps1)*
 
 ---
 
@@ -604,13 +604,13 @@ using `Write-FunctionReturnValue` when errors occur.
 
 **`$ThreadId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ThreadId | System.String | The id of the thread to stop | $null |
+| Name     | Type          | Description                  | Default |
+|----------|---------------|------------------------------|---------|
+| ThreadId | System.String | The id of the thread to stop | $null   |
 
 #### Outputs
 
-System.Management.Automation.PSCustomObject — Strukturierter Rueckgabewert bei Fehler (via Write-FunctionReturnValue); None bei Erfolg.
+System.Management.Automation.PSCustomObject -- Strukturierter Rueckgabewert bei Fehler (via Write-FunctionReturnValue); None bei Erfolg.
 
 #### Examples
 
@@ -622,7 +622,7 @@ PS> Stop-Thread -ThreadId $tid
 
 The actual runspace shutdown and cleanup is handled by the housekeeper loop.
 
-*Source: [src/Core/Threading/Private/Stop-Thread.ps1](../../src/Core/Threading/Private/Stop-Thread.ps1)*
+*Source: [src/Core/Threading/Private/Stop-Thread.ps1](../src/Core/Threading/Private/Stop-Thread.ps1)*
 
 ---
 
@@ -643,25 +643,25 @@ It also enforces lightweight sleeps to reduce CPU usage.
 
 **`$CheckTcpConnection`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CheckTcpConnection | System.SwitchParameter | When set test the global TCP connection status | $false |
+| Name               | Type                   | Description                                    | Default |
+|--------------------|------------------------|------------------------------------------------|---------|
+| CheckTcpConnection | System.SwitchParameter | When set test the global TCP connection status | $false  |
 
 **`$CheckWebSocket`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CheckWebSocket | System.SwitchParameter | When set test the WebSocket connectivity | $false |
+| Name           | Type                   | Description                              | Default |
+|----------------|------------------------|------------------------------------------|---------|
+| CheckWebSocket | System.SwitchParameter | When set test the WebSocket connectivity | $false  |
 
 **`$NoSleep`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| NoSleep | System.SwitchParameter | When set skip the default short sleep at loop start | $false |
+| Name    | Type                   | Description                                         | Default |
+|---------|------------------------|-----------------------------------------------------|---------|
+| NoSleep | System.SwitchParameter | When set skip the default short sleep at loop start | $false  |
 
 #### Outputs
 
-System.Boolean — $true when the thread should continue, $false otherwise.
+System.Boolean -- $true when the thread should continue, $false otherwise.
 
 #### Examples
 
@@ -674,7 +674,7 @@ while (Test-ThreadRunning) { Do-Work }
 This function performs multiple side effects (timestamp updates, logging id rotation)
 and is central to thread lifecycle management.
 
-*Source: [src/Core/Threading/Private/Test-ThreadRunning.ps1](../../src/Core/Threading/Private/Test-ThreadRunning.ps1)*
+*Source: [src/Core/Threading/Private/Test-ThreadRunning.ps1](../src/Core/Threading/Private/Test-ThreadRunning.ps1)*
 
 ---
 
@@ -695,21 +695,21 @@ view. The node is a PSObject as returned by `Get-ThreadTree`.
 
 **`$Node`**
 
-| Name | Type          | Description                              | Default |
-|------|---------------|------------------------------------------|---------|
-| Node | PSObject      | Tree node as returned by `Get-ThreadTree` | $null   |
+| Name | Type     | Description                               | Default |
+|------|----------|-------------------------------------------|---------|
+| Node | PSObject | Tree node as returned by `Get-ThreadTree` | $null   |
 
 **`$StringBuilder`**
 
-| Name          | Type                        | Description                     | Default |
-|---------------|-----------------------------|---------------------------------|---------|
-| StringBuilder | System.Text.StringBuilder   | The builder to append lines to  | $null   |
+| Name          | Type                      | Description                    | Default |
+|---------------|---------------------------|--------------------------------|---------|
+| StringBuilder | System.Text.StringBuilder | The builder to append lines to | $null   |
 
 **`$Level`**
 
-| Name  | Type          | Description                         | Default |
-|-------|---------------|-------------------------------------|---------|
-| Level | System.Int32  | Nesting level for indentation       | 0       |
+| Name  | Type         | Description                   | Default |
+|-------|--------------|-------------------------------|---------|
+| Level | System.Int32 | Nesting level for indentation | 0       |
 
 #### Outputs
 
@@ -725,9 +725,8 @@ Get-ThreadTree | ForEach-Object { Write-ThreadTree -Node $_ -StringBuilder $sb }
 #### Notes
 
 This function does not return a value; it operates by side-effects on the
-supplied builder. Child nodes are read directly from `$Node.Children` — no
+supplied builder. Child nodes are read directly from `$Node.Children` -- no
 additional registry lookups are performed.
 
-*Source: [src/Core/Threading/Private/Write-ThreadTree.ps1](../../src/Core/Threading/Private/Write-ThreadTree.ps1)*
-
+*Source: [src/Core/Threading/Private/Write-ThreadTree.ps1](../src/Core/Threading/Private/Write-ThreadTree.ps1)*
 

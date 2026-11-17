@@ -8,7 +8,7 @@ private RestApi `Spaces` hashtable with parsed space configurations keyed
 by filename (lowercase). Logs per-file parse results using `Write-FunctionReturnValue`.
 
 .OUTPUTS
-None — populates `(Get-GlobalRuntimeVariable).Private.RestApi.Spaces`.
+None -- populates `(Get-GlobalRuntimeVariable).Private.RestApi.Spaces`.
 
 .EXAMPLE
 PS> Read-RestApiSpacesConfig
@@ -16,12 +16,15 @@ PS> Read-RestApiSpacesConfig
 .NOTES
 Each space file must contain a valid JSON object describing routes,
 handlers and optional access control for that API space.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-RestApiSpacesConfig()
 {
-    $RestApiDirectory = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath 'data\restapi\';
-    $ApiSpaceFiles    = Get-SecureChildItem -Path $RestApiDirectory -Filter '*.json' -Recurse -File;
-    $GlobalVariable   = Get-GlobalRuntimeVariable;
+    $RestApiDirectory                      = Join-Path -Path (Get-ModuleRootDirectory) -ChildPath 'data\restapi\';
+    $ApiSpaceFiles                         = Get-SecureChildItem -Path $RestApiDirectory -Filter '*.json' -Recurse -File;
+    $GlobalVariable                        = Get-GlobalRuntimeVariable;
 
     $GlobalVariable.Private.RestApi.Spaces = @{ };
 

@@ -31,6 +31,9 @@ Extracts the category name from the counter path and returns $true when the cate
 
 .NOTES
 Delegates to `IcingaPerformanceCounter::CategoryExists`. Never throws and reads no global state.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-IcingaPerformanceCounterCategory()
 {

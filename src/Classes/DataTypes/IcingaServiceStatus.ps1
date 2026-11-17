@@ -26,6 +26,9 @@ Returns 4, the code used for the service state performance data.
 Defined in the kernel ahead of every function, so functions may use it as a
 parameter type. Not visible outside the module scope; callers pass the name or
 code as a string.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 enum IcingaServiceStatus
 {
@@ -61,6 +64,9 @@ Returns IcingaServiceStatus::StartPending.
 
 .NOTES
 Pure conversion helper without state or external dependencies.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaServiceStatusMap
 {
@@ -74,9 +80,9 @@ class IcingaServiceStatusMap
     unknown names and undefined codes.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                                         | Default |
-    |-------|---------------|---------------------------------------------------------------------|---------|
-    | Value | System.Object | Status name, Win32_Service state, ServiceControllerStatus or code.  |         |
+    | Name  | Type          | Description                                                        | Default |
+    |-------|---------------|--------------------------------------------------------------------|---------|
+    | Value | System.Object | Status name, Win32_Service state, ServiceControllerStatus or code. |         |
 
     .OUTPUTS
     IcingaServiceStatus -- The resolved status, Unknown when it cannot be mapped.

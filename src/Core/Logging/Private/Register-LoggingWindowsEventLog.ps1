@@ -7,7 +7,7 @@ Create and configure Windows Event Log sources for this module.
 namespace and ensures the log maximum size is configured.
 
 .OUTPUTS
-None — Registers event sources under the module name and configures the maximum log size.
+None -- Registers event sources under the module name and configures the maximum log size.
 
 .EXAMPLE
 PS> Register-LoggingWindowsEventLog
@@ -16,6 +16,9 @@ PS> Register-LoggingWindowsEventLog
 Requires administrative privileges to create Windows EventLog sources and modify log settings.
 The module name is resolved via `Get-ModuleProjectName`. Return codes are read from
 `(Get-GlobalRuntimeVariable).Public.ReturnCodes` to derive the full list of source names.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Register-LoggingWindowsEventLog()
 {

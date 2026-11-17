@@ -1,33 +1,35 @@
 <#
 .SYNOPSIS
-Generate Markdown API documentation for all Icinga source functions.
+Generate Markdown API documentation for all Icinga for Windows source functions
 
 .DESCRIPTION
-Walks every `*.ps1` file under `src/`, extracts the comment-based help
-block that immediately precedes each `function` declaration and emits
-one Markdown file per component into `docs/api/`. Also produces an
-`index.md` summarising every component and exported function.
+Walks every `*.ps1` file under `src/`, extracts the comment-based help block
+that immediately precedes each `function` declaration, and emits one Markdown
+file per component into `docs/Icinga.<Component>.md` along with `docs/index.md`.
 
-The generator enforces the doc rules defined in `CLAUDE.md`:
-- Every public function must have `.SYNOPSIS`, `.DESCRIPTION`,
-  `.PARAMETER` (one per parameter, Markdown table), `.OUTPUTS`,
-  `.EXAMPLE`, `.NOTES`.
-- Every private function must have at least `.SYNOPSIS` + `.DESCRIPTION`.
-- `.PARAMETER` blocks must use the four-column Markdown table format
-  shown in `CLAUDE.md`.
+The generator enforces the documentation and SPDX rules defined in
+`docs/Agents/guidelines/01-Instruction.md`:
+- Every public function must have `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER`
+  (one per parameter, four-column Markdown table), `.OUTPUTS`, `.EXAMPLE`,
+  and `.NOTES`.
+- Every private function must have `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER`
+  (for every declared parameter), and `.NOTES`.
+- Every function's `.NOTES` block must contain the two Icinga GmbH SPDX lines
+  (`SPDX-FileCopyrightText` and `SPDX-License-Identifier`), which are stripped
+  when rendering the human-readable `#### Notes` Markdown section.
 
-When `-Strict` is enabled (default), the generator fails with a non-zero
-exit code if any file violates these rules.
+When `-Strict` is enabled (default), the generator fails with a non-zero exit
+code if any file violates these rules.
 
 .PARAMETER ModuleBasePath
-| Name           | Type          | Description                                                        | Default                       |
-|----------------|---------------|--------------------------------------------------------------------|-------------------------------|
-| ModuleBasePath | System.String | Absolute path to the Icinga module root (the folder above `src`).  | Resolved from the script path |
+| Name           | Type          | Description                                                                   | Default                       |
+|----------------|---------------|-------------------------------------------------------------------------------|-------------------------------|
+| ModuleBasePath | System.String | Absolute path to the Icinga for Windows module root (the folder above `src`). | Resolved from the script path |
 
 .PARAMETER OutputPath
-| Name       | Type          | Description                                               | Default                     |
-|------------|---------------|-----------------------------------------------------------|-----------------------------|
-| OutputPath | System.String | Directory where the generated Markdown files are written. | `<ModuleBasePath>\docs\api` |
+| Name       | Type          | Description                                               | Default                 |
+|------------|---------------|-----------------------------------------------------------|-------------------------|
+| OutputPath | System.String | Directory where the generated Markdown files are written. | `<ModuleBasePath>\docs` |
 
 .PARAMETER IncludePrivate
 | Name           | Type           | Description                                                        | Default |
@@ -46,17 +48,19 @@ System.Int32 -- Number of Markdown files written. Throws on strict violations.
 .EXAMPLE
 PS> .\build\Build-ModuleDocs.ps1
 
-Generates docs/api/*.md for every component, including private helpers.
+Generates `docs/Icinga.*.md` and `docs/index.md` for every component, including private helpers.
 
 .EXAMPLE
 PS> .\build\Build-ModuleDocs.ps1 -IncludePrivate:$false -Strict $false
 
-Generate only public API docs, do not fail on missing help sections.
+Generates only public API docs without failing on missing help sections.
 
 .NOTES
-Designed to run on PowerShell 7.5+. Reads source from `src/` and writes
-to `docs/api/`. Does NOT modify any `.ps1` source file; if you see
-violations, fix the help block in the source file.
+Designed for Windows PowerShell 5.1 and PowerShell 7+. Cleans only `Icinga.*.md`
+and `index.md` in `OutputPath` so hand-written docs in `docs/` remain untouched.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 
 [CmdletBinding()]
@@ -74,11 +78,15 @@ $ProgressPreference    = 'SilentlyContinue';
 # Path resolution
 # ---------------------------------------------------------------------------
 if ([string]::IsNullOrEmpty($ModuleBasePath)) {
-    $ModuleBasePath = Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..') | Select-Object -ExpandProperty Path;
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath);
+} elseif (Test-Path -Path $ModuleBasePath) {
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path $ModuleBasePath).ProviderPath);
 }
 
 if ([string]::IsNullOrEmpty($OutputPath)) {
-    $OutputPath = Join-Path -Path $ModuleBasePath -ChildPath 'docs\';
+    $OutputPath = Join-Path -Path $ModuleBasePath -ChildPath 'docs';
+} elseif (Test-Path -Path $OutputPath) {
+    $OutputPath = [System.IO.Path]::GetFullPath((Resolve-Path -Path $OutputPath).ProviderPath);
 }
 
 $SourcePath = Join-Path -Path $ModuleBasePath -ChildPath 'src';
@@ -94,28 +102,31 @@ function Read-IcingaHelpBlock()
 {
     <#
     .SYNOPSIS
-    Extract the comment-based help block and function name from a .ps1 file.
+    Extract the comment-based help block and function name from a .ps1 file
 
     .DESCRIPTION
     Reads the file, locates the comment-based help block that immediately
-    precedes the first `function` declaration and returns a parsed object
+    precedes the first `function` declaration, and returns a parsed object
     with every help section split out. If no help block is present, returns
     `$null` for the `Help` property so the caller can report it.
 
     .PARAMETER Path
-    | Name | Type          | Description                               | Default |
-    |------|---------------|-------------------------------------------|---------|
-    | Path | System.String | Absolute path to a Icinga `.ps1` source.  |         |
+    | Name | Type          | Description                                         | Default |
+    |------|---------------|-----------------------------------------------------|---------|
+    | Path | System.String | Absolute path to an Icinga for Windows `.ps1` file. |         |
 
     .OUTPUTS
     System.Collections.Hashtable -- Parsed structure with keys:
-    Visibility, FunctionName, Synopsis, Description, Parameters, Outputs, Example, Notes.
+    Visibility, FunctionName, Synopsis, Description, Parameters, Outputs, Examples, Notes.
 
     .EXAMPLE
     PS> Read-IcingaHelpBlock -Path '.\src\Core\Logging\Public\Set-IcingaLogLevel.ps1'
 
     .NOTES
     Pure parser -- does not import or execute the source file.
+
+    SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+    SPDX-License-Identifier: GPL-3.0-or-later
     #>
     [CmdletBinding()]
     param (
@@ -123,10 +134,10 @@ function Read-IcingaHelpBlock()
         [string]$Path
     );
 
-    $Content = Get-Content -Path $Path -Raw -Encoding UTF8;
+    $Content       = Get-Content -Path $Path -Raw -Encoding UTF8;
 
     # Find all comment-based help blocks in the file.
-    $HelpBlocks = [regex]::Matches($Content, '(?s)<#(.*?)#>');
+    $HelpBlocks    = [regex]::Matches($Content, '(?s)<#(.*?)#>');
 
     # Build a set of [start, end] ranges covered by comment blocks so the
     # function-declaration search can skip them. Prose like "the function
@@ -134,7 +145,7 @@ function Read-IcingaHelpBlock()
     # real declaration.
     $CommentRanges = New-Object System.Collections.ArrayList;
     foreach ($block in $HelpBlocks) {
-        [void]$CommentRanges.Add(@{ Start = $block.Index; End = $block.Index + $block.Length });
+        [void]$CommentRanges.Add(@{ Start = $block.Index; End = ($block.Index + $block.Length) });
     }
 
     # Walk every `function NAME` match and accept the first one that does
@@ -158,13 +169,17 @@ function Read-IcingaHelpBlock()
     if ($null -eq $FuncMatch) {
         return $null;
     }
-    $FunctionName = $FuncMatch.Groups[1].Value -replace '^Global:', '';
 
-    # Determine visibility from path
-    $Visibility   = if ($Path -match '[\\/]Public[\\/]') { 'Public' } elseif ($Path -match '[\\/]Private[\\/]') { 'Private' } else { 'Unknown' };
+    $FunctionName = $FuncMatch.Groups[1].Value -replace '^Global:', '';
+    $Visibility   = 'Unknown';
+    if ($Path -match '[\\/]Public[\\/]') {
+        $Visibility = 'Public';
+    } elseif ($Path -match '[\\/]Private[\\/]') {
+        $Visibility = 'Private';
+    }
 
     # Pick the last help block that ends before the function declaration
-    $HelpMatch    = $null;
+    $HelpMatch = $null;
     foreach ($block in $HelpBlocks) {
         if (($block.Index + $block.Length) -le $FuncMatch.Index) {
             $HelpMatch = $block;
@@ -203,12 +218,27 @@ function Read-IcingaHelpBlock()
             $Body = $Match.Groups[2].Value.Trim();
 
             switch ($Name) {
-                'SYNOPSIS'    { $HelpSections.Synopsis    = $Body;                       break; }
-                'DESCRIPTION' { $HelpSections.Description = $Body;                       break; }
-                'OUTPUTS'     { $HelpSections.Outputs     = $Body;                       break; }
-                'NOTES'       { $HelpSections.Notes       = $Body;                       break; }
-                'EXAMPLE'     { $HelpSections.Examples   += $Body;                       break; }
-                'PARAMETER'   {
+                'SYNOPSIS' {
+                    $HelpSections.Synopsis = $Body;
+                    break;
+                }
+                'DESCRIPTION' {
+                    $HelpSections.Description = $Body;
+                    break;
+                }
+                'OUTPUTS' {
+                    $HelpSections.Outputs = $Body;
+                    break;
+                }
+                'NOTES' {
+                    $HelpSections.Notes = $Body;
+                    break;
+                }
+                'EXAMPLE' {
+                    $HelpSections.Examples += $Body;
+                    break;
+                }
+                'PARAMETER' {
                     # Body starts with the parameter name, then the table
                     $ParamMatch = [regex]::Match($Body, '^([a-zA-Z0-9_]+)\s*(.*)$', 'Singleline');
                     if ($ParamMatch.Success) {
@@ -218,7 +248,7 @@ function Read-IcingaHelpBlock()
                         };
                     }
                     break;
-                };
+                }
             }
         }
     }
@@ -232,20 +262,20 @@ function Read-IcingaHelpBlock()
 }
 
 # ---------------------------------------------------------------------------
-# Validation per CLAUDE.md
+# Validation per docs/Agents/guidelines/01-Instruction.md
 # ---------------------------------------------------------------------------
 function Test-IcingaHelpCompleteness()
 {
     <#
     .SYNOPSIS
-    Validate that a parsed help block meets the rules defined in CLAUDE.md.
+    Validate that a parsed help block meets the repository documentation and SPDX rules
 
     .DESCRIPTION
-    Public functions require all seven sections. Private functions
-    require at least Synopsis + Description; if they have parameters
-    declared in the source file, those must also be documented via the
-    Markdown table form. Returns a list of human-readable violation
-    strings (empty when the block is valid).
+    Public functions require all seven sections. Both public and private
+    functions require `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER` tables for
+    every declared parameter, and `.NOTES` containing the two Icinga GmbH
+    SPDX license lines. Returns a list of human-readable violation strings
+    (empty when the block is valid).
 
     .PARAMETER ParsedEntry
     | Name        | Type                         | Description                       | Default |
@@ -261,10 +291,13 @@ function Test-IcingaHelpCompleteness()
     System.String[] -- Zero or more violation messages.
 
     .EXAMPLE
-    PS> Test-IcingaHelpCompleteness -ParsedEntry $entry -DeclaredParameters @('Name', 'Count')
+    PS> Test-IcingaHelpCompleteness -ParsedEntry $Entry -DeclaredParameters @( 'Name', 'Count' )
 
     .NOTES
-    Internal generator helper. Used by the strict-mode validator.
+    Internal generator helper used by the strict-mode validator.
+
+    SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+    SPDX-License-Identifier: GPL-3.0-or-later
     #>
     [CmdletBinding()]
     param (
@@ -277,28 +310,37 @@ function Test-IcingaHelpCompleteness()
     $Help       = $ParsedEntry.Help;
 
     if ($null -eq $Help) {
-        $Violations += "missing comment-based help block";
+        $Violations += 'missing comment-based help block';
         return $Violations;
     }
 
     # Synopsis + Description are required for ALL functions
     if ([string]::IsNullOrWhiteSpace($Help.Synopsis)) {
-        $Violations += "missing .SYNOPSIS";
+        $Violations += 'missing .SYNOPSIS';
     }
     if ([string]::IsNullOrWhiteSpace($Help.Description)) {
-        $Violations += "missing .DESCRIPTION";
+        $Violations += 'missing .DESCRIPTION';
     }
 
     if ($ParsedEntry.Visibility -eq 'Public') {
-        # Outputs, Example, Notes are required on public functions
+        # Outputs and Example are required on public functions
         if ([string]::IsNullOrWhiteSpace($Help.Outputs)) {
-            $Violations += "missing .OUTPUTS";
+            $Violations += 'missing .OUTPUTS';
         }
         if ($Help.Examples.Count -eq 0) {
-            $Violations += "missing .EXAMPLE";
+            $Violations += 'missing .EXAMPLE';
         }
-        if ([string]::IsNullOrWhiteSpace($Help.Notes)) {
-            $Violations += "missing .NOTES";
+    }
+
+    # .NOTES + Icinga GmbH SPDX lines are mandatory on ALL functions (Public and Private)
+    if ([string]::IsNullOrWhiteSpace($Help.Notes)) {
+        $Violations += 'missing .NOTES';
+    } else {
+        if ($Help.Notes -notmatch '(?m)^[ \t]*SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga\.com>[ \t]*\r?$') {
+            $Violations += 'missing "SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>" in .NOTES';
+        }
+        if ($Help.Notes -notmatch '(?m)^[ \t]*SPDX-License-Identifier: GPL-3\.0-or-later[ \t]*\r?$') {
+            $Violations += 'missing "SPDX-License-Identifier: GPL-3.0-or-later" in .NOTES';
         }
     }
 
@@ -324,17 +366,17 @@ function Get-IcingaDeclaredParameters()
 {
     <#
     .SYNOPSIS
-    Extract the parameter names from a .ps1 source file's param block.
+    Extract the parameter names from a .ps1 source file's param block
 
     .DESCRIPTION
     Reads the file, locates the first `param( ... )` block following the
-    `function` declaration and returns an array of parameter names. Used
+    `function` declaration, and returns an array of parameter names. Used
     by the validator to detect undocumented parameters.
 
     .PARAMETER Path
-    | Name | Type          | Description                               | Default |
-    |------|---------------|-------------------------------------------|---------|
-    | Path | System.String | Absolute path to a Icinga `.ps1` source.  |         |
+    | Name | Type          | Description                                         | Default |
+    |------|---------------|-----------------------------------------------------|---------|
+    | Path | System.String | Absolute path to an Icinga for Windows `.ps1` file. |         |
 
     .OUTPUTS
     System.String[] -- Parameter names (without `$` prefix).
@@ -343,8 +385,11 @@ function Get-IcingaDeclaredParameters()
     PS> Get-IcingaDeclaredParameters -Path '.\src\Core\Logging\Private\Write-LoggingEntry.ps1'
 
     .NOTES
-    Regex-based; does not use AST. Sufficient for the Icinga house
-    style where params are one-per-line with explicit types.
+    Regex-based; sufficient for the Icinga for Windows house style where
+    parameters are declared one per line with explicit type annotations.
+
+    SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+    SPDX-License-Identifier: GPL-3.0-or-later
     #>
     [CmdletBinding()]
     param (
@@ -370,12 +415,9 @@ function Get-IcingaDeclaredParameters()
 
     $ParamBody = $ParamMatch.Groups[1].Value;
 
-    # A parameter declaration in Icinga always has the shape:
+    # A parameter declaration in Icinga for Windows always has the shape:
     #   [Type]$Name        ...optional default
     # or [Parameter(...)] [ValidateSet(...)] [Type]$Name ...
-    # The token immediately before $Name is always a closing bracket of an
-    # attribute or type annotation. Match exactly that to avoid picking up
-    # $null / $false / $true used as default values.
     $Names     = [regex]::Matches($ParamBody, '\]\s*\$([a-zA-Z_][a-zA-Z0-9_]*)');
 
     return @($Names | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique);
@@ -386,7 +428,7 @@ function Get-IcingaDeclaredParameters()
 # ---------------------------------------------------------------------------
 Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
 Write-Host '|                                                                     |' -ForegroundColor Cyan;
-Write-Host '|                       Icinga Documentation Builder                 |' -ForegroundColor Cyan;
+Write-Host '|                Icinga for Windows - Documentation Builder           |' -ForegroundColor Cyan;
 Write-Host '|                                                                     |' -ForegroundColor Cyan;
 Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
 Write-Host '' -ForegroundColor White;
@@ -448,15 +490,30 @@ Write-Host '' -ForegroundColor White;
 Write-Host "[3/4] Writing Markdown into $OutputPath ..." -ForegroundColor Yellow;
 
 if (Test-Path -Path $OutputPath) {
-    Remove-Item -Path (Join-Path -Path $OutputPath -ChildPath '*.md') -Force -ErrorAction SilentlyContinue;
+    Remove-Item -Path (Join-Path -Path $OutputPath -ChildPath 'Icinga.*.md') -Force -ErrorAction SilentlyContinue;
+    $ExistingIndex = Join-Path -Path $OutputPath -ChildPath 'index.md';
+    if (Test-Path -Path $ExistingIndex) {
+        Remove-Item -Path $ExistingIndex -Force -ErrorAction SilentlyContinue;
+    }
 } else {
     New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null;
 }
 
+# Compute relative link prefix from OutputPath back to ModuleBasePath (e.g. '../' for '<ModuleBasePath>/docs')
+[string]$NormalizedOutDir   = ([System.IO.Path]::GetFullPath($OutputPath)).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar;
+[string]$NormalizedBaseDir  = ([System.IO.Path]::GetFullPath($ModuleBasePath)).TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar;
+[System.Uri]$OutDirUri      = New-Object System.Uri($NormalizedOutDir);
+[System.Uri]$BaseDirUri     = New-Object System.Uri($NormalizedBaseDir);
+[string]$RepoRelativePrefix = [System.Uri]::UnescapeDataString($OutDirUri.MakeRelativeUri($BaseDirUri).ToString()).Replace('\', '/');
+
+if ($RepoRelativePrefix.Length -gt 0 -and -not $RepoRelativePrefix.EndsWith('/')) {
+    $RepoRelativePrefix += '/';
+}
+
 # Group functions by component (relative path under src/, up to and including the subcomponent)
 $Grouped      = $Parsed | Group-Object -Property {
-    $rel    = $_.File.Substring($SourcePath.Length).TrimStart('\', '/');
-    $parts  = $rel -split '[\\/]';
+    $rel   = $_.File.Substring($SourcePath.Length).TrimStart('\', '/');
+    $parts = $rel -split '[\\/]';
     # parts: <Component>, <Subcomponent>, {Public|Private}, <file>.ps1
     if ($parts.Count -ge 3) {
         return ($parts[0..($parts.Count - 3)] -join '.');
@@ -469,7 +526,6 @@ $WrittenFiles = 0;
 foreach ($group in ($Grouped | Sort-Object Name)) {
     $componentName                 = $group.Name;
     $outFile                       = Join-Path -Path $OutputPath -ChildPath ("Icinga.$componentName.md");
-
     [System.Text.StringBuilder]$md = New-Object System.Text.StringBuilder;
 
     [void]$md.AppendLine("# Icinga.$componentName");
@@ -478,7 +534,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
     [void]$md.AppendLine('*Auto-generated from `src/' + $srcDir + '/`. Do not edit by hand -- run `build/Build-ModuleDocs.ps1` to regenerate.*');
     [void]$md.AppendLine();
 
-    $publicFns                     = @($group.Group | Where-Object { $_.Visibility -eq 'Public'  } | Sort-Object { $_.FunctionName });
+    $publicFns                     = @($group.Group | Where-Object { $_.Visibility -eq 'Public' } | Sort-Object { $_.FunctionName });
     $privateFns                    = @($group.Group | Where-Object { $_.Visibility -eq 'Private' } | Sort-Object { $_.FunctionName });
 
     if ($publicFns.Count -gt 0) {
@@ -555,14 +611,17 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
         }
 
         if (-not [string]::IsNullOrWhiteSpace($fn.Help.Notes)) {
-            [void]$md.AppendLine('#### Notes');
-            [void]$md.AppendLine();
-            [void]$md.AppendLine($fn.Help.Notes);
-            [void]$md.AppendLine();
+            [string]$CleanNotes = ([regex]::Replace($fn.Help.Notes, '(?m)^[ \t]*SPDX-(?:FileCopyrightText|License-Identifier):[^\r\n]*(?:\r?\n)?', '')).Trim();
+            if (-not [string]::IsNullOrWhiteSpace($CleanNotes)) {
+                [void]$md.AppendLine('#### Notes');
+                [void]$md.AppendLine();
+                [void]$md.AppendLine($CleanNotes);
+                [void]$md.AppendLine();
+            }
         }
 
         $srcRel = $fn.File.Substring($ModuleBasePath.Length).TrimStart('\', '/').Replace('\', '/');
-        [void]$md.AppendLine("*Source: [$srcRel](../../$srcRel)*");
+        [void]$md.AppendLine("*Source: [$srcRel]($($RepoRelativePrefix)$srcRel)*");
         [void]$md.AppendLine();
     }
 
@@ -573,7 +632,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
 # Index file
 $indexFile                      = Join-Path -Path $OutputPath -ChildPath 'index.md';
 [System.Text.StringBuilder]$idx = New-Object System.Text.StringBuilder;
-[void]$idx.AppendLine('# Icinga API Reference');
+[void]$idx.AppendLine('# Icinga for Windows API Reference');
 [void]$idx.AppendLine();
 [void]$idx.AppendLine('*Auto-generated on ' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '.*');
 [void]$idx.AppendLine();
@@ -581,7 +640,7 @@ $indexFile                      = Join-Path -Path $OutputPath -ChildPath 'index.
 [void]$idx.AppendLine('|-----------|------------------|-----------------|');
 
 foreach ($group in ($Grouped | Sort-Object Name)) {
-    $pubCount = @($group.Group | Where-Object { $_.Visibility -eq 'Public'  }).Count;
+    $pubCount = @($group.Group | Where-Object { $_.Visibility -eq 'Public' }).Count;
     $prvCount = @($group.Group | Where-Object { $_.Visibility -eq 'Private' }).Count;
     [void]$idx.AppendLine("| [Icinga.$($group.Name)](Icinga.$($group.Name).md) | $pubCount | $prvCount |");
 }
@@ -591,7 +650,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
 [void]$idx.AppendLine();
 [void]$idx.AppendLine("- Components: $($Grouped.Count)");
 [void]$idx.AppendLine("- Documented functions: $($Parsed.Count)");
-[void]$idx.AppendLine("- Public: $($Parsed | Where-Object { $_.Visibility -eq 'Public'  } | Measure-Object | Select-Object -ExpandProperty Count)");
+[void]$idx.AppendLine("- Public: $($Parsed | Where-Object { $_.Visibility -eq 'Public' } | Measure-Object | Select-Object -ExpandProperty Count)");
 [void]$idx.AppendLine("- Private: $($Parsed | Where-Object { $_.Visibility -eq 'Private' } | Measure-Object | Select-Object -ExpandProperty Count)");
 
 [System.IO.File]::WriteAllText($indexFile, ($idx.ToString() -replace "`r`n", "`n"), (New-Object System.Text.UTF8Encoding($false)));
@@ -606,7 +665,7 @@ Write-Host '' -ForegroundColor White;
 Write-Host '[4/4] Reporting documentation violations ...' -ForegroundColor Yellow;
 
 if ($Violations.Count -eq 0) {
-    Write-Host '  * No violations -- every function meets the CLAUDE.md doc rules' -ForegroundColor Green;
+    Write-Host '  * No violations -- every function meets the 01-Instruction.md doc and SPDX rules' -ForegroundColor Green;
 } else {
     Write-Host "  ! $($Violations.Count) violation(s):" -ForegroundColor Yellow;
     $Violations |
@@ -617,7 +676,7 @@ if ($Violations.Count -eq 0) {
 }
 
 $BuildDuration = (Get-Date) - $BuildStartTime;
-$DurationText  = "{0:N2}s" -f $BuildDuration.TotalSeconds;
+$DurationText  = '{0:N2}s' -f $BuildDuration.TotalSeconds;
 
 Write-Host '' -ForegroundColor White;
 Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Green;
@@ -626,12 +685,12 @@ Write-Host '|                       * DOCUMENTATION BUILD DONE                  
 Write-Host '|                                                                     |' -ForegroundColor Green;
 Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Green;
 Write-Host '' -ForegroundColor White;
-Write-Host "  Components:           $($Grouped.Count)"     -ForegroundColor White;
-Write-Host "  Functions documented: $($Parsed.Count)"      -ForegroundColor White;
-Write-Host "  Markdown files:       $WrittenFiles"         -ForegroundColor White;
-Write-Host "  Violations:           $($Violations.Count)"  -ForegroundColor White;
-Write-Host "  Build duration:       $DurationText"         -ForegroundColor White;
-Write-Host "  Output:               $OutputPath"           -ForegroundColor Gray;
+Write-Host "  Components:           $($Grouped.Count)" -ForegroundColor White;
+Write-Host "  Functions documented: $($Parsed.Count)" -ForegroundColor White;
+Write-Host "  Markdown files:       $WrittenFiles" -ForegroundColor White;
+Write-Host "  Violations:           $($Violations.Count)" -ForegroundColor White;
+Write-Host "  Build duration:       $DurationText" -ForegroundColor White;
+Write-Host "  Output:               $OutputPath" -ForegroundColor Gray;
 Write-Host '' -ForegroundColor White;
 
 if ($Strict -and $Violations.Count -gt 0) {

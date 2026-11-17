@@ -8,7 +8,7 @@ and processes objects from the global logging queue. It formats messages,
 writes Windows EventLog entries and prints colorized output to the console.
 
 .OUTPUTS
-None — Operates for side effects (writes logs and event entries).
+None -- Operates for side effects (writes logs and event entries).
 
 .EXAMPLE
 PS> Start-LoggingDaemon
@@ -20,6 +20,9 @@ must never run on the main thread. All access to shared state goes through
 `Get-GlobalRuntimeVariable` because the runspace receives only a snapshot of
 `$Global:Icinga` at startup. The daemon exits cleanly when `Test-ThreadRunning`
 returns `$false`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-LoggingDaemon()
 {
@@ -79,10 +82,10 @@ function Start-LoggingDaemon()
         $EntryType               = Get-LoggingEventLogSeverity -Severity $LogObject.Level;
         [string]$EventLogMessage = Format-LoggingConsoleMessage -Message $LogMessage -GetMsgObj;
 
-        $EventLogMessage += "`r`n" + '============================' + "`r`n" + $LogMessage;
+        $EventLogMessage        += "`r`n" + '============================' + "`r`n" + $LogMessage;
 
-        $EventLogSource = [string]::Format('{0}::{1}', $ModuleName, $LogArea);
-        $EventLog       = New-Object System.Diagnostics.EventLog;
+        $EventLogSource          = [string]::Format('{0}::{1}', $ModuleName, $LogArea);
+        $EventLog                = New-Object System.Diagnostics.EventLog;
         try {
             $EventLog.Log    = $ModuleName;
             $EventLog.Source = $EventLogSource;

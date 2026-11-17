@@ -10,12 +10,12 @@ spawns reader, writer and processing worker threads. The handler runs in a
 loop and is responsible for reconnection and keep-alive handling.
 
 .PARAMETER Name
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Name of the WebSocket configuration to manage | |
+| Name | Type          | Description                                   | Default |
+|------|---------------|-----------------------------------------------|---------|
+| Name | System.String | Name of the WebSocket configuration to manage |         |
 
 .OUTPUTS
-System.Object — Emits structured return codes for validation failures; otherwise
+System.Object -- Emits structured return codes for validation failures; otherwise
 the function runs until the thread manager requests termination.
 
 .EXAMPLE
@@ -27,6 +27,9 @@ The function expects a corresponding configuration entry in
 inside a dedicated thread spawned by `New-ModuleWebSocketEnvironment` and drives
 connection, reconnection, keep-alive handling, as well as spawning of reader,
 writer and processing worker threads.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-ModuleWebSocketHandler()
 {
@@ -39,9 +42,9 @@ function Start-ModuleWebSocketHandler()
         return (Write-FunctionReturnValue -ReturnValue 'WebSocketHandlerNoNameProvided');
     };
 
-    $GlobalVariable                  = Get-GlobalRuntimeVariable;
-    [string]$WebSocketAddress        = $GlobalVariable.Public.WebSocket.Config.$Name.Address;
-    [string]$WebSocketType           = $GlobalVariable.Public.WebSocket.Config.$Name.Type;
+    $GlobalVariable           = Get-GlobalRuntimeVariable;
+    [string]$WebSocketAddress = $GlobalVariable.Public.WebSocket.Config.$Name.Address;
+    [string]$WebSocketType    = $GlobalVariable.Public.WebSocket.Config.$Name.Type;
 
     # Only test for the thread itself here, as WebSockets will be handled inside the loop
     # We need to keep this thread active, as it will handle the re-connections and keep-alive events

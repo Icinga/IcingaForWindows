@@ -10,17 +10,17 @@ and retries on lock for a short period. Returns structured return values via
 `Write-FunctionReturnValue`.
 
 .PARAMETER File
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| File | System.String | Target file path to write. | $null |
+| Name | Type          | Description                | Default |
+|------|---------------|----------------------------|---------|
+| File | System.String | Target file path to write. | $null   |
 
 .PARAMETER Value
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Value | System.Object | Content to write. Can be hashtable, PSCustomObject, array or string. | (none) |
+| Name  | Type          | Description                                                          | Default |
+|-------|---------------|----------------------------------------------------------------------|---------|
+| Value | System.Object | Content to write. Can be hashtable, PSCustomObject, array or string. | (none)  |
 
 .OUTPUTS
-PSCustomObject — Function return value via Write-FunctionReturnValue.
+PSCustomObject -- Function return value via Write-FunctionReturnValue.
 WriteFileSuccess on success (Data contains Path and Content), WriteFileLockException
 when the file cannot be opened within the retry window.
 
@@ -30,6 +30,9 @@ PS> Write-SecureFile -File (Join-Path (Get-ModuleConfigDirectory) 'settings.json
 .NOTES
 Creates the file if it does not exist by delegating to `New-SecureItem`. Uses UTF8
 without BOM when writing bytes. Caller receives the content in the return data.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Write-SecureFile()
 {

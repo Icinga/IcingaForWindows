@@ -9,29 +9,29 @@ the current logging configuration, a structured log entry is enqueued.
 Supports returning an override value instead of the mapped code.
 
 .PARAMETER ReturnValue
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ReturnValue | System.String | Semantic key of the return-code entry to emit (for example: 'TlsHandshakeSuccessful'). | |
+| Name        | Type          | Description                                                                            | Default |
+|-------------|---------------|----------------------------------------------------------------------------------------|---------|
+| ReturnValue | System.String | Semantic key of the return-code entry to emit (for example: 'TlsHandshakeSuccessful'). |         |
 
 .PARAMETER Data
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Data | System.Collections.Hashtable | Additional contextual data to attach to the log entry. | @{} |
+| Name | Type                         | Description                                            | Default |
+|------|------------------------------|--------------------------------------------------------|---------|
+| Data | System.Collections.Hashtable | Additional contextual data to attach to the log entry. | @{}     |
 
 .PARAMETER OverrideReturn
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name           | Type          | Description                                                                                                                                                    | Default              |
+|----------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
 | OverrideReturn | System.Object | If provided (not 'Core::IgnoreOverride'), this value is returned instead of the mapped numeric code. Booleans are returned via explicit cast to preserve type. | Core::IgnoreOverride |
 
 .PARAMETER AutomationRun
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AutomationRun | System.Management.Automation.SwitchParameter | When set, returns @{ ExitCode; Output } instead of the numeric code. ExitCode is 0 for Info/Audit/Debug severities, 2 for all others. | $false |
+| Name          | Type                                         | Description                                                                                                                           | Default |
+|---------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|---------|
+| AutomationRun | System.Management.Automation.SwitchParameter | When set, returns @{ ExitCode; Output } instead of the numeric code. ExitCode is 0 for Info/Audit/Debug severities, 2 for all others. | $false  |
 
 .OUTPUTS
-System.Int32 — Numeric code from the return-code table when neither -OverrideReturn nor -AutomationRun is active.
-System.Collections.Hashtable — @{ ExitCode = System.Int32; Output = System.String } when -AutomationRun is set.
-System.Object — The -OverrideReturn value as-is when provided, taking precedence over both the numeric code and -AutomationRun.
+System.Int32 -- Numeric code from the return-code table when neither -OverrideReturn nor -AutomationRun is active.
+System.Collections.Hashtable -- @{ ExitCode = System.Int32; Output = System.String } when -AutomationRun is set.
+System.Object -- The -OverrideReturn value as-is when provided, taking precedence over both the numeric code and -AutomationRun.
 
 .EXAMPLE
 PS> Write-FunctionReturnValue -ReturnValue 'TlsHandshakeSuccessful'
@@ -41,6 +41,9 @@ Calls Set-InternalExitCodes to ensure the return-code table is populated before 
 Enqueues a log entry via Write-LoggingEntry only when the entry's severity is enabled in the
 current logging configuration and is not 'Audit'. Must be called from the main thread or via
 Get-GlobalRuntimeVariable in daemon context.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Write-FunctionReturnValue()
 {
@@ -58,7 +61,7 @@ function Write-FunctionReturnValue()
 
     # Lookup return code entry
     if ($GlobalVariable.Public.ReturnCodes.ContainsKey($ReturnValue)) {
-        $codeEntry = $GlobalVariable.Public.ReturnCodes[$ReturnValue];
+        $codeEntry                = $GlobalVariable.Public.ReturnCodes[$ReturnValue];
 
         # Assign a unique message ID for tracking
         $Data['LoggingMessageId'] = $GlobalVariable.Private.Logging.CurrentLoggingId.ToString();

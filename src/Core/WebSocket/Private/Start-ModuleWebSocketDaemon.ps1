@@ -8,7 +8,7 @@ background thread that initializes the WebSocket runtime (`New-ModuleWebSocketEn
 The function returns immediately after the management thread is started.
 
 .OUTPUTS
-None — Starts a background thread and returns immediately without a return value.
+None -- Starts a background thread and returns immediately without a return value.
 
 .EXAMPLE
 PS> Start-ModuleWebSocketDaemon
@@ -18,6 +18,9 @@ This helper wraps `New-Thread` to ensure the WebSocket environment is
 initialized on a separate thread. The background thread executes
 `New-ModuleWebSocketEnvironment`, which loads all persisted WebSocket
 configurations and spawns per-instance handler threads.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-ModuleWebSocketDaemon()
 {

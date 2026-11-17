@@ -64,6 +64,9 @@ A counter without an instance is keyed category-first.
 .NOTES
 The request/response transport lives under `(Get-GlobalRuntimeVariable).Public.PerformanceCounter`.
 Timeouts are logged through `Write-LoggingEntry` at Warning level. No external services are used.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaPerformanceCounter()
 {

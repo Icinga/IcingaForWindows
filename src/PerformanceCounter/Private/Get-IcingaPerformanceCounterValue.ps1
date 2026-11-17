@@ -30,6 +30,9 @@ Returns the processor load of core 0, or the error text if that counter could no
 .NOTES
 Pure helper; reads no global state and touches no counters. Intended for use by plugins after they
 have selected a single counter from a `Get-IcingaPerformanceCounter` result.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaPerformanceCounterValue()
 {

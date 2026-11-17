@@ -10,26 +10,33 @@ WebSocket type (for example MyWebSocket), and augments them with
 manager requests shutdown.
 
 .PARAMETER Name
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection to read from | |
+| Name | Type          | Description                                           | Default |
+|------|---------------|-------------------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection to read from |         |
 
 .PARAMETER ClientWebSocket
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance | |
+| Name            | Type                                  | Description                      | Default |
+|-----------------|---------------------------------------|----------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance |         |
 
 .PARAMETER CancellationTokenSource
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel operations | |
+| Name                    | Type                                     | Description                                         | Default |
+|-------------------------|------------------------------------------|-----------------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel operations |         |
 
 .OUTPUTS
-System.Object — Emits structured module return values on errors; otherwise
+System.Object -- Emits structured module return values on errors; otherwise
 messages are prepared and enqueued for further processing.
 
 .EXAMPLE
 PS> Start-ModuleWebSocketReaderWorker -Name 'MyWebSocket' -ClientWebSocket $ws -CancellationTokenSource $cts
+
+.NOTES
+Runs on a dedicated background worker runspace managed by `New-Thread` and
+exits cleanly when `Test-ThreadRunning -CheckWebSocket` returns `$false`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-ModuleWebSocketReaderWorker()
 {
@@ -45,11 +52,11 @@ function Start-ModuleWebSocketReaderWorker()
         return;
     }
 
-    [string]$WebSocketName   = $GlobalVariable.Private.WebSocket.Name;
-    [string]$WebSocketType   = $GlobalVariable.Public.WebSocket.Config.$WebSocketName.Type;
+    [string]$WebSocketName = $GlobalVariable.Private.WebSocket.Name;
+    [string]$WebSocketType = $GlobalVariable.Public.WebSocket.Config.$WebSocketName.Type;
     # [string]$WebSocketConfig = $GlobalVariable.Public.WebSocket.Config.$WebSocketName.Config;
 
-     # If the WebSocket is not open, we don't need to proceed and close the thread
+    # If the WebSocket is not open, we don't need to proceed and close the thread
     while (Test-ThreadRunning -CheckWebSocket) {
         try {
             [string]$WebSocketMessage = $null;

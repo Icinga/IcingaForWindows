@@ -9,12 +9,12 @@ assembling the file content. Returns standardized return values via
 `Write-FunctionReturnValue`.
 
 .PARAMETER File
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| File | System.String | Path to the file to read. | $null |
+| Name | Type          | Description               | Default |
+|------|---------------|---------------------------|---------|
+| File | System.String | Path to the file to read. | $null   |
 
 .OUTPUTS
-System.String — File content on success (returned as raw override via Write-FunctionReturnValue).
+System.String -- File content on success (returned as raw override via Write-FunctionReturnValue).
 ObjectReadSucceeded on success (Data contains Path and Content).
 FileNotFound, AccessViolation or FileLockException on errors.
 
@@ -24,6 +24,9 @@ PS> Read-SecureFile -File (Join-Path (Get-ModuleConfigDirectory) 'settings.json'
 .NOTES
 This helper attempts to open the file for up to ~5 seconds before failing with
 `FileLockException`. Use for reading module configuration files safely.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-SecureFile()
 {
@@ -66,8 +69,8 @@ function Read-SecureFile()
                     $UTF8BOM = $TRUE;
                 }
 
-                $UTF8Encoding  = New-Object System.Text.UTF8Encoding $UTF8BOM;
-                $FileContent   = '';
+                $UTF8Encoding = New-Object System.Text.UTF8Encoding $UTF8BOM;
+                $FileContent  = '';
 
                 while ($FileStream.Read($ReadArray, 0 , $ReadArray.Length)) {
                     $FileContent = [System.String]::Concat($FileContent, $UTF8Encoding.GetString($ReadArray));

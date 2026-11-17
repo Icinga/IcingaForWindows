@@ -24,6 +24,9 @@ Converts the name into IcingaServiceStartupType::Manual.
 Defined in the kernel ahead of every function, so functions may use it as a
 parameter type. Not visible outside the module scope; callers pass the name or
 code as a string.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 enum IcingaServiceStartupType
 {
@@ -57,6 +60,9 @@ Returns IcingaServiceStartupType::Automatic.
 
 .NOTES
 Pure conversion helper without state or external dependencies.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaServiceStartupTypeMap
 {

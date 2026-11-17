@@ -16,9 +16,9 @@ consuming host resources:
   descendant handle, waits for exit, and disposes all descendant handles.
 
 .PARAMETER Process
-| Name    | Type                       | Description                                         | Default |
-|---------|----------------------------|-----------------------------------------------------|---------|
-| Process | System.Diagnostics.Process | Live root Process object whose handle stays open.   | $null   |
+| Name    | Type                       | Description                                       | Default |
+|---------|----------------------------|---------------------------------------------------|---------|
+| Process | System.Diagnostics.Process | Live root Process object whose handle stays open. | $null   |
 
 .PARAMETER RootProcessId
 | Name          | Type         | Description                                     | Default |
@@ -36,6 +36,9 @@ Kills the root process and all descendant processes spawned by it.
 .NOTES
 Caller remains responsible for disposing the root Process instance after stream
 drain completes.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Stop-IcingaProtocolProcessTree()
 {

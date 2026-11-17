@@ -18,9 +18,9 @@ Hashtables are read by key, every other object (including CIM instances) by
 member name.
 
 .PARAMETER InputObject
-| Name        | Type         | Description            | Default |
-|-------------|--------------|------------------------|---------|
-| InputObject | System.Array | The elements to sort.  | @()     |
+| Name        | Type         | Description           | Default |
+|-------------|--------------|-----------------------|---------|
+| InputObject | System.Array | The elements to sort. | @()     |
 
 .PARAMETER Property
 | Name     | Type         | Description                                                              | Default |
@@ -48,6 +48,9 @@ Sorts Win32_Service instances by their name.
 .NOTES
 No external dependencies. Replaces 'Sort-Object -Property { ... }' in plugin
 code. The verb follows the approved PowerShell verbs; 'Sort' is not one of them.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-IcingaSortedArray()
 {

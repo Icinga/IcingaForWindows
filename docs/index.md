@@ -1,6 +1,6 @@
-# Icinga API Reference
+# Icinga for Windows API Reference
 
-*Auto-generated on 2026-11-16 23:35:50.*
+*Auto-generated on 2026-11-17 09:32:42.*
 
 | Component | Public functions | Private helpers |
 |-----------|------------------|-----------------|

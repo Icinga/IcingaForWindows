@@ -30,6 +30,9 @@ Declares two counters so the daemon keeps them warm and the discovery step can f
 .NOTES
 The counters are stored under `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
 This function does not return counter values -- use `Get-IcingaPerformanceCounter` to read them.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaPerformanceCounter()
 {

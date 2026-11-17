@@ -9,32 +9,32 @@ implementation; this wrapper simply forwards arguments and returns the same
 standardized return values.
 
 .PARAMETER RoleName
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RoleName | System.String | Friendly name for the access role. | '' |
+| Name     | Type          | Description                        | Default |
+|----------|---------------|------------------------------------|---------|
+| RoleName | System.String | Friendly name for the access role. | ''      |
 
 .PARAMETER Users
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @() |
+| Name  | Type            | Description                                              | Default |
+|-------|-----------------|----------------------------------------------------------|---------|
+| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @()     |
 
 .PARAMETER AccessControlObject
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @() |
+| Name                | Type                    | Description                                                   | Default |
+|---------------------|-------------------------|---------------------------------------------------------------|---------|
+| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @()     |
 
 .PARAMETER InheritedRoles
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @() |
+| Name           | Type            | Description                                         | Default |
+|----------------|-----------------|-----------------------------------------------------|---------|
+| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @()     |
 
 .PARAMETER Force
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false |
+| Name  | Type                                         | Description                              | Default |
+|-------|----------------------------------------------|------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false  |
 
 .OUTPUTS
-PSCustomObject — Forwarded return value from `New-ModuleAccessRole`.
+PSCustomObject -- Forwarded return value from `New-ModuleAccessRole`.
 
 .EXAMPLE
 PS> New-IcingaAccessRole -RoleName 'admin' -Users @('alice') -AccessControlObject $acl
@@ -46,6 +46,9 @@ control object and persists it via the private implementation.
 This function is intentionally thin and exists to expose a public command
 surface while the implementation and persistence logic remain in the module
 private helper.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaAccessRole()
 {

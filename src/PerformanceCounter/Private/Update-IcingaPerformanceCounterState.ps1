@@ -29,6 +29,9 @@ PS> Update-IcingaPerformanceCounterState
 Reads configuration (`RefreshIntervalMs`, `EvictionMinutes`) from the store's Config object.
 Heartbeat is always refreshed so liveness detection stays responsive even under load. The daemon
 passes its cached store reference to avoid re-resolving it through Get-GlobalRuntimeVariable each cycle.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Update-IcingaPerformanceCounterState()
 {

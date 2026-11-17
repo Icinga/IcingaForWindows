@@ -28,6 +28,9 @@ Builds the canonical/alias lookup map and positional list for the command.
 
 .NOTES
 Pure metadata helper with no external dependencies or side effects.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ModuleCommandParameterMap()
 {

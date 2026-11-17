@@ -33,6 +33,9 @@ Functions create and test errors through the type of the current runspace
 literal. Every runspace shares the compiled kernel, so the literal resolves to
 the type of the main runspace; inside a background thread the error would then
 not match the thread's own IcingaError type that IcingaPlugin.SetError expects.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaError
 {
@@ -109,9 +112,9 @@ class IcingaError
     failure.
 
     .PARAMETER ReturnCode
-    | Name       | Type          | Description                                   | Default |
-    |------------|---------------|-----------------------------------------------|---------|
-    | ReturnCode | System.String | Semantic key of the return-code table entry.  |         |
+    | Name       | Type          | Description                                  | Default |
+    |------------|---------------|----------------------------------------------|---------|
+    | ReturnCode | System.String | Semantic key of the return-code table entry. |         |
 
     .PARAMETER Message
     | Name    | Type          | Description                   | Default |
@@ -119,9 +122,9 @@ class IcingaError
     | Message | System.String | Human-readable error message. |         |
 
     .PARAMETER Data
-    | Name | Type                         | Description                     | Default |
-    |------|------------------------------|---------------------------------|---------|
-    | Data | System.Collections.Hashtable | Context values of the failure.  |         |
+    | Name | Type                         | Description                    | Default |
+    |------|------------------------------|--------------------------------|---------|
+    | Data | System.Collections.Hashtable | Context values of the failure. |         |
 
     .OUTPUTS
     IcingaError -- The error object.

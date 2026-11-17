@@ -10,22 +10,22 @@ connection name. It updates thread processing state and handles
 exceptions by emitting structured module return values.
 
 .PARAMETER Name
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection | |
+| Name | Type          | Description                              | Default |
+|------|---------------|------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection |         |
 
 .PARAMETER ClientWebSocket
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | The active client WebSocket instance | |
+| Name            | Type                                  | Description                          | Default |
+|-----------------|---------------------------------------|--------------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | The active client WebSocket instance |         |
 
 .PARAMETER CancellationTokenSource
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel read operations | |
+| Name                    | Type                                     | Description                                 | Default |
+|-------------------------|------------------------------------------|---------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel read operations |         |
 
 .OUTPUTS
-System.Object — Emits structured `Write-FunctionReturnValue` values on errors;
+System.Object -- Emits structured `Write-FunctionReturnValue` values on errors;
 otherwise received messages are placed into the named reader worker queue for
 downstream processing.
 
@@ -40,6 +40,9 @@ reads from the `ClientWebSocket` in a blocking loop. Received messages are
 placed in the `ReaderWorker` BlockingCollection under
 `$Global:ModuleName.Public.WebSocket.<Name>`. The loop runs until
 `Test-ThreadRunning -CheckWebSocket` returns `$false`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-ModuleWebSocket()
 {
@@ -88,7 +91,7 @@ function Read-ModuleWebSocket()
             } while (-not $EndOfMessage -and (Test-ModuleWebSocket));
 
             $RequestProgress.Dispose();
-            $RequestProgress = $null;
+            $RequestProgress     = $null;
 
             # Log the received message for debugging purposes
             [string]$ResponseMsg = $ResponseMsgBuilder.ToString();

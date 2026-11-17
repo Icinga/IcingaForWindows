@@ -8,17 +8,17 @@ values and percent-encoding. Multiple occurrences of the same key
 are converted into arrays.
 
 .PARAMETER QueryString
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| QueryString | System.String | Raw query string (may include leading '?'). | |
+| Name        | Type          | Description                                 | Default |
+|-------------|---------------|---------------------------------------------|---------|
+| QueryString | System.String | Raw query string (may include leading '?'). |         |
 
 .PARAMETER QueryParams
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| QueryParams | System.Collections.Hashtable | Hashtable to populate with parsed parameters. | @{} |
+| Name        | Type                         | Description                                   | Default |
+|-------------|------------------------------|-----------------------------------------------|---------|
+| QueryParams | System.Collections.Hashtable | Hashtable to populate with parsed parameters. | @{}     |
 
 .OUTPUTS
-None — modifies the provided `QueryParams` hashtable in place.
+None -- modifies the provided `QueryParams` hashtable in place.
 
 .EXAMPLE
 PS> Expand-RestApiQueryString -QueryString '?q=hello%20world&tags=one&tags=two' -QueryParams $params
@@ -26,6 +26,9 @@ PS> Expand-RestApiQueryString -QueryString '?q=hello%20world&tags=one&tags=two' 
 .NOTES
 This function is tolerant to quoted parameter values and retains array
 semantics for repeated keys.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Expand-RestApiQueryString()
 {
@@ -94,7 +97,7 @@ function Expand-RestApiQueryString()
                         $QueryParams[$Key] += $Value;
                     } else {
                         # Convert to array
-                        $NewArray = @($CurrentValue, $Value);
+                        $NewArray          = @($CurrentValue, $Value);
                         $QueryParams[$Key] = $NewArray;
                     };
                 } else {

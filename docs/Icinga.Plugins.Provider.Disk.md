@@ -49,9 +49,9 @@ DiskInformationDiskQueryFailed), so the log shows where the collection stopped.
 
 **`$SkipPartitionMapping`**
 
-| Name                 | Type                                         | Description                                                           | Default |
-|----------------------|----------------------------------------------|-----------------------------------------------------------------------|---------|
-| SkipPartitionMapping | System.Management.Automation.SwitchParameter | Skip querying MSFT_Partition when Entrypoint is set to 'Volume'.      | $false  |
+| Name                 | Type                                         | Description                                                      | Default |
+|----------------------|----------------------------------------------|------------------------------------------------------------------|---------|
+| SkipPartitionMapping | System.Management.Automation.SwitchParameter | Skip querying MSFT_Partition when Entrypoint is set to 'Volume'. | $false  |
 
 #### Outputs
 
@@ -96,5 +96,5 @@ Windows-only. Reads root/cimv2 (Win32_Volume), root/Microsoft/Windows/Storage
 Standard users can read all of them. Spanned volumes are linked to the first
 partition reporting them.
 
-*Source: [src/Plugins/Provider/Disk/Private/Get-IcingaDiskInformation.ps1](../../src/Plugins/Provider/Disk/Private/Get-IcingaDiskInformation.ps1)*
+*Source: [src/Plugins/Provider/Disk/Private/Get-IcingaDiskInformation.ps1](../src/Plugins/Provider/Disk/Private/Get-IcingaDiskInformation.ps1)*
 

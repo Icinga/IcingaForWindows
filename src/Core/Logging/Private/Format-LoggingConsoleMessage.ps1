@@ -7,23 +7,26 @@ Format a markup-colored logging message for console output.
 and returns either a formatted string or writes the colored message to the host.
 
 .PARAMETER Message
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Message | System.String | Message containing optional color tags | |
+| Name    | Type          | Description                            | Default |
+|---------|---------------|----------------------------------------|---------|
+| Message | System.String | Message containing optional color tags |         |
 
 .PARAMETER GetMsgObj
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name      | Type                   | Description                                                                   | Default  |
+|-----------|------------------------|-------------------------------------------------------------------------------|----------|
 | GetMsgObj | System.SwitchParameter | When set the function returns the formatted string instead of writing to host | `$false` |
 
 .OUTPUTS
-System.String — The formatted message string when `-GetMsgObj` is set; otherwise None, the message is written directly to the host.
+System.String -- The formatted message string when `-GetMsgObj` is set; otherwise None, the message is written directly to the host.
 
 .EXAMPLE
 PS> Format-LoggingConsoleMessage -Message '[Green]OK[/Green] Completed' -GetMsgObj
 
 .NOTES
 Supports escaping and validates color names against `System.ConsoleColor`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleMessage()
 {
@@ -44,8 +47,8 @@ function Format-LoggingConsoleMessage()
     $StringBuilder = New-Object System.Text.StringBuilder;
 
     # Allowed colors (optional restriction)
-    $validColors  = [enum]::GetNames([System.ConsoleColor]);
-    $currentIndex = 0
+    $validColors   = [enum]::GetNames([System.ConsoleColor]);
+    $currentIndex  = 0
 
     while ($currentIndex -lt $Message.Length) {
         # Find next opening tag: [color]

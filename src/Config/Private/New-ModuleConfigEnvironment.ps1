@@ -24,6 +24,9 @@ creating them if necessary, and returns the mapped numeric return code.
 .NOTES
 Uses Get-ModuleConfigDirectory and Get-ModuleBinaryDirectory to resolve target
 paths. Missing directories are created with -Force.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-ModuleConfigEnvironment()
 {

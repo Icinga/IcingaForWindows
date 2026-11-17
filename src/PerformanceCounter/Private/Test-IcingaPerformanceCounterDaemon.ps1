@@ -18,6 +18,9 @@ PS> if (Test-IcingaPerformanceCounterDaemon) { 'daemon is serving requests' }
 .NOTES
 The heartbeat lives at `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Heartbeat`.
 A heartbeat older than five seconds is treated as not alive.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-IcingaPerformanceCounterDaemon()
 {

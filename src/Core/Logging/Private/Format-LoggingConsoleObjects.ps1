@@ -8,17 +8,17 @@ several special CLR types (TcpClient, SslStream, X509Certificate2, TcpListener)
 and returns a string with structured, colorized output for logging.
 
 .PARAMETER Object
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Object | System.Object | The object to format for console output | |
+| Name   | Type          | Description                             | Default |
+|--------|---------------|-----------------------------------------|---------|
+| Object | System.Object | The object to format for console output |         |
 
 .PARAMETER Level
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Level | System.Int32 | Indentation/nesting level for pretty printing | 0 |
+| Name  | Type         | Description                                   | Default |
+|-------|--------------|-----------------------------------------------|---------|
+| Level | System.Int32 | Indentation/nesting level for pretty printing | 0       |
 
 .OUTPUTS
-System.String — A formatted multi-line representation of the object.
+System.String -- A formatted multi-line representation of the object.
 
 .EXAMPLE
 PS> Format-LoggingConsoleObjects -Object $response -Level 1
@@ -26,6 +26,9 @@ PS> Format-LoggingConsoleObjects -Object $response -Level 1
 .NOTES
 This function delegates to other helpers (scalar, properties, nested access)
 and is the central place for human-friendly logging formatting.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleObjects()
 {
@@ -41,8 +44,8 @@ function Format-LoggingConsoleObjects()
     if ($Level -eq 0) {
         $Prefix = '';
     } else {
-        $Prefix = '└── '
-    };
+        $Prefix = [string]::Concat([char]0x2514, [char]0x2500, [char]0x2500, ' ');
+    }
 
     # Compute current indentation
     $Indent        = [string]::Format('{0}{1}', $Indent, $Prefix);

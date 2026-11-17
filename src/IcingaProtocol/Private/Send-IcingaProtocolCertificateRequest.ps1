@@ -9,12 +9,12 @@ setup and certificate signing request (CSR) workflow. If a ticket is
 provided it is included in the RPC parameters for auto-signing.
 
 .PARAMETER Ticket
-| Name   | Type          | Description                                | Default |
-|--------|---------------|--------------------------------------------|---------|
-| Ticket | System.String | The ticket to use for auto-signing.        | $null   |
+| Name   | Type          | Description                         | Default |
+|--------|---------------|-------------------------------------|---------|
+| Ticket | System.String | The ticket to use for auto-signing. | $null   |
 
 .OUTPUTS
-None — Does not return any value.
+None -- Does not return any value.
 
 .EXAMPLE
 PS> Send-IcingaProtocolCertificateRequest -Ticket '1234567890abcdef'
@@ -23,6 +23,9 @@ Sends a certificate request to the connected Icinga endpoint.
 
 .NOTES
 Requires an active TCP connection to the Icinga endpoint.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Send-IcingaProtocolCertificateRequest()
 {

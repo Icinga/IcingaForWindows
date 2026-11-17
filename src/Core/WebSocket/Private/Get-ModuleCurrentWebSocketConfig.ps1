@@ -10,7 +10,7 @@ returns the corresponding configuration object stored in
 function returns `$null`.
 
 .OUTPUTS
-System.Management.Automation.PSCustomObject — Returns the WebSocket configuration
+System.Management.Automation.PSCustomObject -- Returns the WebSocket configuration
 object for the current thread, or `$null` when no configuration is available.
 
 .EXAMPLE
@@ -22,6 +22,9 @@ Relies on global state populated by WebSocket management functions under
 access to the current connection credentials and settings. The thread-local
 WebSocket name is read from `$Global:ModuleName.Private.WebSocket.Name` via
 `Get-GlobalRuntimeVariable`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ModuleCurrentWebSocketConfig()
 {

@@ -8,12 +8,12 @@ sanitizing the role name into a safe filename. Reloads module access control
 definitions to reflect the deletion in the current runtime.
 
 .PARAMETER RoleName
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RoleName | System.String | Name of the role to remove. | '' |
+| Name     | Type          | Description                 | Default |
+|----------|---------------|-----------------------------|---------|
+| RoleName | System.String | Name of the role to remove. | ''      |
 
 .OUTPUTS
-System.Object — Structured return object from Write-FunctionReturnValue when the
+System.Object -- Structured return object from Write-FunctionReturnValue when the
 role name is empty; otherwise None.
 
 .EXAMPLE
@@ -26,6 +26,9 @@ access control definitions.
 Uses Remove-SecureItem to safely delete the role file and then calls
 Read-ModuleAccessControl to refresh the in-memory role list for the current
 session.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Remove-ModuleAccessRole()
 {

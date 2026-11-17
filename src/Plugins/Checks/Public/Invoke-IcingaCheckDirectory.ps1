@@ -159,9 +159,9 @@ reported as UNKNOWN with its reason.
 | OverrideNotFound | System.String | State when nothing matches: Ok, Warning, Critical, Unknown; a missing path counts as empty. |         |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -190,6 +190,9 @@ Goes critical when no backup file was written within the last day.
 Windows-only. Reads the file system through Get-IcingaDirectoryInformation; the
 user needs list permission on every checked directory. The integer exit code is
 the return value; an Icinga command wrapper is expected to exit with it.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaCheckDirectory()
 {

@@ -8,39 +8,39 @@ registers the thread in the global threading registry and optionally starts it.
 The function supports keep-alive semantics and parent/child relationships.
 
 .PARAMETER Command
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Command | System.String | The command (function) name to execute in the thread | |
+| Name    | Type          | Description                                          | Default |
+|---------|---------------|------------------------------------------------------|---------|
+| Command | System.String | The command (function) name to execute in the thread |         |
 
 .PARAMETER Parameters
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Parameters | System.Hashtable | Named parameters passed to the command | @{} |
+| Name       | Type             | Description                            | Default |
+|------------|------------------|----------------------------------------|---------|
+| Parameters | System.Hashtable | Named parameters passed to the command | @{}     |
 
 .PARAMETER ParentThread
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ParentThread | System.String | Optional parent thread id (defaults to current thread) | $null |
+| Name         | Type          | Description                                            | Default |
+|--------------|---------------|--------------------------------------------------------|---------|
+| ParentThread | System.String | Optional parent thread id (defaults to current thread) | $null   |
 
 .PARAMETER OverrideName
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| OverrideName | System.String | Optional explicit display name for the created thread | $null |
+| Name         | Type          | Description                                           | Default |
+|--------------|---------------|-------------------------------------------------------|---------|
+| OverrideName | System.String | Optional explicit display name for the created thread | $null   |
 
 .PARAMETER Start
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Start | System.SwitchParameter | When set, start the thread immediately after creation | $false |
+| Name  | Type                   | Description                                           | Default |
+|-------|------------------------|-------------------------------------------------------|---------|
+| Start | System.SwitchParameter | When set, start the thread immediately after creation | $false  |
 
 .PARAMETER KeepAlive
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| KeepAlive | System.SwitchParameter | When set, the housekeeper may restart the thread on failure | $false |
+| Name      | Type                   | Description                                                 | Default |
+|-----------|------------------------|-------------------------------------------------------------|---------|
+| KeepAlive | System.SwitchParameter | When set, the housekeeper may restart the thread on failure | $false  |
 
 .PARAMETER WaitForJobs
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WaitForJobs | System.SwitchParameter | When set the thread is expected to wait for queued jobs | $false |
+| Name        | Type                   | Description                                             | Default |
+|-------------|------------------------|---------------------------------------------------------|---------|
+| WaitForJobs | System.SwitchParameter | When set the thread is expected to wait for queued jobs | $false  |
 
 .OUTPUTS
 System.String. The newly created thread id.
@@ -50,6 +50,9 @@ PS> New-Thread -Command 'Start-Worker' -Parameters @{ 'Queue' = $q } -Start
 
 .NOTES
 This helper uses `Set-ThreadData` in the created runspace to initialize thread-local state.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-Thread()
 {

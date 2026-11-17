@@ -24,29 +24,29 @@ Get-ModuleBinaryDirectory:
 | Command | System.String | PowerShell command name or full .ps1 script path to call. | ''      |
 
 .PARAMETER NamedArguments
-| Name           | Type                         | Description                                  | Default |
-|----------------|------------------------------|----------------------------------------------|---------|
-| NamedArguments | System.Collections.Hashtable | Named parameter splatting hashtable.         | @{}     |
+| Name           | Type                         | Description                          | Default |
+|----------------|------------------------------|--------------------------------------|---------|
+| NamedArguments | System.Collections.Hashtable | Named parameter splatting hashtable. | @{}     |
 
 .PARAMETER PositionalArguments
-| Name                | Type         | Description                                     | Default |
-|---------------------|--------------|-------------------------------------------------|---------|
-| PositionalArguments | System.Array | Optional positional arguments to pass after @.  | @()     |
+| Name                | Type         | Description                                    | Default |
+|---------------------|--------------|------------------------------------------------|---------|
+| PositionalArguments | System.Array | Optional positional arguments to pass after @. | @()     |
 
 .PARAMETER AllocatedSecrets
-| Name             | Type         | Description                                              | Default |
-|------------------|--------------|----------------------------------------------------------|---------|
-| AllocatedSecrets | System.Array | Temporary SecureString instances to dispose in finally.  | @()     |
+| Name             | Type         | Description                                             | Default |
+|------------------|--------------|---------------------------------------------------------|---------|
+| AllocatedSecrets | System.Array | Temporary SecureString instances to dispose in finally. | @()     |
 
 .PARAMETER UseLastExitCode
-| Name            | Type                                         | Description                                                 | Default |
-|-----------------|----------------------------------------------|-------------------------------------------------------------|---------|
-| UseLastExitCode | System.Management.Automation.SwitchParameter | Fall back to $global:LASTEXITCODE for external .ps1 scripts.| $false  |
+| Name            | Type                                         | Description                                                  | Default |
+|-----------------|----------------------------------------------|--------------------------------------------------------------|---------|
+| UseLastExitCode | System.Management.Automation.SwitchParameter | Fall back to $global:LASTEXITCODE for external .ps1 scripts. | $false  |
 
 .PARAMETER ErrorContext
-| Name         | Type          | Description                                                     | Default |
-|--------------|---------------|-----------------------------------------------------------------|---------|
-| ErrorContext | System.String | Optional custom prefix for [UNKNOWN] unhandled error messages.  | ''      |
+| Name         | Type          | Description                                                    | Default |
+|--------------|---------------|----------------------------------------------------------------|---------|
+| ErrorContext | System.String | Optional custom prefix for [UNKNOWN] unhandled error messages. | ''      |
 
 .OUTPUTS
 System.Collections.Hashtable -- Plain hashtable containing primitive ExitCode,
@@ -61,6 +61,9 @@ result hashtable.
 .NOTES
 Accesses runtime state exclusively via Get-GlobalRuntimeVariable. Never returns
 PowerShell class instances across thread boundaries.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-ModulePowerShellCommand()
 {

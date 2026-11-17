@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+Pester unit test suite for Test-IcingaArrayFilter in Icinga for Windows
+
+.DESCRIPTION
+Validates functional behavior, edge cases, and runtime contracts for Test-IcingaArrayFilter
+as part of the Icinga for Windows automated Pester test suite.
+
+.NOTES
+Executed via build/Invoke-ModuleTests.ps1 using Pester 5.0+.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
+#>
 $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\IcingaForWindows.psd1';
 if (-not (Get-Module -Name 'IcingaForWindows')) {
     Import-Module -Name $ModulePath -Force -Global;

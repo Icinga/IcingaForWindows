@@ -12,7 +12,7 @@ certificate and then creates the blocking worker queues and spawns one
 be populated before this function runs.
 
 .OUTPUTS
-None — populates `(Get-GlobalRuntimeVariable).Public.RestApi.WorkerQueue`
+None -- populates `(Get-GlobalRuntimeVariable).Public.RestApi.WorkerQueue`
 and starts all worker and listener threads.
 
 .EXAMPLE
@@ -23,6 +23,9 @@ Must be called after `Set-RestApiConfig` has been executed so that a valid
 `restapi.json` configuration file exists. All threads started here rely on
 the global runtime variable rather than parameters, so thread-safety
 depends on the blocking collections used for the worker queues.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-RestApiEnvironment()
 {

@@ -15,6 +15,9 @@ PS> Read-RestApiHeader
 
 .NOTES
 This function reads directly from `(Get-GlobalRuntimeVariable).Private.TCP.Stream`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-RestApiHeader()
 {
@@ -39,9 +42,9 @@ function Read-RestApiHeader()
                 # Check for double newline (HTTP header terminator)
                 if ($HeaderString -match "`r`n`r`n") {
                     # Find the position of double newline in bytes
-                    [string]$DoubleNewline      = "`r`n`r`n";
+                    [string]$DoubleNewline = "`r`n`r`n";
                     # Search for header terminator pattern
-                    $HeaderEndIndex             = $HeaderString.IndexOf($DoubleNewline);
+                    $HeaderEndIndex        = $HeaderString.IndexOf($DoubleNewline);
 
                     if ($HeaderEndIndex -ge 0) {
                         # Calculate actual byte position accounting for potential multi-byte UTF8 characters

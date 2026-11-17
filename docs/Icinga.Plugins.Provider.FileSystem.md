@@ -165,5 +165,5 @@ Reads the file system through System.IO.DirectoryInfo; the user needs list
 permission on every scanned directory. Relative paths are resolved against the
 current PowerShell file system location. No external services are used.
 
-*Source: [src/Plugins/Provider/FileSystem/Private/Get-IcingaDirectoryInformation.ps1](../../src/Plugins/Provider/FileSystem/Private/Get-IcingaDirectoryInformation.ps1)*
+*Source: [src/Plugins/Provider/FileSystem/Private/Get-IcingaDirectoryInformation.ps1](../src/Plugins/Provider/FileSystem/Private/Get-IcingaDirectoryInformation.ps1)*
 

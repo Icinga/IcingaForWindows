@@ -10,17 +10,17 @@ hashtable with the keys message (byte array) and length (integer) ready to be
 passed to Send-TCPMessage or Add-IcingaRPCMessageToWriterQueue.
 
 .PARAMETER Method
-| Name   | Type          | Description                                         | Default |
-|--------|---------------|-----------------------------------------------------|---------|
-| Method | System.String | JSON-RPC method name (for example icinga::Hello).   |         |
+| Name   | Type          | Description                                       | Default |
+|--------|---------------|---------------------------------------------------|---------|
+| Method | System.String | JSON-RPC method name (for example icinga::Hello). |         |
 
 .PARAMETER Parameters
-| Name       | Type                          | Description                                    | Default |
-|------------|-------------------------------|------------------------------------------------|---------|
-| Parameters | System.Collections.Hashtable  | Parameters to include in the RPC params field. | @{}     |
+| Name       | Type                         | Description                                    | Default |
+|------------|------------------------------|------------------------------------------------|---------|
+| Parameters | System.Collections.Hashtable | Parameters to include in the RPC params field. | @{}     |
 
 .OUTPUTS
-System.Collections.Hashtable — Hashtable with keys message (System.Byte[]) and length (System.Int32).
+System.Collections.Hashtable -- Hashtable with keys message (System.Byte[]) and length (System.Int32).
 
 .EXAMPLE
 PS> New-IcingaRPCMessage -Method 'icinga::Hello'
@@ -30,6 +30,9 @@ Returns a length-prefixed encoded message hashtable for the Hello handshake.
 .NOTES
 The method call is logged at Debug level via Write-LoggingEntry before the byte
 encoding step.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaRPCMessage()
 {
@@ -44,9 +47,9 @@ function New-IcingaRPCMessage()
         'params'  = $Parameters;
     };
 
-    $JsonMessage      = (ConvertTo-ModuleJson -InputObject $MessageHash);
-    [int]$ByteCount   = [System.Text.Encoding]::UTF8.GetByteCount($JsonMessage);
-    $FormattedMessage = [string]::Format('{0}:{1},', $ByteCount, $JsonMessage);
+    $JsonMessage            = (ConvertTo-ModuleJson -InputObject $MessageHash);
+    [int]$ByteCount         = [System.Text.Encoding]::UTF8.GetByteCount($JsonMessage);
+    $FormattedMessage       = [string]::Format('{0}:{1},', $ByteCount, $JsonMessage);
 
     Write-LoggingEntry -Message 'Creating Icinga RPC Message' -Level 'Debug' -Data @{ 'JsonMessage' = $FormattedMessage; };
 

@@ -54,43 +54,43 @@ to attach it to a user or group.
 
 **`$AllowedMethods`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name           | Type            | Description                                                            | Default  |
+|----------------|-----------------|------------------------------------------------------------------------|----------|
 | AllowedMethods | System.String[] | List of allowed HTTP methods (case-insensitive). Use `*` to allow all. | @('GET') |
 
 **`$AllowedResources`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AllowedResources | System.String[] | Glob-style patterns of resources that are explicitly allowed. Use `*` to allow all. | @() |
+| Name             | Type            | Description                                                                         | Default |
+|------------------|-----------------|-------------------------------------------------------------------------------------|---------|
+| AllowedResources | System.String[] | Glob-style patterns of resources that are explicitly allowed. Use `*` to allow all. | @()     |
 
 **`$BlockedResources`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| BlockedResources | System.String[] | Glob-style patterns of resources that are explicitly blocked. Use `*` to block all. | @('*') |
+| Name             | Type            | Description                                                                         | Default |
+|------------------|-----------------|-------------------------------------------------------------------------------------|---------|
+| BlockedResources | System.String[] | Glob-style patterns of resources that are explicitly blocked. Use `*` to block all. | @('*')  |
 
 **`$AllowedOrigins`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AllowedOrigins | System.String[] | Client IP or hostname patterns that may access the API. Use `*` to allow all origins. | @('*') |
+| Name           | Type            | Description                                                                           | Default |
+|----------------|-----------------|---------------------------------------------------------------------------------------|---------|
+| AllowedOrigins | System.String[] | Client IP or hostname patterns that may access the API. Use `*` to allow all origins. | @('*')  |
 
 **`$RequireCredentials`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RequireCredentials | System.Boolean | When true, the access control entry requires credentials. | $false |
+| Name               | Type           | Description                                               | Default |
+|--------------------|----------------|-----------------------------------------------------------|---------|
+| RequireCredentials | System.Boolean | When true, the access control entry requires credentials. | $false  |
 
 **`$RequestBodySizeLimitKB`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RequestBodySizeLimitKB | System.Int32 | Maximum allowed request body size in kilobytes. Negative values are normalized to 0. | 1024 |
+| Name                   | Type         | Description                                                                          | Default |
+|------------------------|--------------|--------------------------------------------------------------------------------------|---------|
+| RequestBodySizeLimitKB | System.Int32 | Maximum allowed request body size in kilobytes. Negative values are normalized to 0. | 1024    |
 
 #### Outputs
 
-PSCustomObject — access control object with `AllowedMethods`, `AllowedResources`,
+PSCustomObject -- access control object with `AllowedMethods`, `AllowedResources`,
 `BlockedResources`, `AllowedOrigins`, `RequireCredentials`,
 `RequestBodySizeLimit` (bytes) and `Scope` set to `RestApi`.
 
@@ -107,7 +107,7 @@ credential enforcement must be added in the request handling logic.
 The KB limit is converted to bytes internally. At least one allowed method
 must be specified; passing an empty array causes the function to return `$null`.
 
-*Source: [src/Core/RestApi/Public/New-IcingaRestApiAccessControlObject.ps1](../../src/Core/RestApi/Public/New-IcingaRestApiAccessControlObject.ps1)*
+*Source: [src/Core/RestApi/Public/New-IcingaRestApiAccessControlObject.ps1](../src/Core/RestApi/Public/New-IcingaRestApiAccessControlObject.ps1)*
 
 ---
 
@@ -130,31 +130,31 @@ the `Body` hashtable as JSON. Non-200 responses are returned as failures.
 
 **`$WebPath`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WebPath | System.String | Relative web path or endpoint (e.g. '/v1/status'). Leading slash is optional. | '' |
+| Name    | Type          | Description                                                                   | Default |
+|---------|---------------|-------------------------------------------------------------------------------|---------|
+| WebPath | System.String | Relative web path or endpoint (e.g. '/v1/status'). Leading slash is optional. | ''      |
 
 **`$Method`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Method | System.String | HTTP method to use (GET, POST, PUT, DELETE, etc.). | 'GET' |
+| Name   | Type          | Description                                        | Default |
+|--------|---------------|----------------------------------------------------|---------|
+| Method | System.String | HTTP method to use (GET, POST, PUT, DELETE, etc.). | 'GET'   |
 
 **`$Headers`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name    | Type                         | Description                                        | Default                                   |
+|---------|------------------------------|----------------------------------------------------|-------------------------------------------|
 | Headers | System.Collections.Hashtable | Additional HTTP headers to include in the request. | @{ 'Content-Type' = 'application/json'; } |
 
 **`$Body`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Body | System.Collections.Hashtable | Request body serialized as JSON for non-GET methods. | @{ } |
+| Name | Type                         | Description                                          | Default |
+|------|------------------------------|------------------------------------------------------|---------|
+| Body | System.Collections.Hashtable | Request body serialized as JSON for non-GET methods. | @{ }    |
 
 #### Outputs
 
-PSCustomObject — structured return value from `Write-FunctionReturnValue`.
+PSCustomObject -- structured return value from `Write-FunctionReturnValue`.
 `RestApiRequestSuccessful` with `Response` in Data on success;
 `RestApiRequestFailed` with `StatusCode` and `Response` or `Exception` on failure.
 
@@ -172,7 +172,7 @@ module config directory. The request always targets `https://localhost:<port>`.
 Certificate validation is skipped via `-SkipCertificateCheck` to support
 self-signed TLS certificates.
 
-*Source: [src/Core/RestApi/Public/Send-IcingaRestApiRequest.ps1](../../src/Core/RestApi/Public/Send-IcingaRestApiRequest.ps1)*
+*Source: [src/Core/RestApi/Public/Send-IcingaRestApiRequest.ps1](../src/Core/RestApi/Public/Send-IcingaRestApiRequest.ps1)*
 
 ---
 
@@ -194,37 +194,37 @@ return objects as the underlying private implementation.
 
 **`$ListenAddress`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name          | Type          | Description                                                                                | Default   |
+|---------------|---------------|--------------------------------------------------------------------------------------------|-----------|
 | ListenAddress | System.String | IP address or hostname to bind the RestApi listener. Use '0.0.0.0' to bind all interfaces. | '0.0.0.0' |
 
 **`$ListenPort`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 5668 |
+| Name       | Type         | Description                      | Default |
+|------------|--------------|----------------------------------|---------|
+| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 5668    |
 
 **`$TlsCertConfig`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-IcingaTlsCertConfig`. | $null |
+| Name          | Type                  | Description                                                         | Default |
+|---------------|-----------------------|---------------------------------------------------------------------|---------|
+| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-IcingaTlsCertConfig`. | $null   |
 
 **`$WorkerCount`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5 |
+| Name        | Type         | Description                                                 | Default |
+|-------------|--------------|-------------------------------------------------------------|---------|
+| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5       |
 
 **`$DryRun`**
 
-| Name   | Type                                         | Description                                                                                       | Default |
-|--------|----------------------------------------------|---------------------------------------------------------------------------------------------------|---------|
-| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false |
+| Name   | Type                                         | Description                                                                                                                    | Default |
+|--------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false  |
 
 #### Outputs
 
-PSCustomObject — Function return value forwarded from `Set-RestApiConfig`.
+PSCustomObject -- Function return value forwarded from `Set-RestApiConfig`.
 
 #### Examples
 
@@ -238,7 +238,7 @@ This public wrapper exists to expose a stable module API while keeping the
 implementation in `Set-RestApiConfig` (private) where validation and persistence
 logic is implemented.
 
-*Source: [src/Core/RestApi/Public/Set-IcingaRestApiConfig.ps1](../../src/Core/RestApi/Public/Set-IcingaRestApiConfig.ps1)*
+*Source: [src/Core/RestApi/Public/Set-IcingaRestApiConfig.ps1](../src/Core/RestApi/Public/Set-IcingaRestApiConfig.ps1)*
 
 ---
 
@@ -258,9 +258,9 @@ assignment and validates the input client.
 
 **`$TcpClient`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient | Accepted TCP client to assign to a worker queue. | |
+| Name      | Type                         | Description                                      | Default |
+|-----------|------------------------------|--------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Accepted TCP client to assign to a worker queue. |         |
 
 #### Outputs
 
@@ -278,7 +278,7 @@ This helper expects RestApi worker queues to be initialized under
 `(Get-GlobalRuntimeVariable).Public.RestApi.WorkerQueue` and a
 `WorkerCount` value in the RestApi configuration.
 
-*Source: [src/Core/RestApi/Private/Add-RestApiClientToWorker.ps1](../../src/Core/RestApi/Private/Add-RestApiClientToWorker.ps1)*
+*Source: [src/Core/RestApi/Private/Add-RestApiClientToWorker.ps1](../src/Core/RestApi/Private/Add-RestApiClientToWorker.ps1)*
 
 ---
 
@@ -298,13 +298,13 @@ the parsed structure or logs an error and returns `$null` on parse failure.
 
 **`$HeaderString`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| HeaderString | System.String | Raw HTTP header string including request line and headers. | |
+| Name         | Type          | Description                                                | Default |
+|--------------|---------------|------------------------------------------------------------|---------|
+| HeaderString | System.String | Raw HTTP header string including request line and headers. |         |
 
 #### Outputs
 
-System.Collections.Hashtable — parsed header hashtable with `Method`, `Path`, `HttpVersion` and `Headers`.
+System.Collections.Hashtable -- parsed header hashtable with `Method`, `Path`, `HttpVersion` and `Headers`.
 
 #### Examples
 
@@ -316,7 +316,7 @@ PS> Expand-RestApiHeader -HeaderString $rawHeader
 
 Used by RestApi worker processing to interpret incoming HTTP requests.
 
-*Source: [src/Core/RestApi/Private/Expand-RestApiHeader.ps1](../../src/Core/RestApi/Private/Expand-RestApiHeader.ps1)*
+*Source: [src/Core/RestApi/Private/Expand-RestApiHeader.ps1](../src/Core/RestApi/Private/Expand-RestApiHeader.ps1)*
 
 ---
 
@@ -336,19 +336,19 @@ are converted into arrays.
 
 **`$QueryString`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| QueryString | System.String | Raw query string (may include leading '?'). | |
+| Name        | Type          | Description                                 | Default |
+|-------------|---------------|---------------------------------------------|---------|
+| QueryString | System.String | Raw query string (may include leading '?'). |         |
 
 **`$QueryParams`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| QueryParams | System.Collections.Hashtable | Hashtable to populate with parsed parameters. | @{} |
+| Name        | Type                         | Description                                   | Default |
+|-------------|------------------------------|-----------------------------------------------|---------|
+| QueryParams | System.Collections.Hashtable | Hashtable to populate with parsed parameters. | @{}     |
 
 #### Outputs
 
-None — modifies the provided `QueryParams` hashtable in place.
+None -- modifies the provided `QueryParams` hashtable in place.
 
 #### Examples
 
@@ -361,7 +361,7 @@ PS> Expand-RestApiQueryString -QueryString '?q=hello%20world&tags=one&tags=two' 
 This function is tolerant to quoted parameter values and retains array
 semantics for repeated keys.
 
-*Source: [src/Core/RestApi/Private/Expand-RestApiQueryString.ps1](../../src/Core/RestApi/Private/Expand-RestApiQueryString.ps1)*
+*Source: [src/Core/RestApi/Private/Expand-RestApiQueryString.ps1](../src/Core/RestApi/Private/Expand-RestApiQueryString.ps1)*
 
 ---
 
@@ -381,13 +381,13 @@ and an array of path segments.
 
 **`$WebPath`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WebPath | System.String | The HTTP path to normalize (e.g. '/api/v1/resource/'). | |
+| Name    | Type          | Description                                            | Default |
+|---------|---------------|--------------------------------------------------------|---------|
+| WebPath | System.String | The HTTP path to normalize (e.g. '/api/v1/resource/'). |         |
 
 #### Outputs
 
-System.Collections.Hashtable — parsed path object with keys `Segments`, `QueryParams`, `WebPath`,
+System.Collections.Hashtable -- parsed path object with keys `Segments`, `QueryParams`, `WebPath`,
 `HasQuery`, `SegmentCount` and optional `Version`, `Space`, `Action`, `Resource`.
 
 #### Examples
@@ -401,7 +401,7 @@ PS> Expand-RestApiWebPath -Path '/api//v1/resource/'
 This helper is used when routing incoming requests to configured RestApi
 spaces and handlers.
 
-*Source: [src/Core/RestApi/Private/Expand-RestApiWebPath.ps1](../../src/Core/RestApi/Private/Expand-RestApiWebPath.ps1)*
+*Source: [src/Core/RestApi/Private/Expand-RestApiWebPath.ps1](../src/Core/RestApi/Private/Expand-RestApiWebPath.ps1)*
 
 ---
 
@@ -415,17 +415,17 @@ spaces and handlers.
 
 Core dispatcher of the Icinga for Windows REST API. Reads the parsed web-path
 and headers from `$Global.Private.RestApi.*`, walks the configured
-spaces hashtable (Space → Action → Resource) to locate an
+spaces hashtable (Space -> Action -> Resource) to locate an
 `ApiCommandExecution` field and invokes the bound PowerShell function
 via `Invoke-RestApiCommandExecutionField`. Emits the appropriate JSON
 response on success and well-formed error responses on failure
-(missing space → 404, invalid path depth → 400, command error → 500,
-no spaces configured → 500, no command at all → HTML endpoint listing
+(missing space -> 404, invalid path depth -> 400, command error -> 500,
+no spaces configured -> 500, no command at all -> HTML endpoint listing
 or 200 / 404 for JSON callers).
 
 #### Outputs
 
-System.Int32 — A semantic return code resolved through
+System.Int32 -- A semantic return code resolved through
 `Write-FunctionReturnValue` for downstream diagnostics. The HTTP
 response is sent directly over the worker's TCP stream.
 
@@ -444,7 +444,7 @@ Path schema is `/v1/<Space>/<Action>/<Resource>`. The actual
 `ApiCommandExecution` lookup supports 2, 3 or 4 segments (segment
 count is checked before the handler runs).
 
-*Source: [src/Core/RestApi/Private/Invoke-RestApiCall.ps1](../../src/Core/RestApi/Private/Invoke-RestApiCall.ps1)*
+*Source: [src/Core/RestApi/Private/Invoke-RestApiCall.ps1](../src/Core/RestApi/Private/Invoke-RestApiCall.ps1)*
 
 ---
 
@@ -467,13 +467,13 @@ function result or a structured error object on failure.
 
 **`$Space`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Space | PSCustomObject | ApiCommandExecution configuration object with `Function`, `Method` and `Parameters` properties. | $null |
+| Name  | Type           | Description                                                                                     | Default |
+|-------|----------------|-------------------------------------------------------------------------------------------------|---------|
+| Space | PSCustomObject | ApiCommandExecution configuration object with `Function`, `Method` and `Parameters` properties. | $null   |
 
 #### Outputs
 
-System.Object — the return value of the invoked function, or a hashtable
+System.Object -- the return value of the invoked function, or a hashtable
 with an `error` key when the invocation fails or is not permitted.
 
 #### Examples
@@ -489,7 +489,7 @@ Array values in GET query strings are split on commas while respecting
 quoted strings. Must only be called from within a RestApi worker thread
 after `Private.RestApi.WebPath` and `Private.RestApi.Header` are set.
 
-*Source: [src/Core/RestApi/Private/Invoke-RestApiCommandExecutionField.ps1](../../src/Core/RestApi/Private/Invoke-RestApiCommandExecutionField.ps1)*
+*Source: [src/Core/RestApi/Private/Invoke-RestApiCommandExecutionField.ps1](../src/Core/RestApi/Private/Invoke-RestApiCommandExecutionField.ps1)*
 
 ---
 
@@ -511,43 +511,43 @@ the RestApi access control evaluation routines.
 
 **`$AllowedMethods`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name           | Type            | Description                                                            | Default  |
+|----------------|-----------------|------------------------------------------------------------------------|----------|
 | AllowedMethods | System.String[] | List of allowed HTTP methods (case-insensitive). Use `*` to allow all. | @('GET') |
 
 **`$AllowedResources`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AllowedResources | System.String[] | Glob-style patterns of resources that are explicitly allowed. Use `*` to allow all. | @() |
+| Name             | Type            | Description                                                                         | Default |
+|------------------|-----------------|-------------------------------------------------------------------------------------|---------|
+| AllowedResources | System.String[] | Glob-style patterns of resources that are explicitly allowed. Use `*` to allow all. | @()     |
 
 **`$BlockedResources`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| BlockedResources | System.String[] | Glob-style patterns of resources that are explicitly blocked. Use `*` to block all. | @('*') |
+| Name             | Type            | Description                                                                         | Default |
+|------------------|-----------------|-------------------------------------------------------------------------------------|---------|
+| BlockedResources | System.String[] | Glob-style patterns of resources that are explicitly blocked. Use `*` to block all. | @('*')  |
 
 **`$AllowedOrigins`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AllowedOrigins | System.String[] | Client IP/hostname patterns that are allowed to access the API. Use `*` to allow all origins. | @('*') |
+| Name           | Type            | Description                                                                                   | Default |
+|----------------|-----------------|-----------------------------------------------------------------------------------------------|---------|
+| AllowedOrigins | System.String[] | Client IP/hostname patterns that are allowed to access the API. Use `*` to allow all origins. | @('*')  |
 
 **`$RequireCredentials`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RequireCredentials | System.Boolean | When true, the ACL requires credentials (not implemented in this helper). | $false |
+| Name               | Type           | Description                                                               | Default |
+|--------------------|----------------|---------------------------------------------------------------------------|---------|
+| RequireCredentials | System.Boolean | When true, the ACL requires credentials (not implemented in this helper). | $false  |
 
 **`$RequestBodySizeLimitKB`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RequestBodySizeLimitKB | System.Int32 | Maximum allowed request body size in kilobytes. Negative values are normalized to 0. | 1024 |
+| Name                   | Type         | Description                                                                          | Default |
+|------------------------|--------------|--------------------------------------------------------------------------------------|---------|
+| RequestBodySizeLimitKB | System.Int32 | Maximum allowed request body size in kilobytes. Negative values are normalized to 0. | 1024    |
 
 #### Outputs
 
-PSCustomObject — access control object ready for inclusion in role definitions.
+PSCustomObject -- access control object ready for inclusion in role definitions.
 
 #### Examples
 
@@ -558,10 +558,10 @@ PS> New-RestApiAccessControlObject -AllowedMethods @('GET','POST') -AllowedResou
 #### Notes
 
 The returned object converts KB limit to bytes and normalizes string
-arrays. The `RequireCredentials` flag is informational — credential
+arrays. The `RequireCredentials` flag is informational -- credential
 enforcement must be implemented in the request handling logic.
 
-*Source: [src/Core/RestApi/Private/New-RestApiAccessControlObject.ps1](../../src/Core/RestApi/Private/New-RestApiAccessControlObject.ps1)*
+*Source: [src/Core/RestApi/Private/New-RestApiAccessControlObject.ps1](../src/Core/RestApi/Private/New-RestApiAccessControlObject.ps1)*
 
 ---
 
@@ -583,7 +583,7 @@ be populated before this function runs.
 
 #### Outputs
 
-None — populates `(Get-GlobalRuntimeVariable).Public.RestApi.WorkerQueue`
+None -- populates `(Get-GlobalRuntimeVariable).Public.RestApi.WorkerQueue`
 and starts all worker and listener threads.
 
 #### Examples
@@ -599,7 +599,7 @@ Must be called after `Set-RestApiConfig` has been executed so that a valid
 the global runtime variable rather than parameters, so thread-safety
 depends on the blocking collections used for the worker queues.
 
-*Source: [src/Core/RestApi/Private/New-RestApiEnvironment.ps1](../../src/Core/RestApi/Private/New-RestApiEnvironment.ps1)*
+*Source: [src/Core/RestApi/Private/New-RestApiEnvironment.ps1](../src/Core/RestApi/Private/New-RestApiEnvironment.ps1)*
 
 ---
 
@@ -617,7 +617,7 @@ structure or logs an error when no data is supplied.
 
 #### Outputs
 
-System.Collections.Hashtable — response object with `Message` (byte[]) and
+System.Collections.Hashtable -- response object with `Message` (byte[]) and
 `Length` (int), ready to pass to `Send-TCPMessage`.
 
 #### Examples
@@ -632,7 +632,7 @@ The favicon is read from `assets\restapi\favicon.png` under the module root
 directory. The function selects the correct MIME type (`image/x-icon` or
 `image/png`) based on the file extension found at that path.
 
-*Source: [src/Core/RestApi/Private/New-RestApiFaviconResponse.ps1](../../src/Core/RestApi/Private/New-RestApiFaviconResponse.ps1)*
+*Source: [src/Core/RestApi/Private/New-RestApiFaviconResponse.ps1](../src/Core/RestApi/Private/New-RestApiFaviconResponse.ps1)*
 
 ---
 
@@ -652,27 +652,27 @@ into a single byte array suitable for sending over a TCP socket. When the
 
 **`$StatusCode`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| StatusCode | System.Int32 | HTTP status code to send (e.g. 200). | 200 |
+| Name       | Type         | Description                          | Default |
+|------------|--------------|--------------------------------------|---------|
+| StatusCode | System.Int32 | HTTP status code to send (e.g. 200). | 200     |
 
 **`$StatusMessage`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| StatusMessage | System.String | Short HTTP status message (e.g. 'OK'). | 'OK' |
+| Name          | Type          | Description                            | Default |
+|---------------|---------------|----------------------------------------|---------|
+| StatusMessage | System.String | Short HTTP status message (e.g. 'OK'). | 'OK'    |
 
 **`$ContentType`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name        | Type          | Description                      | Default                           |
+|-------------|---------------|----------------------------------|-----------------------------------|
 | ContentType | System.String | MIME type for the response body. | 'application/json; charset=utf-8' |
 
 **`$ResponseBody`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ResponseBody | Object | Body payload; may be byte[], string or object (serialized to JSON). | |
+| Name         | Type   | Description                                                         | Default |
+|--------------|--------|---------------------------------------------------------------------|---------|
+| ResponseBody | Object | Body payload; may be byte[], string or object (serialized to JSON). |         |
 
 #### Outputs
 
@@ -688,7 +688,7 @@ PS> New-RestApiResponse -StatusCode 200 -ResponseBody @{ success = $true }
 
 The returned `Message` is ready to be written to a TCP stream.
 
-*Source: [src/Core/RestApi/Private/New-RestApiResponse.ps1](../../src/Core/RestApi/Private/New-RestApiResponse.ps1)*
+*Source: [src/Core/RestApi/Private/New-RestApiResponse.ps1](../src/Core/RestApi/Private/New-RestApiResponse.ps1)*
 
 ---
 
@@ -709,15 +709,15 @@ bytes, string and parsed JSON (if applicable).
 
 **`$ParsedHeaders`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ParsedHeaders | System.Collections.Hashtable | Parsed header object produced by `Expand-RestApiHeader`. | @{ } |
+| Name          | Type                         | Description                                              | Default |
+|---------------|------------------------------|----------------------------------------------------------|---------|
+| ParsedHeaders | System.Collections.Hashtable | Parsed header object produced by `Expand-RestApiHeader`. | @{ }    |
 
 **`$PreReadBodyBytes`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| PreReadBodyBytes | byte[] | Any body bytes that were read along with the headers. | @() |
+| Name             | Type   | Description                                           | Default |
+|------------------|--------|-------------------------------------------------------|---------|
+| PreReadBodyBytes | byte[] | Any body bytes that were read along with the headers. | @()     |
 
 #### Outputs
 
@@ -734,7 +734,7 @@ PS> Read-RestApiBody -ParsedHeaders $parsed -PreReadBodyBytes $extraBytes
 Closes the TCP connection and returns `$null` if access control denies
 the request or a timeout occurs while reading.
 
-*Source: [src/Core/RestApi/Private/Read-RestApiBody.ps1](../../src/Core/RestApi/Private/Read-RestApiBody.ps1)*
+*Source: [src/Core/RestApi/Private/Read-RestApiBody.ps1](../src/Core/RestApi/Private/Read-RestApiBody.ps1)*
 
 ---
 
@@ -752,7 +752,7 @@ under `(Get-GlobalRuntimeVariable).Public.RestApi.Config`.
 
 #### Outputs
 
-PSCustomObject — the loaded RestApi configuration on success, or a
+PSCustomObject -- the loaded RestApi configuration on success, or a
 structured return code object when the file is missing or corrupt.
 
 #### Examples
@@ -766,7 +766,7 @@ PS> Read-RestApiConfig
 Logs structured return codes using `Write-FunctionReturnValue` when the
 file is missing or cannot be parsed.
 
-*Source: [src/Core/RestApi/Private/Read-RestApiConfig.ps1](../../src/Core/RestApi/Private/Read-RestApiConfig.ps1)*
+*Source: [src/Core/RestApi/Private/Read-RestApiConfig.ps1](../src/Core/RestApi/Private/Read-RestApiConfig.ps1)*
 
 ---
 
@@ -796,7 +796,7 @@ PS> Read-RestApiHeader
 
 This function reads directly from `(Get-GlobalRuntimeVariable).Private.TCP.Stream`.
 
-*Source: [src/Core/RestApi/Private/Read-RestApiHeader.ps1](../../src/Core/RestApi/Private/Read-RestApiHeader.ps1)*
+*Source: [src/Core/RestApi/Private/Read-RestApiHeader.ps1](../src/Core/RestApi/Private/Read-RestApiHeader.ps1)*
 
 ---
 
@@ -814,7 +814,7 @@ by filename (lowercase). Logs per-file parse results using `Write-FunctionReturn
 
 #### Outputs
 
-None — populates `(Get-GlobalRuntimeVariable).Private.RestApi.Spaces`.
+None -- populates `(Get-GlobalRuntimeVariable).Private.RestApi.Spaces`.
 
 #### Examples
 
@@ -827,7 +827,7 @@ PS> Read-RestApiSpacesConfig
 Each space file must contain a valid JSON object describing routes,
 handlers and optional access control for that API space.
 
-*Source: [src/Core/RestApi/Private/Read-RestApiSpacesConfig.ps1](../../src/Core/RestApi/Private/Read-RestApiSpacesConfig.ps1)*
+*Source: [src/Core/RestApi/Private/Read-RestApiSpacesConfig.ps1](../src/Core/RestApi/Private/Read-RestApiSpacesConfig.ps1)*
 
 ---
 
@@ -847,13 +847,13 @@ spaces. The HTML is returned to the client as an HTTP response.
 
 **`$SpaceObj`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| SpaceObj | PSCustomObject | Optional space configuration object to enumerate endpoints for. | |
+| Name     | Type           | Description                                                     | Default |
+|----------|----------------|-----------------------------------------------------------------|---------|
+| SpaceObj | PSCustomObject | Optional space configuration object to enumerate endpoints for. |         |
 
 #### Outputs
 
-None — sends an HTTP response with `Content-Type: text/html` via `Send-TCPMessage`.
+None -- sends an HTTP response with `Content-Type: text/html` via `Send-TCPMessage`.
 
 #### Examples
 
@@ -865,7 +865,7 @@ PS> Send-RestApiHtmlEndpointResponse -SpaceObj $space
 
 Intended to be used by browser-based exploration of the RestApi.
 
-*Source: [src/Core/RestApi/Private/Send-RestApiHtmlEndpointResponse.ps1](../../src/Core/RestApi/Private/Send-RestApiHtmlEndpointResponse.ps1)*
+*Source: [src/Core/RestApi/Private/Send-RestApiHtmlEndpointResponse.ps1](../src/Core/RestApi/Private/Send-RestApiHtmlEndpointResponse.ps1)*
 
 ---
 
@@ -887,31 +887,31 @@ methods. The function returns standardized return values using
 
 **`$WebPath`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WebPath | System.String | Relative web path or endpoint (for example '/v1/status'). Leading slash optional. | '' |
+| Name    | Type          | Description                                                                       | Default |
+|---------|---------------|-----------------------------------------------------------------------------------|---------|
+| WebPath | System.String | Relative web path or endpoint (for example '/v1/status'). Leading slash optional. | ''      |
 
 **`$Method`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Method | System.String | HTTP method to use (GET, POST, PUT, DELETE, etc.). | 'GET' |
+| Name   | Type          | Description                                        | Default |
+|--------|---------------|----------------------------------------------------|---------|
+| Method | System.String | HTTP method to use (GET, POST, PUT, DELETE, etc.). | 'GET'   |
 
 **`$Headers`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name    | Type                         | Description                         | Default                                   |
+|---------|------------------------------|-------------------------------------|-------------------------------------------|
 | Headers | System.Collections.Hashtable | Additional HTTP headers to include. | @{ 'Content-Type' = 'application/json'; } |
 
 **`$Body`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Body | System.Hashtable | Request body to be serialized as JSON for non-GET methods. | @{ } |
+| Name | Type             | Description                                                | Default |
+|------|------------------|------------------------------------------------------------|---------|
+| Body | System.Hashtable | Request body to be serialized as JSON for non-GET methods. | @{ }    |
 
 #### Outputs
 
-PSCustomObject — Function return value produced by `Write-FunctionReturnValue`.
+PSCustomObject -- Function return value produced by `Write-FunctionReturnValue`.
 - `RestApiRequestSuccessful`: Data contains `Response`.
 - `RestApiRequestFailed`: Data contains `Exception`, `Uri`, `Method`, `Headers`, `Body` or `StatusCode` and `Response`.
 
@@ -928,7 +928,7 @@ Uses `Read-RestApiConfig` to ensure RestApi is configured and `Invoke-RestMethod
 with `-SkipCertificateCheck` for local/self-signed certificates. Non-200 status
 codes are treated as failures and returned via `Write-FunctionReturnValue`.
 
-*Source: [src/Core/RestApi/Private/Send-RestApiRequest.ps1](../../src/Core/RestApi/Private/Send-RestApiRequest.ps1)*
+*Source: [src/Core/RestApi/Private/Send-RestApiRequest.ps1](../src/Core/RestApi/Private/Send-RestApiRequest.ps1)*
 
 ---
 
@@ -949,37 +949,37 @@ configuration and writes the configuration to the module config directory as
 
 **`$ListenAddress`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name          | Type          | Description                                                                                | Default   |
+|---------------|---------------|--------------------------------------------------------------------------------------------|-----------|
 | ListenAddress | System.String | IP address or hostname to bind the RestApi listener. Use '0.0.0.0' to bind all interfaces. | '0.0.0.0' |
 
 **`$ListenPort`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 10000 |
+| Name       | Type         | Description                      | Default |
+|------------|--------------|----------------------------------|---------|
+| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 10000   |
 
 **`$TlsCertConfig`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-TlsCertConfig`. | $null |
+| Name          | Type                  | Description                                                   | Default |
+|---------------|-----------------------|---------------------------------------------------------------|---------|
+| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-TlsCertConfig`. | $null   |
 
 **`$WorkerCount`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5 |
+| Name        | Type         | Description                                                 | Default |
+|-------------|--------------|-------------------------------------------------------------|---------|
+| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5       |
 
 **`$DryRun`**
 
-| Name   | Type                                         | Description                                                                                       | Default |
-|--------|----------------------------------------------|---------------------------------------------------------------------------------------------------|---------|
-| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false |
+| Name   | Type                                         | Description                                                                                                                    | Default |
+|--------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false  |
 
 #### Outputs
 
-PSCustomObject — Function return value via `Write-FunctionReturnValue`.
+PSCustomObject -- Function return value via `Write-FunctionReturnValue`.
 - `RestApiConfigConfigured`: Data contains `Config`.
 - `NoRestApiListenAddressProvided`: invalid listen address.
 - `NoRestApiListenPortProvided`: invalid port.
@@ -997,7 +997,7 @@ Persists the configuration to `restapi.json` under the module config directory
 using `Write-SecureFile` and `Get-ModuleConfigDirectory`. `WorkerCount` is
 bounded by the global `Threading.MaxThreads` setting.
 
-*Source: [src/Core/RestApi/Private/Set-RestApiConfig.ps1](../../src/Core/RestApi/Private/Set-RestApiConfig.ps1)*
+*Source: [src/Core/RestApi/Private/Set-RestApiConfig.ps1](../src/Core/RestApi/Private/Set-RestApiConfig.ps1)*
 
 ---
 
@@ -1015,7 +1015,7 @@ environment. This is a lightweight helper that delegates to
 
 #### Outputs
 
-None — starts a background thread and returns immediately.
+None -- starts a background thread and returns immediately.
 
 #### Examples
 
@@ -1029,7 +1029,7 @@ This function starts a thread but does not wait for the environment to be
 fully initialized. Use `New-RestApiEnvironment` directly when synchronous
 initialization is required.
 
-*Source: [src/Core/RestApi/Private/Start-RestApiDaemon.ps1](../../src/Core/RestApi/Private/Start-RestApiDaemon.ps1)*
+*Source: [src/Core/RestApi/Private/Start-RestApiDaemon.ps1](../src/Core/RestApi/Private/Start-RestApiDaemon.ps1)*
 
 ---
 
@@ -1060,7 +1060,7 @@ PS> Start-RestApiListener
 This function runs on a dedicated thread and uses global runtime state
 for configuration and worker management.
 
-*Source: [src/Core/RestApi/Private/Start-RestApiListener.ps1](../../src/Core/RestApi/Private/Start-RestApiListener.ps1)*
+*Source: [src/Core/RestApi/Private/Start-RestApiListener.ps1](../src/Core/RestApi/Private/Start-RestApiListener.ps1)*
 
 ---
 
@@ -1081,19 +1081,19 @@ the appropriate handler.
 
 **`$WorkerId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WorkerId | System.Int32 | Numeric identifier for this worker. | -1 |
+| Name     | Type         | Description                         | Default |
+|----------|--------------|-------------------------------------|---------|
+| WorkerId | System.Int32 | Numeric identifier for this worker. | -1      |
 
 **`$Spaces`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Spaces | System.Collections.Hashtable | Hashtable of RestApi space configurations. | @{ } |
+| Name   | Type                         | Description                                | Default |
+|--------|------------------------------|--------------------------------------------|---------|
+| Spaces | System.Collections.Hashtable | Hashtable of RestApi space configurations. | @{ }    |
 
 #### Outputs
 
-None — sends responses over the TCP connection and logs results.
+None -- sends responses over the TCP connection and logs results.
 
 #### Examples
 
@@ -1106,7 +1106,7 @@ PS> Start-RestApiWorker -WorkerId 0 -Spaces $spaces
 This function is designed to run as a long-lived thread and relies on
 global runtime variables for TCP streams and timeouts.
 
-*Source: [src/Core/RestApi/Private/Start-RestApiWorker.ps1](../../src/Core/RestApi/Private/Start-RestApiWorker.ps1)*
+*Source: [src/Core/RestApi/Private/Start-RestApiWorker.ps1](../src/Core/RestApi/Private/Start-RestApiWorker.ps1)*
 
 ---
 
@@ -1126,19 +1126,19 @@ origins (client IP) and request body size limits.
 
 **`$TestOrigins`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TestOrigins | SwitchParameter | If set, evaluates allowed client origins for the request. | $false |
+| Name        | Type            | Description                                               | Default |
+|-------------|-----------------|-----------------------------------------------------------|---------|
+| TestOrigins | SwitchParameter | If set, evaluates allowed client origins for the request. | $false  |
 
 **`$TestContentLength`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TestContentLength | SwitchParameter | If set, enforces configured request body size limits. | $false |
+| Name              | Type            | Description                                           | Default |
+|-------------------|-----------------|-------------------------------------------------------|---------|
+| TestContentLength | SwitchParameter | If set, enforces configured request body size limits. | $false  |
 
 #### Outputs
 
-System.Int32 — structured return code from `Write-FunctionReturnValue` indicating
+System.Int32 -- structured return code from `Write-FunctionReturnValue` indicating
 permission granted, denied, origin blocked or content length exceeded.
 
 #### Examples
@@ -1152,7 +1152,7 @@ PS> Test-RestApiAccessControl -TestOrigins
 This function uses the protected `AccessControl` configuration stored in
 the global runtime variable and the current RestApi context.
 
-*Source: [src/Core/RestApi/Private/Test-RestApiAccessControl.ps1](../../src/Core/RestApi/Private/Test-RestApiAccessControl.ps1)*
+*Source: [src/Core/RestApi/Private/Test-RestApiAccessControl.ps1](../src/Core/RestApi/Private/Test-RestApiAccessControl.ps1)*
 
 ---
 
@@ -1173,13 +1173,13 @@ space. Returns boolean-like structured return codes via
 
 **`$Space`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Space | PSCustomObject | Space configuration object to inspect. | |
+| Name  | Type           | Description                            | Default |
+|-------|----------------|----------------------------------------|---------|
+| Space | PSCustomObject | Space configuration object to inspect. |         |
 
 #### Outputs
 
-System.Boolean — `$true` when `ApiCommandExecution` is present, `$false` otherwise,
+System.Boolean -- `$true` when `ApiCommandExecution` is present, `$false` otherwise,
 wrapped via `Write-FunctionReturnValue`.
 
 #### Examples
@@ -1193,6 +1193,5 @@ PS> Test-RestApiCommandExecutionField -Space $space
 Used by routing logic to decide whether to invoke a command or render
 sub-endpoints for a space.
 
-*Source: [src/Core/RestApi/Private/Test-RestApiCommandExecutionField.ps1](../../src/Core/RestApi/Private/Test-RestApiCommandExecutionField.ps1)*
-
+*Source: [src/Core/RestApi/Private/Test-RestApiCommandExecutionField.ps1](../src/Core/RestApi/Private/Test-RestApiCommandExecutionField.ps1)*
 

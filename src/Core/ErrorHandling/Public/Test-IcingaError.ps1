@@ -10,9 +10,9 @@ provider can stop with a single check before it uses the data. It returns $false
 for $null, for collections and for every other value.
 
 .PARAMETER InputObject
-| Name        | Type          | Description                                    | Default |
-|-------------|---------------|------------------------------------------------|---------|
-| InputObject | System.Object | Result of a data collection function to test.  | $null   |
+| Name        | Type          | Description                                   | Default |
+|-------------|---------------|-----------------------------------------------|---------|
+| InputObject | System.Object | Result of a data collection function to test. | $null   |
 
 .OUTPUTS
 System.Boolean -- $true when InputObject is an IcingaError, otherwise $false.
@@ -27,6 +27,9 @@ Stops the plugin with the error message when the query failed.
 Use it instead of '-is [IcingaError]'. Every runspace shares the compiled kernel,
 so the literal resolves to the type of the main runspace and does not match an
 error created inside a background thread. No external dependencies.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-IcingaError()
 {

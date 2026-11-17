@@ -8,18 +8,21 @@ request method, path, HTTP version and a dictionary of headers. Returns
 the parsed structure or logs an error and returns `$null` on parse failure.
 
 .PARAMETER HeaderString
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| HeaderString | System.String | Raw HTTP header string including request line and headers. | |
+| Name         | Type          | Description                                                | Default |
+|--------------|---------------|------------------------------------------------------------|---------|
+| HeaderString | System.String | Raw HTTP header string including request line and headers. |         |
 
 .OUTPUTS
-System.Collections.Hashtable — parsed header hashtable with `Method`, `Path`, `HttpVersion` and `Headers`.
+System.Collections.Hashtable -- parsed header hashtable with `Method`, `Path`, `HttpVersion` and `Headers`.
 
 .EXAMPLE
 PS> Expand-RestApiHeader -HeaderString $rawHeader
 
 .NOTES
 Used by RestApi worker processing to interpret incoming HTTP requests.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Expand-RestApiHeader()
 {
@@ -70,8 +73,8 @@ function Expand-RestApiHeader()
 
             # Split header by colon
             if ($HeaderLine -match '^([^:]+):\s*(.*)$') {
-                $HeaderName  = $matches[1].Trim();
-                $HeaderValue = $matches[2].Trim();
+                $HeaderName                                     = $matches[1].Trim();
+                $HeaderValue                                    = $matches[2].Trim();
 
                 # Store header (case-insensitive key, but preserve original case for reference)
                 $ParsedHeader['Headers'][$HeaderName.ToLower()] = @{

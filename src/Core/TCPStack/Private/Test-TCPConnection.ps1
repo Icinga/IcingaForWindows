@@ -7,20 +7,23 @@ Check whether the current TCP client and stream are connected.
 stream are present and returns the client's `Connected` state.
 
 .OUTPUTS
-System.Boolean — $true when connected and a valid client and stream are present; $false otherwise.
+System.Boolean -- $true when connected and a valid client and stream are present; $false otherwise.
 
 .EXAMPLE
 PS> Test-TCPConnection
 
 .NOTES
 Used by thread health checks and higher-level network monitors.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-TCPConnection()
 {
     $GlobalVariable = Get-GlobalRuntimeVariable;
 
-    $Client = $GlobalVariable.Private.TCP.Client;
-    $Stream = $GlobalVariable.Private.TCP.Stream;
+    $Client         = $GlobalVariable.Private.TCP.Client;
+    $Stream         = $GlobalVariable.Private.TCP.Stream;
 
     if ($null -eq $Stream -or $null -eq $Client -or $null -eq $Client.Client) {
         return $false;

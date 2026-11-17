@@ -8,7 +8,7 @@ directory and stores the parsed object into the global runtime variable
 under `(Get-GlobalRuntimeVariable).Public.RestApi.Config`.
 
 .OUTPUTS
-PSCustomObject — the loaded RestApi configuration on success, or a
+PSCustomObject -- the loaded RestApi configuration on success, or a
 structured return code object when the file is missing or corrupt.
 
 .EXAMPLE
@@ -17,6 +17,9 @@ PS> Read-RestApiConfig
 .NOTES
 Logs structured return codes using `Write-FunctionReturnValue` when the
 file is missing or cannot be parsed.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-RestApiConfig()
 {

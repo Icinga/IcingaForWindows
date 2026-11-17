@@ -16,7 +16,7 @@ empty input returns an empty string without attempting any conversion.
 | Content | System.String | The string to normalize. | $null   |
 
 .OUTPUTS
-System.String — Re-serialized JSON string when the input is valid JSON, the
+System.String -- Re-serialized JSON string when the input is valid JSON, the
 original input string when it is not, or an empty string for null or empty input.
 
 .EXAMPLE
@@ -28,6 +28,9 @@ Returns the JSON re-serialized with ConvertTo-Json formatting.
 Used by Compare-IcingaTextContent to ensure both sides of a diff use identical
 formatting before line-level comparison. Relies only on ConvertFrom-Json and
 ConvertTo-Json from the PowerShell standard library; no external dependencies.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-NormalizedTextContent()
 {

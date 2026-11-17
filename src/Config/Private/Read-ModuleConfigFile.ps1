@@ -12,17 +12,17 @@ error object via Write-FunctionReturnValue with -OverrideReturn $null so that
 callers receive $null on failure.
 
 .PARAMETER Config
-| Name   | Type          | Description                       | Default |
-|--------|---------------|-----------------------------------|---------|
-| Config | System.String | Filename of the config to read.   | $null   |
+| Name   | Type          | Description                     | Default |
+|--------|---------------|---------------------------------|---------|
+| Config | System.String | Filename of the config to read. | $null   |
 
 .PARAMETER IncludeSubConfig
-| Name             | Type                                        | Description                                               | Default |
-|------------------|---------------------------------------------|-----------------------------------------------------------|---------|
+| Name             | Type                                         | Description                                                   | Default |
+|------------------|----------------------------------------------|---------------------------------------------------------------|---------|
 | IncludeSubConfig | System.Management.Automation.SwitchParameter | When set, recursively reads sub-configs referenced by Config. | $false  |
 
 .OUTPUTS
-System.Object — Parsed JSON object on success, or $null on error.
+System.Object -- Parsed JSON object on success, or $null on error.
 
 .EXAMPLE
 PS> Read-ModuleConfigFile -Config 'module.json' -IncludeSubConfig
@@ -34,6 +34,9 @@ any referenced sub-config.
 Relies on Get-ModuleConfigDirectory and Read-SecureFile for file I/O.
 Returns $null via -OverrideReturn $null on error to match calling conventions
 elsewhere in the module.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-ModuleConfigFile()
 {

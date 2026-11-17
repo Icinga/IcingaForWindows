@@ -22,9 +22,9 @@ Returns a plain hashtable of primitive values and arrays so no PowerShell class
 instance ever crosses runspace boundaries.
 
 .PARAMETER Params
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
-| Params | System.Object | Deserialized params dictionary or object from event::ExecuteCommand.  | $null   |
+| Name   | Type          | Description                                                          | Default |
+|--------|---------------|----------------------------------------------------------------------|---------|
+| Params | System.Object | Deserialized params dictionary or object from event::ExecuteCommand. | $null   |
 
 .OUTPUTS
 System.Collections.Hashtable -- Hashtable containing ExitCode (Int32 0..3),
@@ -39,6 +39,9 @@ and rendered command line.
 .NOTES
 Runs inside protocol worker threads; accesses runtime state exclusively via
 Get-GlobalRuntimeVariable.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaProtocolCheckCommand()
 {

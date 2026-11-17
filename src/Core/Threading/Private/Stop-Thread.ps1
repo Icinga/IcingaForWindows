@@ -8,18 +8,21 @@ registry. It validates the provided thread id and returns structured results
 using `Write-FunctionReturnValue` when errors occur.
 
 .PARAMETER ThreadId
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ThreadId | System.String | The id of the thread to stop | $null |
+| Name     | Type          | Description                  | Default |
+|----------|---------------|------------------------------|---------|
+| ThreadId | System.String | The id of the thread to stop | $null   |
 
 .OUTPUTS
-System.Management.Automation.PSCustomObject — Strukturierter Rueckgabewert bei Fehler (via Write-FunctionReturnValue); None bei Erfolg.
+System.Management.Automation.PSCustomObject -- Strukturierter Rueckgabewert bei Fehler (via Write-FunctionReturnValue); None bei Erfolg.
 
 .EXAMPLE
 PS> Stop-Thread -ThreadId $tid
 
 .NOTES
 The actual runspace shutdown and cleanup is handled by the housekeeper loop.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Stop-Thread()
 {

@@ -12,24 +12,24 @@ CommandLine via Format-ModuleCommandLineArguments, and executes the script
 in-process via Invoke-ModulePowerShellCommand -UseLastExitCode.
 
 .PARAMETER ScriptPath
-| Name       | Type          | Description                                             | Default |
-|------------|---------------|---------------------------------------------------------|---------|
-| ScriptPath | System.String | Full canonical path to the approved .ps1 check script.  | ''      |
+| Name       | Type          | Description                                            | Default |
+|------------|---------------|--------------------------------------------------------|---------|
+| ScriptPath | System.String | Full canonical path to the approved .ps1 check script. | ''      |
 
 .PARAMETER CommandName
-| Name        | Type          | Description                                             | Default |
-|-------------|---------------|---------------------------------------------------------|---------|
-| CommandName | System.String | Display file name of the script for error messages.     | ''      |
+| Name        | Type          | Description                                         | Default |
+|-------------|---------------|-----------------------------------------------------|---------|
+| CommandName | System.String | Display file name of the script for error messages. | ''      |
 
 .PARAMETER BinaryArguments
-| Name            | Type            | Description                                         | Default |
-|-----------------|-----------------|-----------------------------------------------------|---------|
-| BinaryArguments | System.String[] | Ordered CLI tokens produced by macro resolution.    | @()     |
+| Name            | Type            | Description                                      | Default |
+|-----------------|-----------------|--------------------------------------------------|---------|
+| BinaryArguments | System.String[] | Ordered CLI tokens produced by macro resolution. | @()     |
 
 .PARAMETER DefaultCommandLine
-| Name               | Type          | Description                                             | Default |
-|--------------------|---------------|---------------------------------------------------------|---------|
-| DefaultCommandLine | System.String | Pre-rendered command line when no secret masking occurs.| ''      |
+| Name               | Type          | Description                                              | Default |
+|--------------------|---------------|----------------------------------------------------------|---------|
+| DefaultCommandLine | System.String | Pre-rendered command line when no secret masking occurs. | ''      |
 
 .OUTPUTS
 System.Collections.Hashtable -- Hashtable containing ExitCode, Output,
@@ -43,6 +43,9 @@ Binds the parameters of check_custom.ps1 and executes it in-process.
 .NOTES
 Delegates execution and deterministic SecureString disposal to
 Invoke-ModulePowerShellCommand.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaProtocolExternalScript()
 {

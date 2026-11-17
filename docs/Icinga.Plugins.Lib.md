@@ -32,9 +32,9 @@ positional in the order Name, Value, Unit.
 
 **`$Name`**
 
-| Name | Type          | Description                          | Default |
-|------|---------------|--------------------------------------|---------|
-| Name | System.String | Display name of the plugin node.     | $null   |
+| Name | Type          | Description                      | Default |
+|------|---------------|----------------------------------|---------|
+| Name | System.String | Display name of the plugin node. | $null   |
 
 **`$Value`**
 
@@ -78,5 +78,5 @@ workers. The runtime lookup returns the type the current runspace loaded itself.
 Keep the node inside the runspace that created it and hand only its rendered
 output, exit code and performance data to other threads.
 
-*Source: [src/Plugins/Lib/Public/New-IcingaPlugin.ps1](../../src/Plugins/Lib/Public/New-IcingaPlugin.ps1)*
+*Source: [src/Plugins/Lib/Public/New-IcingaPlugin.ps1](../src/Plugins/Lib/Public/New-IcingaPlugin.ps1)*
 

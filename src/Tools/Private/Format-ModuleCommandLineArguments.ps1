@@ -11,9 +11,9 @@ double quotes with preceding backslashes doubled before embedded quotes and
 before the closing quote.
 
 .PARAMETER Arguments
-| Name      | Type         | Description                                     | Default |
-|-----------|--------------|-------------------------------------------------|---------|
-| Arguments | System.Array | Ordered CLI argument tokens to quote and join.  | @()     |
+| Name      | Type         | Description                                    | Default |
+|-----------|--------------|------------------------------------------------|---------|
+| Arguments | System.Array | Ordered CLI argument tokens to quote and join. | @()     |
 
 .OUTPUTS
 System.String -- Space-joined, CommandLineToArgvW-compliant argument string.
@@ -26,6 +26,9 @@ Quotes tokens containing spaces or quotes while leaving simple tokens intact.
 
 .NOTES
 Pure string formatter with no external dependencies or global state access.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-ModuleCommandLineArguments()
 {

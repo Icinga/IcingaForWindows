@@ -10,32 +10,32 @@ configuration and worker count. The function returns the same standardized
 return objects as the underlying private implementation.
 
 .PARAMETER ListenAddress
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name          | Type          | Description                                                                                | Default   |
+|---------------|---------------|--------------------------------------------------------------------------------------------|-----------|
 | ListenAddress | System.String | IP address or hostname to bind the RestApi listener. Use '0.0.0.0' to bind all interfaces. | '0.0.0.0' |
 
 .PARAMETER ListenPort
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 5668 |
+| Name       | Type         | Description                      | Default |
+|------------|--------------|----------------------------------|---------|
+| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 5668    |
 
 .PARAMETER TlsCertConfig
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-IcingaTlsCertConfig`. | $null |
+| Name          | Type                  | Description                                                         | Default |
+|---------------|-----------------------|---------------------------------------------------------------------|---------|
+| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-IcingaTlsCertConfig`. | $null   |
 
 .PARAMETER WorkerCount
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5 |
+| Name        | Type         | Description                                                 | Default |
+|-------------|--------------|-------------------------------------------------------------|---------|
+| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5       |
 
 .PARAMETER DryRun
-| Name   | Type                                         | Description                                                                                       | Default |
-|--------|----------------------------------------------|---------------------------------------------------------------------------------------------------|---------|
-| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false |
+| Name   | Type                                         | Description                                                                                                                    | Default |
+|--------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false  |
 
 .OUTPUTS
-PSCustomObject — Function return value forwarded from `Set-RestApiConfig`.
+PSCustomObject -- Function return value forwarded from `Set-RestApiConfig`.
 
 .EXAMPLE
 PS> Set-IcingaRestApiConfig -ListenAddress '127.0.0.1' -ListenPort 10443 -WorkerCount 8
@@ -44,6 +44,9 @@ PS> Set-IcingaRestApiConfig -ListenAddress '127.0.0.1' -ListenPort 10443 -Worker
 This public wrapper exists to expose a stable module API while keeping the
 implementation in `Set-RestApiConfig` (private) where validation and persistence
 logic is implemented.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Set-IcingaRestApiConfig()
 {

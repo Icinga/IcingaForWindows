@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+Pester unit test suite for ClassLiteral in Icinga for Windows
+
+.DESCRIPTION
+Validates functional behavior, edge cases, and runtime contracts for ClassLiteral
+as part of the Icinga for Windows automated Pester test suite.
+
+.NOTES
+Executed via build/Invoke-ModuleTests.ps1 using Pester 5.0+.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
+#>
 $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\IcingaForWindows.psd1';
 if (-not (Get-Module -Name 'IcingaForWindows')) {
     Import-Module -Name $ModulePath -Force -Global;
@@ -12,7 +26,7 @@ Describe 'Class literals in functions' {
         # Functions therefore use New-IcingaPlugin, Test-IcingaError or a runtime
         # lookup ('Name' -as [type]); only the class files themselves and enums may
         # use literals.
-        $script:SourceRoot           = [System.IO.Path]::GetFullPath((Join-Path -Path $PSScriptRoot -ChildPath '..\src'));
+        $script:SourceRoot           = [System.IO.Path]::GetFullPath((Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path '..' -ChildPath 'src'))).ProviderPath);
         [string[]]$script:ClassNames = @();
 
         foreach ($File in (Get-ChildItem -Path (Join-Path -Path $script:SourceRoot -ChildPath 'Classes') -Filter '*.ps1' -Recurse)) {
@@ -39,10 +53,11 @@ Describe 'Class literals in functions' {
         );
 
         foreach ($File in (Get-ChildItem -Path $script:SourceRoot -Filter '*.ps1' -Recurse)) {
-            [bool]$Skip = $false;
+            [string]$FullFilePath = [System.IO.Path]::GetFullPath($File.FullName);
+            [bool]$Skip           = $false;
 
             foreach ($Folder in $Skipped) {
-                if ($File.FullName.StartsWith($Folder + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
+                if ($FullFilePath.StartsWith($Folder + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
                     $Skip = $true;
                 }
             }
@@ -51,7 +66,7 @@ Describe 'Class literals in functions' {
                 continue;
             }
 
-            $Ast   = [System.Management.Automation.Language.Parser]::ParseFile($File.FullName, [ref]$null, [ref]$null);
+            $Ast   = [System.Management.Automation.Language.Parser]::ParseFile($FullFilePath, [ref]$null, [ref]$null);
             $Nodes = $Ast.FindAll({ param ($Node) $Node -is [System.Management.Automation.Language.TypeExpressionAst] -or $Node -is [System.Management.Automation.Language.TypeConstraintAst] }, $true);
 
             foreach ($Node in $Nodes) {
@@ -62,7 +77,7 @@ Describe 'Class literals in functions' {
                 }
 
                 if ($script:ClassNames -contains $TypeName.Name) {
-                    $Violations += ('{0}:{1} [{2}]' -f $File.FullName.Substring($script:SourceRoot.Length + 1), $Node.Extent.StartLineNumber, $TypeName.Name);
+                    $Violations += ('{0}:{1} [{2}]' -f $FullFilePath.Substring($script:SourceRoot.Length + 1), $Node.Extent.StartLineNumber, $TypeName.Name);
                 }
             }
         }

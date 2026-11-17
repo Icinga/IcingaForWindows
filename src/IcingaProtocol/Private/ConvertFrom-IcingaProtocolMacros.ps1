@@ -24,14 +24,14 @@ Two Icinga 2 delivery modes are supported seamlessly across Windows PowerShell
    when unprefixed custom variables are present).
 
 .PARAMETER ResolvedCommand
-| Name            | Type                         | Description                                                  | Default |
-|-----------------|------------------------------|--------------------------------------------------------------|---------|
-| ResolvedCommand | System.Collections.Hashtable | Command descriptor returned by Resolve-IcingaProtocolCommand.| @{}     |
+| Name            | Type                         | Description                                                   | Default |
+|-----------------|------------------------------|---------------------------------------------------------------|---------|
+| ResolvedCommand | System.Collections.Hashtable | Command descriptor returned by Resolve-IcingaProtocolCommand. | @{}     |
 
 .PARAMETER Macros
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
-| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand.  | $null   |
+| Name   | Type          | Description                                                          | Default |
+|--------|---------------|----------------------------------------------------------------------|---------|
+| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand. | $null   |
 
 .OUTPUTS
 System.Collections.Hashtable -- Parsed argument bundle containing Status,
@@ -48,6 +48,9 @@ Maps the Path macro to Invoke-IcingaCheckDirectory's -Path parameter.
 Callers must dispose every entry in AllocatedSecureStrings once plugin execution
 completes. On validation errors, any SecureString allocated earlier in the same
 call is disposed before returning.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertFrom-IcingaProtocolMacros()
 {

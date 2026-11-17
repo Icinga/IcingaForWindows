@@ -34,37 +34,37 @@ standardized return values.
 
 **`$RoleName`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RoleName | System.String | Friendly name for the access role. | '' |
+| Name     | Type          | Description                        | Default |
+|----------|---------------|------------------------------------|---------|
+| RoleName | System.String | Friendly name for the access role. | ''      |
 
 **`$Users`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @() |
+| Name  | Type            | Description                                              | Default |
+|-------|-----------------|----------------------------------------------------------|---------|
+| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @()     |
 
 **`$AccessControlObject`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @() |
+| Name                | Type                    | Description                                                   | Default |
+|---------------------|-------------------------|---------------------------------------------------------------|---------|
+| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @()     |
 
 **`$InheritedRoles`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @() |
+| Name           | Type            | Description                                         | Default |
+|----------------|-----------------|-----------------------------------------------------|---------|
+| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @()     |
 
 **`$Force`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false |
+| Name  | Type                                         | Description                              | Default |
+|-------|----------------------------------------------|------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false  |
 
 #### Outputs
 
-PSCustomObject — Forwarded return value from `New-ModuleAccessRole`.
+PSCustomObject -- Forwarded return value from `New-ModuleAccessRole`.
 
 #### Examples
 
@@ -81,7 +81,7 @@ This function is intentionally thin and exists to expose a public command
 surface while the implementation and persistence logic remain in the module
 private helper.
 
-*Source: [src/Core/AccessControl/Public/New-IcingaAccessRole.ps1](../../src/Core/AccessControl/Public/New-IcingaAccessRole.ps1)*
+*Source: [src/Core/AccessControl/Public/New-IcingaAccessRole.ps1](../src/Core/AccessControl/Public/New-IcingaAccessRole.ps1)*
 
 ---
 
@@ -101,13 +101,13 @@ return value or status codes in case of error.
 
 **`$RoleName`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RoleName | System.String | Name of the role to remove. | '' |
+| Name     | Type          | Description                 | Default |
+|----------|---------------|-----------------------------|---------|
+| RoleName | System.String | Name of the role to remove. | ''      |
 
 #### Outputs
 
-PSCustomObject — Forwarded return value from `Remove-ModuleAccessRole`.
+PSCustomObject -- Forwarded return value from `Remove-ModuleAccessRole`.
 
 #### Examples
 
@@ -123,7 +123,7 @@ access control definitions via the private implementation.
 This wrapper keeps the public module API distinct from the private
 implementation which performs the file deletion and reloads access control data.
 
-*Source: [src/Core/AccessControl/Public/Remove-IcingaAccessRole.ps1](../../src/Core/AccessControl/Public/Remove-IcingaAccessRole.ps1)*
+*Source: [src/Core/AccessControl/Public/Remove-IcingaAccessRole.ps1](../src/Core/AccessControl/Public/Remove-IcingaAccessRole.ps1)*
 
 ---
 
@@ -140,7 +140,7 @@ the module logging system by delegating to `Show-ModuleAccessRoles`.
 
 #### Outputs
 
-None — Emits the current access role list to the logging system at Output level.
+None -- Emits the current access role list to the logging system at Output level.
 
 #### Examples
 
@@ -155,7 +155,7 @@ Writes all currently loaded Icinga access roles to the logging output channel.
 This command does not modify state; it is purely informational and relies on
 Read-ModuleAccessControl having been run previously to populate the in-memory list.
 
-*Source: [src/Core/AccessControl/Public/Show-IcingaAccessRoles.ps1](../../src/Core/AccessControl/Public/Show-IcingaAccessRoles.ps1)*
+*Source: [src/Core/AccessControl/Public/Show-IcingaAccessRoles.ps1](../src/Core/AccessControl/Public/Show-IcingaAccessRoles.ps1)*
 
 ---
 
@@ -176,37 +176,37 @@ and reloads the module access control definitions.
 
 **`$RoleName`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RoleName | System.String | Friendly name for the access role. | '' |
+| Name     | Type          | Description                        | Default |
+|----------|---------------|------------------------------------|---------|
+| RoleName | System.String | Friendly name for the access role. | ''      |
 
 **`$Users`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @() |
+| Name  | Type            | Description                                              | Default |
+|-------|-----------------|----------------------------------------------------------|---------|
+| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @()     |
 
 **`$AccessControlObject`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @() |
+| Name                | Type                    | Description                                                   | Default |
+|---------------------|-------------------------|---------------------------------------------------------------|---------|
+| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @()     |
 
 **`$InheritedRoles`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @() |
+| Name           | Type            | Description                                         | Default |
+|----------------|-----------------|-----------------------------------------------------|---------|
+| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @()     |
 
 **`$Force`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false |
+| Name  | Type                                         | Description                              | Default |
+|-------|----------------------------------------------|------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false  |
 
 #### Outputs
 
-System.Object — Structured return object from Write-FunctionReturnValue. Returns
+System.Object -- Structured return object from Write-FunctionReturnValue. Returns
 AccessRoleCreated on success (Data contains RoleName and AccessRole) or one of
 several error return codes for validation or file errors.
 
@@ -226,7 +226,7 @@ Write-SecureFile and New-SecureItem are used to persist files securely.
 Read-ModuleAccessControl is called after writing to reload the in-memory
 access control definitions for the current session.
 
-*Source: [src/Core/AccessControl/Private/New-ModuleAccessRole.ps1](../../src/Core/AccessControl/Private/New-ModuleAccessRole.ps1)*
+*Source: [src/Core/AccessControl/Private/New-ModuleAccessRole.ps1](../src/Core/AccessControl/Private/New-ModuleAccessRole.ps1)*
 
 ---
 
@@ -245,7 +245,7 @@ Parsing and IO errors are logged and reported via `Write-FunctionReturnValue`.
 
 #### Outputs
 
-System.Object — Structured return object from Write-FunctionReturnValue when the
+System.Object -- Structured return object from Write-FunctionReturnValue when the
 AccessRoles folder is not found; otherwise None (populates
 (Get-GlobalRuntimeVariable).Protected.AccessControl as a side effect).
 
@@ -264,7 +264,7 @@ Role files are expected to be valid JSON and are read with Read-SecureFile.
 Parsing errors for individual files do not abort the overall loading process;
 they are logged and the loader continues with the remaining files.
 
-*Source: [src/Core/AccessControl/Private/Read-ModuleAccessControl.ps1](../../src/Core/AccessControl/Private/Read-ModuleAccessControl.ps1)*
+*Source: [src/Core/AccessControl/Private/Read-ModuleAccessControl.ps1](../src/Core/AccessControl/Private/Read-ModuleAccessControl.ps1)*
 
 ---
 
@@ -284,13 +284,13 @@ definitions to reflect the deletion in the current runtime.
 
 **`$RoleName`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RoleName | System.String | Name of the role to remove. | '' |
+| Name     | Type          | Description                 | Default |
+|----------|---------------|-----------------------------|---------|
+| RoleName | System.String | Name of the role to remove. | ''      |
 
 #### Outputs
 
-System.Object — Structured return object from Write-FunctionReturnValue when the
+System.Object -- Structured return object from Write-FunctionReturnValue when the
 role name is empty; otherwise None.
 
 #### Examples
@@ -308,7 +308,7 @@ Uses Remove-SecureItem to safely delete the role file and then calls
 Read-ModuleAccessControl to refresh the in-memory role list for the current
 session.
 
-*Source: [src/Core/AccessControl/Private/Remove-ModuleAccessRole.ps1](../../src/Core/AccessControl/Private/Remove-ModuleAccessRole.ps1)*
+*Source: [src/Core/AccessControl/Private/Remove-ModuleAccessRole.ps1](../src/Core/AccessControl/Private/Remove-ModuleAccessRole.ps1)*
 
 ---
 
@@ -326,7 +326,7 @@ the global runtime variable and emits them as structured log data.
 
 #### Outputs
 
-None — Emits structured log output at the Output level as a side effect.
+None -- Emits structured log output at the Output level as a side effect.
 
 #### Examples
 
@@ -342,6 +342,5 @@ This helper does not modify state; it only emits the current
 (Get-GlobalRuntimeVariable).Protected.AccessControl via Write-LoggingEntry.
 Read-ModuleAccessControl must have been called previously to populate the list.
 
-*Source: [src/Core/AccessControl/Private/Show-ModuleAccessRoles.ps1](../../src/Core/AccessControl/Private/Show-ModuleAccessRoles.ps1)*
-
+*Source: [src/Core/AccessControl/Private/Show-ModuleAccessRoles.ps1](../src/Core/AccessControl/Private/Show-ModuleAccessRoles.ps1)*
 

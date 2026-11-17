@@ -7,13 +7,16 @@ Stop and release the TCP listener socket
 and clears the listener reference in the global runtime variable.
 
 .OUTPUTS
-None — Stops the listener and clears its reference in the global state.
+None -- Stops the listener and clears its reference in the global state.
 
 .EXAMPLE
 PS> Close-TCPSocket
 
 .NOTES
 Requires privileges sufficient to stop the listener; exceptions are logged.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Close-TCPSocket()
 {

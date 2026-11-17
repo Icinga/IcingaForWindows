@@ -28,6 +28,9 @@ Returns the sort key of the volume's Name property.
 .NOTES
 Pure helper without state or external dependencies. Numbers are supported
 within +/- 1E20.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaSortKey
 {
@@ -48,9 +51,9 @@ class IcingaSortKey
     | InputObject | System.Object | The object to build for. |         |
 
     .PARAMETER Property
-    | Name     | Type            | Description                                              | Default |
-    |----------|-----------------|----------------------------------------------------------|---------|
-    | Property | System.String[] | Properties in order of precedence; empty uses the object.|         |
+    | Name     | Type            | Description                                               | Default |
+    |----------|-----------------|-----------------------------------------------------------|---------|
+    | Property | System.String[] | Properties in order of precedence; empty uses the object. |         |
 
     .OUTPUTS
     System.String -- The sort key.

@@ -14,12 +14,12 @@ current TCP client and writer queue through Get-GlobalRuntimeVariable so
 that it works correctly inside worker thread runspaces.
 
 .PARAMETER MsgObj
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
+| Name   | Type          | Description                                                             | Default |
+|--------|---------------|-------------------------------------------------------------------------|---------|
 | MsgObj | System.Object | Message object as returned by New-IcingaRPCMessage (@{message;length}). | $null   |
 
 .OUTPUTS
-None — The function enqueues the message or sends it directly; no pipeline output is produced.
+None -- The function enqueues the message or sends it directly; no pipeline output is produced.
 
 .EXAMPLE
 PS> Add-IcingaRPCMessageToWriterQueue -MsgObj (New-IcingaRPCMessage -Method 'icinga::Hello')
@@ -28,6 +28,9 @@ PS> Add-IcingaRPCMessageToWriterQueue -MsgObj (New-IcingaRPCMessage -Method 'ici
 This function uses Get-GlobalRuntimeVariable to access global state, making it safe to
 call from within thread runspaces. The writer queue is keyed by the string representation
 of the remote endpoint IP address.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Add-IcingaRPCMessageToWriterQueue()
 {

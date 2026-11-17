@@ -21,22 +21,22 @@ tools or modules are required.
 | NewConfig | System.String | The new content as a JSON string or plain text. | $null   |
 
 .PARAMETER OldConfig
-| Name      | Type          | Description                                           | Default |
-|-----------|---------------|-------------------------------------------------------|---------|
-| OldConfig | System.String | The baseline content as a JSON string or plain text.  | $null   |
+| Name      | Type          | Description                                          | Default |
+|-----------|---------------|------------------------------------------------------|---------|
+| OldConfig | System.String | The baseline content as a JSON string or plain text. | $null   |
 
 .PARAMETER OldFile
-| Name    | Type          | Description                                                           | Default |
-|---------|---------------|-----------------------------------------------------------------------|---------|
-| OldFile | System.String | File path to the baseline; read via Read-SecureFile when provided.    | $null   |
+| Name    | Type          | Description                                                        | Default |
+|---------|---------------|--------------------------------------------------------------------|---------|
+| OldFile | System.String | File path to the baseline; read via Read-SecureFile when provided. | $null   |
 
 .PARAMETER Colorized
-| Name      | Type                                         | Description                                                    | Default |
-|-----------|----------------------------------------------|----------------------------------------------------------------|---------|
+| Name      | Type                                         | Description                                                   | Default |
+|-----------|----------------------------------------------|---------------------------------------------------------------|---------|
 | Colorized | System.Management.Automation.SwitchParameter | When set, embeds ANSI color codes (green/red/cyan) in output. | $false  |
 
 .OUTPUTS
-System.Collections.Hashtable — Always returns @{ ExitCode = System.Int32; Output = System.String }.
+System.Collections.Hashtable -- Always returns @{ ExitCode = System.Int32; Output = System.String }.
 ExitCode is 0 when both inputs are identical after normalization, 1 when they differ.
 Output is an empty string when identical; otherwise a unified diff with header lines
 (--- old / +++ new), @@ hunk headers and +/-/space-prefixed content lines.
@@ -61,6 +61,9 @@ paths outside those locations will cause -OldFile to resolve to an empty baselin
 matrix; inputs beyond a few thousand lines will consume significant memory, which
 is acceptable for config-file comparison. No external binaries, modules, or .NET
 packages beyond the PowerShell standard library are used.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Compare-IcingaTextContent()
 {
@@ -102,11 +105,11 @@ function Compare-IcingaTextContent()
     [int]$OldCount      = $OldLines.Count;
     [int]$NewCount      = $NewLines.Count;
 
-    # Build the LCS table — O(m*n) time and space.
-    # Use a jagged int[][] instead of int[,] — New-Object 'int[,]' is unreliable
+    # Build the LCS table -- O(m*n) time and space.
+    # Use a jagged int[][] instead of int[,] -- New-Object 'int[,]' is unreliable
     # in PS5 and causes the array to be typed as System.Object[], which turns
     # two-index access into array slicing instead of element lookup.
-    $LCS = New-Object 'int[][]' ($OldCount + 1);
+    $LCS                = New-Object 'int[][]' ($OldCount + 1);
     for ($i = 0; $i -le $OldCount; $i++) {
         $LCS[$i] = New-Object 'int[]' ($NewCount + 1);
     }
@@ -187,7 +190,7 @@ function Compare-IcingaTextContent()
     }
 
     # Merge adjacent change positions into hunk ranges with context padding.
-    $HunkRanges = New-Object System.Collections.ArrayList;
+    $HunkRanges     = New-Object System.Collections.ArrayList;
     [int]$HunkStart = [Math]::Max(0, [int]$ChangeIdxList[0] - $ContextSize);
     [int]$HunkEnd   = [Math]::Min($TotalEntries - 1, [int]$ChangeIdxList[0] + $ContextSize);
 
@@ -212,7 +215,7 @@ function Compare-IcingaTextContent()
     [string]$Cyan  = "${Esc}[36m";
     [string]$Reset = "${Esc}[0m";
 
-    $OutputParts = New-Object System.Collections.ArrayList;
+    $OutputParts   = New-Object System.Collections.ArrayList;
 
     if ($Colorized) {
         [void]$OutputParts.Add("${Red}--- old${Reset}");
@@ -259,7 +262,7 @@ function Compare-IcingaTextContent()
         }
 
         for ($idx = [int]$Hunk.S; $idx -le [int]$Hunk.E; $idx++) {
-            $DE = $DiffEntries[$idx];
+            $DE               = $DiffEntries[$idx];
             [string]$DiffLine = "$($DE.Type)$($DE.Line)";
 
             if ($Colorized) {

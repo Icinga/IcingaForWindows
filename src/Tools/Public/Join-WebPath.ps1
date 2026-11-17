@@ -7,13 +7,13 @@ Combines a base path and additional child path segments, handling trailing and l
 URL query parameters and avoiding duplicate slashes. Preserves scheme endings like '://'.
 
 .PARAMETER Path
-| Name | Type          | Description                  | Default |
-|------|---------------|------------------------------|---------|
+| Name | Type          | Description                     | Default |
+|------|---------------|---------------------------------|---------|
 | Path | System.String | Base path or URL to start from. | $null   |
 
 .PARAMETER ChildPath
-| Name      | Type         | Description                                                                          | Default |
-|-----------|--------------|--------------------------------------------------------------------------------------|---------|
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
 | ChildPath | System.Array | Child path segments to append. Segments may start with /, ? or & for query strings. | $null   |
 
 .EXAMPLE
@@ -27,10 +27,13 @@ PS> Join-WebPath -Path 'http://example.com' -ChildPath @('search', '?q=test', '&
 Returns 'http://example.com/search?q=test&page=2'.
 
 .OUTPUTS
-System.String — The assembled web path or URL.
+System.String -- The assembled web path or URL.
 
 .NOTES
 No external dependencies.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Join-WebPath()
 {
@@ -48,7 +51,7 @@ function Join-WebPath()
     [int]$Length = $Path.Length;
     [int]$Slash  = $Path.LastIndexOf('/') + 1;
 
-    # If the last character is a slash, remove it — but preserve scheme endings like '://'
+    # If the last character is a slash, remove it -- but preserve scheme endings like '://'
     if ($Length -eq $Slash -and -not $Path.EndsWith('://')) {
         $Path = $Path.Substring(0, $Path.Length - 1);
     }

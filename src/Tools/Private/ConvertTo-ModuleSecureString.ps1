@@ -30,6 +30,9 @@ Converts the plain-text string into a SecureString instance.
 Compatible with Windows PowerShell 5.1 and PowerShell 7+. Callers that allocate
 temporary SecureString instances for check execution should call Dispose() once
 the check finishes.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-ModuleSecureString()
 {

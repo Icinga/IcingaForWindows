@@ -5,13 +5,13 @@ Render or return the current thread hierarchy and status.
 .DESCRIPTION
 `Show-Threads` builds a complete thread tree via `Get-ThreadTree` and either
 returns the structured tree objects or renders them as a formatted hierarchy
-string and emits it to the logging system — depending on the `-AsObject`
+string and emits it to the logging system -- depending on the `-AsObject`
 switch.
 
 .PARAMETER AsObject
-| Name     | Type                    | Description                                        | Default |
-|----------|-------------------------|----------------------------------------------------|---------|
-| AsObject | System.SwitchParameter  | Return the tree as PSObjects instead of rendering  | $false  |
+| Name     | Type                   | Description                                       | Default |
+|----------|------------------------|---------------------------------------------------|---------|
+| AsObject | System.SwitchParameter | Return the tree as PSObjects instead of rendering | $false  |
 
 .OUTPUTS
 System.Array when `-AsObject` is set. Returns the root-level thread nodes
@@ -31,6 +31,9 @@ PS> $tree[0].Children
 .NOTES
 Relies on `Get-ThreadTree` to build the hierarchy and `Write-ThreadTree` to
 render individual branches.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Show-Threads()
 {

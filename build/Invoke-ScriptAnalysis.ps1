@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-Run PSScriptAnalyzer over the Icinga for Windows source tree.
+Run PSScriptAnalyzer over the Icinga for Windows source tree
 
 .DESCRIPTION
-Standalone code-style gate for the CI/CD pipeline. Runs
+Standalone static-analysis gate for the CI/CD pipeline. Runs
 PSScriptAnalyzer recursively over the hand-written parts of the
-repository (`src/`, `build/` and the root `IcingaForWindows.psm1`)
+repository (`src/`, `build/`, and the root `IcingaForWindows.psm1`)
 and prints every finding grouped into build-breaking and advisory
-buckets. The auto-generated `lib/` and `docs/api/` artifacts are
+buckets. The auto-generated `lib/` and `docs/Icinga.*.md` artifacts are
 intentionally excluded because they are never edited by hand.
 
 Which rules run is controlled by `PSScriptAnalyzerSettings.psd1` in
@@ -19,29 +19,29 @@ editor integrations.
 
 On top of the severity model, a small set of rules is treated as
 build-breaking regardless of the severity PSScriptAnalyzer assigns,
-because they map directly onto mandatory CLAUDE.md house rules
+because they map directly onto mandatory `01-Instruction.md` house rules
 (approved verbs only, no aliases in source). A finding fails the run
-when it is one of those rules, when its severity is `Error`, or —
-with `-FailOn 'Warning'` — when its severity is `Warning`. Everything
+when it is one of those rules, when its severity is `Error`, or --
+with `-FailOn 'Warning'` -- when its severity is `Warning`. Everything
 else is reported as advisory and does not break the build.
 
 .PARAMETER ModuleBasePath
-| Name           | Type          | Description                                                       | Default                       |
-|----------------|---------------|-------------------------------------------------------------------|-------------------------------|
-| ModuleBasePath | System.String | Absolute path to the Icinga module root (the folder above `src`). | Resolved from the script path |
+| Name           | Type          | Description                                                                   | Default                       |
+|----------------|---------------|-------------------------------------------------------------------------------|-------------------------------|
+| ModuleBasePath | System.String | Absolute path to the Icinga for Windows module root (the folder above `src`). | Resolved from the script path |
 
 .PARAMETER SettingsPath
-| Name         | Type          | Description                                                              | Default                                       |
-|--------------|---------------|--------------------------------------------------------------------------|-----------------------------------------------|
-| SettingsPath | System.String | PSScriptAnalyzer settings file to apply.                                 | `<ModuleBasePath>\PSScriptAnalyzerSettings.psd1` |
+| Name         | Type          | Description                              | Default                                          |
+|--------------|---------------|------------------------------------------|--------------------------------------------------|
+| SettingsPath | System.String | PSScriptAnalyzer settings file to apply. | `<ModuleBasePath>\PSScriptAnalyzerSettings.psd1` |
 
 .PARAMETER FailOn
-| Name   | Type          | Description                                                                              | Default |
-|--------|---------------|------------------------------------------------------------------------------------------|---------|
-| FailOn | System.String | Lowest severity that fails the run. One of `Error` or `Warning`.                         | Error   |
+| Name   | Type          | Description                                                      | Default |
+|--------|---------------|------------------------------------------------------------------|---------|
+| FailOn | System.String | Lowest severity that fails the run. One of `Error` or `Warning`. | Error   |
 
 .OUTPUTS
-System.Object[] — All analyzer findings. Throws when any build-breaking
+System.Object[] -- All analyzer findings. Throws when any build-breaking
 finding is present.
 
 .EXAMPLE
@@ -58,7 +58,10 @@ Treats warnings as build failures as well.
 .NOTES
 Requires the PSScriptAnalyzer module. In CI install it with
 `Install-Module PSScriptAnalyzer -Force -SkipPublisherCheck`.
-Designed for PowerShell 7.5+ on Windows.
+Designed for PowerShell 7.5+ on Windows, Linux, and macOS.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 
 [CmdletBinding()]
@@ -73,18 +76,20 @@ $ErrorActionPreference = 'Stop';
 $ProgressPreference    = 'SilentlyContinue';
 
 # Rules elevated to build-breaking errors. They map directly onto mandatory
-# CLAUDE.md house rules and currently have zero violations, so they act as
+# 01-Instruction.md house rules and currently have zero violations, so they act as
 # forward guards without flagging existing code. PSScriptAnalyzer settings
 # cannot reassign rule severity, which is why this lives here and not in the
 # settings file.
-[string[]]$ErrorRules = @(
+[string[]]$ErrorRules  = @(
     'PSUseApprovedVerbs',
     'PSAvoidUsingCmdletAliases',
     'PSAvoidTrailingWhitespace'
 );
 
 if ([string]::IsNullOrEmpty($ModuleBasePath)) {
-    $ModuleBasePath = Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..') | Select-Object -ExpandProperty Path;
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath);
+} elseif (Test-Path -Path $ModuleBasePath) {
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path $ModuleBasePath).ProviderPath);
 }
 
 if ([string]::IsNullOrEmpty($SettingsPath)) {
@@ -98,16 +103,16 @@ if ($null -eq (Get-Module -ListAvailable -Name 'PSScriptAnalyzer')) {
 Import-Module -Name 'PSScriptAnalyzer' -Force;
 
 Write-Host '' -ForegroundColor White;
-Write-Host '╔═════════════════════════════════════════════════════════════════════╗' -ForegroundColor Cyan;
-Write-Host '║                                                                     ║' -ForegroundColor Cyan;
-Write-Host '║                  Icinga for Windows - Code Style                   ║' -ForegroundColor Cyan;
-Write-Host '║                                                                     ║' -ForegroundColor Cyan;
-Write-Host '╚═════════════════════════════════════════════════════════════════════╝' -ForegroundColor Cyan;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
+Write-Host '|                                                                     |' -ForegroundColor Cyan;
+Write-Host '|                   Icinga for Windows - Code Style                   |' -ForegroundColor Cyan;
+Write-Host '|                                                                     |' -ForegroundColor Cyan;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
 Write-Host '' -ForegroundColor White;
 
 # Only the hand-written parts of the repository are analysed. lib/ and
-# docs/api/ are regenerated by the build and must never be edited by hand.
-[array]$AnalysisTargets = @(
+# docs/Icinga.*.md are regenerated by the build and must never be edited by hand.
+[array]$AnalysisTargets   = @(
     (Join-Path -Path $ModuleBasePath -ChildPath 'src'),
     (Join-Path -Path $ModuleBasePath -ChildPath 'build'),
     (Join-Path -Path $ModuleBasePath -ChildPath 'IcingaForWindows.psm1')
@@ -119,7 +124,7 @@ if (Test-Path -Path $SettingsPath) {
     $AnalyzerSplat['Settings'] = $SettingsPath;
     Write-Host "  Using settings: $($SettingsPath.Substring($ModuleBasePath.Length).TrimStart('\', '/'))" -ForegroundColor Gray;
 } else {
-    Write-Host "  ⚠ Settings file not found, running with default rules: $SettingsPath" -ForegroundColor Yellow;
+    Write-Host "  [WARN] Settings file not found, running with default rules: $SettingsPath" -ForegroundColor Yellow;
 }
 
 [array]$Findings = @();
@@ -132,7 +137,7 @@ foreach ($target in $AnalysisTargets) {
         continue;
     }
 
-    Write-Host "  🔍 $($target.Substring($ModuleBasePath.Length).TrimStart('\', '/'))" -ForegroundColor White;
+    Write-Host "  * $($target.Substring($ModuleBasePath.Length).TrimStart('\', '/'))" -ForegroundColor White;
     $Findings += Invoke-ScriptAnalyzer -Path $target @AnalyzerSplat;
 }
 
@@ -140,7 +145,7 @@ Write-Host '' -ForegroundColor White;
 Write-Host '[2/2] Evaluating findings ...' -ForegroundColor Yellow;
 
 # A finding breaks the build when it is one of the elevated house-rule rules,
-# when PSScriptAnalyzer flags it as an Error, or — under -FailOn 'Warning' —
+# when PSScriptAnalyzer flags it as an Error, or -- under -FailOn 'Warning' --
 # when it is a Warning. Anything else is advisory only.
 [array]$Blocking = @(
     $Findings | Where-Object {
@@ -178,6 +183,6 @@ if ($Blocking.Count -gt 0) {
 }
 
 Write-Host '' -ForegroundColor White;
-Write-Host '  ✓ No build-breaking findings' -ForegroundColor Green;
+Write-Host '  * No build-breaking findings' -ForegroundColor Green;
 
 return $Findings;

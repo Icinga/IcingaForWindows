@@ -17,19 +17,19 @@ table:
   $false so optional Icinga arguments are cleanly skipped.
 
 .PARAMETER Expression
-| Name       | Type          | Description                                               | Default |
-|------------|---------------|-----------------------------------------------------------|---------|
-| Expression | System.Object | Raw 'value' or 'set_if' expression from ifw_api_arguments.| $null   |
+| Name       | Type          | Description                                                | Default |
+|------------|---------------|------------------------------------------------------------|---------|
+| Expression | System.Object | Raw 'value' or 'set_if' expression from ifw_api_arguments. | $null   |
 
 .PARAMETER MacroMap
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| MacroMap | System.Object | Case-sensitive OrderedDictionary of macro key/values.    | $null   |
+| Name     | Type          | Description                                           | Default |
+|----------|---------------|-------------------------------------------------------|---------|
+| MacroMap | System.Object | Case-sensitive OrderedDictionary of macro key/values. | $null   |
 
 .PARAMETER MacroIgnoreCase
-| Name            | Type                         | Description                                       | Default |
-|-----------------|------------------------------|---------------------------------------------------|---------|
-| MacroIgnoreCase | System.Collections.Hashtable | Case-insensitive fallback hashtable for macros.   | @{}     |
+| Name            | Type                         | Description                                     | Default |
+|-----------------|------------------------------|-------------------------------------------------|---------|
+| MacroIgnoreCase | System.Collections.Hashtable | Case-insensitive fallback hashtable for macros. | @{}     |
 
 .OUTPUTS
 System.Collections.Hashtable -- Hashtable with keys IsSet (System.Boolean) and
@@ -42,6 +42,9 @@ Interpolates the '$address$' and '$port$' tokens in a single pass.
 
 .NOTES
 Pure macro evaluator with no side effects or global state dependencies.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Expand-IcingaProtocolMacroValue()
 {

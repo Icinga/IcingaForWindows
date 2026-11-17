@@ -49,13 +49,13 @@ predefined levels to control verbosity.
 
 **`$Level`**
 
-| Name  | Type          | Description                   | Default  |
-|-------|---------------|-------------------------------|----------|
-| Level | System.String | Desired minimum logging level | 'Info'   |
+| Name  | Type          | Description                   | Default |
+|-------|---------------|-------------------------------|---------|
+| Level | System.String | Desired minimum logging level | 'Info'  |
 
 #### Outputs
 
-None — This function sets a global variable and does not emit pipeline output.
+None -- This function sets a global variable and does not emit pipeline output.
 
 #### Examples
 
@@ -69,7 +69,7 @@ Valid levels are `Debug`, `Audit`, `Info`, `Success`, `Warning`, `Error` and `Fa
 `Test-LoggingWriteLog` consults the global level to decide whether a message
 at a given severity should be emitted.
 
-*Source: [src/Core/Logging/Public/Set-IcingaLogLevel.ps1](../../src/Core/Logging/Public/Set-IcingaLogLevel.ps1)*
+*Source: [src/Core/Logging/Public/Set-IcingaLogLevel.ps1](../src/Core/Logging/Public/Set-IcingaLogLevel.ps1)*
 
 ---
 
@@ -88,19 +88,19 @@ using `Format-LoggingConsoleObjectProperties` and a predefined set of properties
 
 **`$Exception`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Exception | System.Exception | The exception to format | |
+| Name      | Type             | Description             | Default |
+|-----------|------------------|-------------------------|---------|
+| Exception | System.Exception | The exception to format |         |
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation string for nested formatting | '' |
+| Name   | Type          | Description                                       | Default |
+|--------|---------------|---------------------------------------------------|---------|
+| Indent | System.String | Optional indentation string for nested formatting | ''      |
 
 #### Outputs
 
-System.String — A formatted multiline string describing the exception.
+System.String -- A formatted multiline string describing the exception.
 
 #### Examples
 
@@ -112,7 +112,7 @@ PS> Format-LoggingConsoleException -Exception $ex -Indent '  '
 
 Uses `Format-LoggingConsoleObjectProperties` to extract common exception details.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleException.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleException.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleException.ps1](../src/Core/Logging/Private/Format-LoggingConsoleException.ps1)*
 
 ---
 
@@ -131,19 +131,19 @@ and returns either a formatted string or writes the colored message to the host.
 
 **`$Message`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Message | System.String | Message containing optional color tags | |
+| Name    | Type          | Description                            | Default |
+|---------|---------------|----------------------------------------|---------|
+| Message | System.String | Message containing optional color tags |         |
 
 **`$GetMsgObj`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name      | Type                   | Description                                                                   | Default  |
+|-----------|------------------------|-------------------------------------------------------------------------------|----------|
 | GetMsgObj | System.SwitchParameter | When set the function returns the formatted string instead of writing to host | `$false` |
 
 #### Outputs
 
-System.String — The formatted message string when `-GetMsgObj` is set; otherwise None, the message is written directly to the host.
+System.String -- The formatted message string when `-GetMsgObj` is set; otherwise None, the message is written directly to the host.
 
 #### Examples
 
@@ -155,7 +155,7 @@ PS> Format-LoggingConsoleMessage -Message '[Green]OK[/Green] Completed' -GetMsgO
 
 Supports escaping and validates color names against `System.ConsoleColor`.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleMessage.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleMessage.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleMessage.ps1](../src/Core/Logging/Private/Format-LoggingConsoleMessage.ps1)*
 
 ---
 
@@ -174,13 +174,13 @@ for null values used throughout logging output formatting helpers.
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional prefix indentation for the returned string | '' |
+| Name   | Type          | Description                                         | Default |
+|--------|---------------|-----------------------------------------------------|---------|
+| Indent | System.String | Optional prefix indentation for the returned string | ''      |
 
 #### Outputs
 
-System.String — A one-line formatted representation of a null value.
+System.String -- A one-line formatted representation of a null value.
 
 #### Examples
 
@@ -192,7 +192,7 @@ PS> Format-LoggingConsoleNullValue -Indent '  '
 
 Used by multiple formatting helpers to ensure consistent null rendering.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleNullValue.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleNullValue.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleNullValue.ps1](../src/Core/Logging/Private/Format-LoggingConsoleNullValue.ps1)*
 
 ---
 
@@ -211,25 +211,25 @@ from an object and returns a colorized string suitable for console logging.
 
 **`$Object`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Object | System.Object | The input object to inspect | |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Object | System.Object | The input object to inspect |         |
 
 **`$Properties`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Properties | System.Array | List of property paths to extract (e.g. 'Client.Address') | @() |
+| Name       | Type         | Description                                               | Default |
+|------------|--------------|-----------------------------------------------------------|---------|
+| Properties | System.Array | List of property paths to extract (e.g. 'Client.Address') | @()     |
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Indentation prefix for each formatted line | '' |
+| Name   | Type          | Description                                | Default |
+|--------|---------------|--------------------------------------------|---------|
+| Indent | System.String | Indentation prefix for each formatted line | ''      |
 
 #### Outputs
 
-System.String — A multi-line formatted string with property:value pairs.
+System.String -- A multi-line formatted string with property:value pairs.
 
 #### Examples
 
@@ -242,7 +242,7 @@ PS> Format-LoggingConsoleObjectProperties -Object $resp -Properties @('Status','
 Relies on `Get-LoggingConsoleNestedProperty`, `Get-LoggingConsoleColorForObjectType`,
 and `Get-LoggingConsoleColorForValue` for nested access and color selection.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleObjectProperties.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleObjectProperties.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleObjectProperties.ps1](../src/Core/Logging/Private/Format-LoggingConsoleObjectProperties.ps1)*
 
 ---
 
@@ -262,19 +262,19 @@ and returns a string with structured, colorized output for logging.
 
 **`$Object`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Object | System.Object | The object to format for console output | |
+| Name   | Type          | Description                             | Default |
+|--------|---------------|-----------------------------------------|---------|
+| Object | System.Object | The object to format for console output |         |
 
 **`$Level`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Level | System.Int32 | Indentation/nesting level for pretty printing | 0 |
+| Name  | Type         | Description                                   | Default |
+|-------|--------------|-----------------------------------------------|---------|
+| Level | System.Int32 | Indentation/nesting level for pretty printing | 0       |
 
 #### Outputs
 
-System.String — A formatted multi-line representation of the object.
+System.String -- A formatted multi-line representation of the object.
 
 #### Examples
 
@@ -287,7 +287,7 @@ PS> Format-LoggingConsoleObjects -Object $response -Level 1
 This function delegates to other helpers (scalar, properties, nested access)
 and is the central place for human-friendly logging formatting.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleObjects.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleObjects.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleObjects.ps1](../src/Core/Logging/Private/Format-LoggingConsoleObjects.ps1)*
 
 ---
 
@@ -306,19 +306,19 @@ using `Get-LoggingConsoleColorForValue` to determine an appropriate color.
 
 **`$Object`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Object | System.Object | The value to format | |
+| Name   | Type          | Description         | Default |
+|--------|---------------|---------------------|---------|
+| Object | System.Object | The value to format |         |
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 #### Outputs
 
-System.String — A formatted single-line representation of the scalar value.
+System.String -- A formatted single-line representation of the scalar value.
 
 #### Examples
 
@@ -330,7 +330,7 @@ PS> Format-LoggingConsoleScalar -Object 123 -Indent '  '
 
 Used internally by `Format-LoggingConsoleObjects` for fallback scalar formatting.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleScalar.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleScalar.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleScalar.ps1](../src/Core/Logging/Private/Format-LoggingConsoleScalar.ps1)*
 
 ---
 
@@ -349,19 +349,19 @@ from a `System.Net.Security.SslStream` and returns a colorized string.
 
 **`$Stream`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Stream | System.Net.Security.SslStream | The SSL stream to inspect | |
+| Name   | Type                          | Description               | Default |
+|--------|-------------------------------|---------------------------|---------|
+| Stream | System.Net.Security.SslStream | The SSL stream to inspect |         |
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | $null |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | $null   |
 
 #### Outputs
 
-System.String — A multi-line formatted representation of the stream properties.
+System.String -- A multi-line formatted representation of the stream properties.
 
 #### Examples
 
@@ -373,7 +373,7 @@ PS> Format-LoggingConsoleSslStream -Stream $sslStream -Indent '  '
 
 Delegates property extraction to `Format-LoggingConsoleObjectProperties`.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleSslStream.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleSslStream.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleSslStream.ps1](../src/Core/Logging/Private/Format-LoggingConsoleSslStream.ps1)*
 
 ---
 
@@ -392,19 +392,19 @@ Delegates property extraction to `Format-LoggingConsoleObjectProperties`.
 
 **`$Client`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Client | System.Net.Sockets.TcpClient | The TCP client instance to format | |
+| Name   | Type                         | Description                       | Default |
+|--------|------------------------------|-----------------------------------|---------|
+| Client | System.Net.Sockets.TcpClient | The TCP client instance to format |         |
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 #### Outputs
 
-System.String — A formatted multi-line description of the `TcpClient`.
+System.String -- A formatted multi-line description of the `TcpClient`.
 
 #### Examples
 
@@ -416,7 +416,7 @@ PS> Format-LoggingConsoleTcpClient -Client $client
 
 This helper uses `Format-LoggingConsoleObjectProperties` for property extraction.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleTcpClient.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleTcpClient.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleTcpClient.ps1](../src/Core/Logging/Private/Format-LoggingConsoleTcpClient.ps1)*
 
 ---
 
@@ -435,19 +435,19 @@ This helper uses `Format-LoggingConsoleObjectProperties` for property extraction
 
 **`$TcpListener`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TcpListener | System.Net.Sockets.TcpListener | The listener to format | |
+| Name        | Type                           | Description            | Default |
+|-------------|--------------------------------|------------------------|---------|
+| TcpListener | System.Net.Sockets.TcpListener | The listener to format |         |
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 #### Outputs
 
-System.String — A formatted string describing listener properties.
+System.String -- A formatted string describing listener properties.
 
 #### Examples
 
@@ -459,7 +459,7 @@ PS> Format-LoggingConsoleTcpListener -TcpListener $listener
 
 Used to present network listener details consistently in logs.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleTcpListener.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleTcpListener.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleTcpListener.ps1](../src/Core/Logging/Private/Format-LoggingConsoleTcpListener.ps1)*
 
 ---
 
@@ -479,19 +479,19 @@ them as a colorized multi-line string for inclusion in logs.
 
 **`$Certificate`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Certificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Certificate to format | |
+| Name        | Type                                                           | Description           | Default |
+|-------------|----------------------------------------------------------------|-----------------------|---------|
+| Certificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Certificate to format |         |
 
 **`$Indent`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 #### Outputs
 
-System.String — A formatted representation of the certificate.
+System.String -- A formatted representation of the certificate.
 
 #### Examples
 
@@ -503,7 +503,7 @@ PS> Format-LoggingConsoleTlsCertificate -Certificate $cert
 
 Useful when logging TLS connection metadata.
 
-*Source: [src/Core/Logging/Private/Format-LoggingConsoleTlsCertificate.ps1](../../src/Core/Logging/Private/Format-LoggingConsoleTlsCertificate.ps1)*
+*Source: [src/Core/Logging/Private/Format-LoggingConsoleTlsCertificate.ps1](../src/Core/Logging/Private/Format-LoggingConsoleTlsCertificate.ps1)*
 
 ---
 
@@ -523,25 +523,25 @@ for special cases like parameters and null values.
 
 **`$ObjectName`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ObjectName | System.String | The CLR type name or friendly name to evaluate | |
+| Name       | Type          | Description                                    | Default |
+|------------|---------------|------------------------------------------------|---------|
+| ObjectName | System.String | The CLR type name or friendly name to evaluate |         |
 
 **`$IsParameter`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsParameter | System.SwitchParameter | When set returns the color used for parameter names | $false |
+| Name        | Type                   | Description                                         | Default |
+|-------------|------------------------|-----------------------------------------------------|---------|
+| IsParameter | System.SwitchParameter | When set returns the color used for parameter names | $false  |
 
 **`$IsNullValue`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsNullValue | System.SwitchParameter | When set returns the color used for null values | $false |
+| Name        | Type                   | Description                                     | Default |
+|-------------|------------------------|-------------------------------------------------|---------|
+| IsNullValue | System.SwitchParameter | When set returns the color used for null values | $false  |
 
 #### Outputs
 
-System.String — The name of a `System.ConsoleColor` value.
+System.String -- The name of a `System.ConsoleColor` value.
 
 #### Examples
 
@@ -553,7 +553,7 @@ PS> Get-LoggingConsoleColorForObjectType -ObjectName 'String'
 
 Color choices are mapped to common CLR type names and special flags.
 
-*Source: [src/Core/Logging/Private/Get-LoggingConsoleColorForObjectType.ps1](../../src/Core/Logging/Private/Get-LoggingConsoleColorForObjectType.ps1)*
+*Source: [src/Core/Logging/Private/Get-LoggingConsoleColorForObjectType.ps1](../src/Core/Logging/Private/Get-LoggingConsoleColorForObjectType.ps1)*
 
 ---
 
@@ -573,13 +573,13 @@ appropriate `System.ConsoleColor` name by delegating to
 
 **`$Value`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Value | System.Object | The value to choose a color for | |
+| Name  | Type          | Description                     | Default |
+|-------|---------------|---------------------------------|---------|
+| Value | System.Object | The value to choose a color for |         |
 
 #### Outputs
 
-System.String — The chosen console color name.
+System.String -- The chosen console color name.
 
 #### Examples
 
@@ -591,7 +591,7 @@ PS> Get-LoggingConsoleColorForValue -Value 42
 
 Returns a special color for `$null` values.
 
-*Source: [src/Core/Logging/Private/Get-LoggingConsoleColorForValue.ps1](../../src/Core/Logging/Private/Get-LoggingConsoleColorForValue.ps1)*
+*Source: [src/Core/Logging/Private/Get-LoggingConsoleColorForValue.ps1](../src/Core/Logging/Private/Get-LoggingConsoleColorForValue.ps1)*
 
 ---
 
@@ -611,19 +611,19 @@ any segment cannot be resolved.
 
 **`$InputObject`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InputObject | System.Object | The object to query | |
+| Name        | Type          | Description         | Default |
+|-------------|---------------|---------------------|---------|
+| InputObject | System.Object | The object to query |         |
 
 **`$PropertyPath`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| PropertyPath | System.String | Dot-separated property path to resolve | |
+| Name         | Type          | Description                            | Default |
+|--------------|---------------|----------------------------------------|---------|
+| PropertyPath | System.String | Dot-separated property path to resolve |         |
 
 #### Outputs
 
-System.Object — The resolved property value or `$null` when not found.
+System.Object -- The resolved property value or `$null` when not found.
 
 #### Examples
 
@@ -635,7 +635,7 @@ PS> Get-LoggingConsoleNestedProperty -InputObject $resp -PropertyPath 'Client.Ad
 
 This helper intentionally swallows property access errors and returns `$null` on failure.
 
-*Source: [src/Core/Logging/Private/Get-LoggingConsoleNestedProperty.ps1](../../src/Core/Logging/Private/Get-LoggingConsoleNestedProperty.ps1)*
+*Source: [src/Core/Logging/Private/Get-LoggingConsoleNestedProperty.ps1](../src/Core/Logging/Private/Get-LoggingConsoleNestedProperty.ps1)*
 
 ---
 
@@ -654,13 +654,13 @@ Windows EventLog entry types such as 'Information' or 'Error'.
 
 **`$Severity`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Severity | System.String | Internal severity string (e.g. 'Debug', 'Info') | |
+| Name     | Type          | Description                                     | Default |
+|----------|---------------|-------------------------------------------------|---------|
+| Severity | System.String | Internal severity string (e.g. 'Debug', 'Info') |         |
 
 #### Outputs
 
-System.String — The Windows EventLog entry type name.
+System.String -- The Windows EventLog entry type name.
 
 #### Examples
 
@@ -672,7 +672,7 @@ PS> Get-LoggingEventLogSeverity -Severity 'Error'
 
 Unknown severities default to 'Information'.
 
-*Source: [src/Core/Logging/Private/Get-LoggingEventLogSeverity.ps1](../../src/Core/Logging/Private/Get-LoggingEventLogSeverity.ps1)*
+*Source: [src/Core/Logging/Private/Get-LoggingEventLogSeverity.ps1](../src/Core/Logging/Private/Get-LoggingEventLogSeverity.ps1)*
 
 ---
 
@@ -689,7 +689,7 @@ namespace and ensures the log maximum size is configured.
 
 #### Outputs
 
-None — Registers event sources under the module name and configures the maximum log size.
+None -- Registers event sources under the module name and configures the maximum log size.
 
 #### Examples
 
@@ -703,7 +703,7 @@ Requires administrative privileges to create Windows EventLog sources and modify
 The module name is resolved via `Get-ModuleProjectName`. Return codes are read from
 `(Get-GlobalRuntimeVariable).Public.ReturnCodes` to derive the full list of source names.
 
-*Source: [src/Core/Logging/Private/Register-LoggingWindowsEventLog.ps1](../../src/Core/Logging/Private/Register-LoggingWindowsEventLog.ps1)*
+*Source: [src/Core/Logging/Private/Register-LoggingWindowsEventLog.ps1](../src/Core/Logging/Private/Register-LoggingWindowsEventLog.ps1)*
 
 ---
 
@@ -722,13 +722,13 @@ runtime variable so subsequent log writes follow the desired verbosity.
 
 **`$Level`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Level | System.String | One of 'Debug','Audit','Info','Success','Warning','Error','Fatal' | 'Info' |
+| Name  | Type          | Description                                                       | Default |
+|-------|---------------|-------------------------------------------------------------------|---------|
+| Level | System.String | One of 'Debug','Audit','Info','Success','Warning','Error','Fatal' | 'Info'  |
 
 #### Outputs
 
-None — Updates `(Get-GlobalRuntimeVariable).Public.Logging.Level`.
+None -- Updates `(Get-GlobalRuntimeVariable).Public.Logging.Level`.
 
 #### Examples
 
@@ -740,7 +740,7 @@ PS> Set-LoggingLogLevel -Level 'Debug'
 
 Use `Test-LoggingWriteLog` to determine whether a message at a given level will be emitted.
 
-*Source: [src/Core/Logging/Private/Set-LoggingLogLevel.ps1](../../src/Core/Logging/Private/Set-LoggingLogLevel.ps1)*
+*Source: [src/Core/Logging/Private/Set-LoggingLogLevel.ps1](../src/Core/Logging/Private/Set-LoggingLogLevel.ps1)*
 
 ---
 
@@ -758,7 +758,7 @@ writes Windows EventLog entries and prints colorized output to the console.
 
 #### Outputs
 
-None — Operates for side effects (writes logs and event entries).
+None -- Operates for side effects (writes logs and event entries).
 
 #### Examples
 
@@ -775,7 +775,7 @@ must never run on the main thread. All access to shared state goes through
 `$Global:Icinga` at startup. The daemon exits cleanly when `Test-ThreadRunning`
 returns `$false`.
 
-*Source: [src/Core/Logging/Private/Start-LoggingDaemon.ps1](../../src/Core/Logging/Private/Start-LoggingDaemon.ps1)*
+*Source: [src/Core/Logging/Private/Start-LoggingDaemon.ps1](../src/Core/Logging/Private/Start-LoggingDaemon.ps1)*
 
 ---
 
@@ -795,13 +795,13 @@ for scalar values such as strings.
 
 **`$Value`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Value | System.Object | The value to test for iterable printing | |
+| Name  | Type          | Description                             | Default |
+|-------|---------------|-----------------------------------------|---------|
+| Value | System.Object | The value to test for iterable printing |         |
 
 #### Outputs
 
-System.Boolean — `$true` when the value is considered iterable for logging.
+System.Boolean -- `$true` when the value is considered iterable for logging.
 
 #### Examples
 
@@ -813,7 +813,7 @@ PS> Test-LoggingConsoleNextObjectIterable -Value $arr
 
 Strings and certain CLR types are intentionally excluded from iteration.
 
-*Source: [src/Core/Logging/Private/Test-LoggingConsoleNextObjectIterable.ps1](../../src/Core/Logging/Private/Test-LoggingConsoleNextObjectIterable.ps1)*
+*Source: [src/Core/Logging/Private/Test-LoggingConsoleNextObjectIterable.ps1](../src/Core/Logging/Private/Test-LoggingConsoleNextObjectIterable.ps1)*
 
 ---
 
@@ -833,13 +833,13 @@ should be written.
 
 **`$Level`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Level | System.String | The severity of the message to evaluate | 'Info' |
+| Name  | Type          | Description                             | Default |
+|-------|---------------|-----------------------------------------|---------|
+| Level | System.String | The severity of the message to evaluate | 'Info'  |
 
 #### Outputs
 
-System.Boolean — `$true` if the message should be written given the current logging level.
+System.Boolean -- `$true` if the message should be written given the current logging level.
 
 #### Examples
 
@@ -851,7 +851,7 @@ PS> Test-LoggingWriteLog -Level 'Debug'
 
 Logging level hierarchy is implemented by explicit membership checks per level.
 
-*Source: [src/Core/Logging/Private/Test-LoggingWriteLog.ps1](../../src/Core/Logging/Private/Test-LoggingWriteLog.ps1)*
+*Source: [src/Core/Logging/Private/Test-LoggingWriteLog.ps1](../src/Core/Logging/Private/Test-LoggingWriteLog.ps1)*
 
 ---
 
@@ -870,13 +870,13 @@ generated by a thread. If a `ThreadId` is provided it is used; otherwise a new G
 
 **`$ThreadId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ThreadId | System.String | Optional GUID to use as the current logging id | $null |
+| Name     | Type          | Description                                    | Default |
+|----------|---------------|------------------------------------------------|---------|
+| ThreadId | System.String | Optional GUID to use as the current logging id | $null   |
 
 #### Outputs
 
-None — Updates `(Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId`.
+None -- Updates `(Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId`.
 
 #### Examples
 
@@ -888,7 +888,7 @@ PS> Update-LoggingThreadLoggingId -ThreadId (New-Guid).ToString()
 
 This id helps correlate logs produced during the lifetime of a thread.
 
-*Source: [src/Core/Logging/Private/Update-LoggingThreadLoggingId.ps1](../../src/Core/Logging/Private/Update-LoggingThreadLoggingId.ps1)*
+*Source: [src/Core/Logging/Private/Update-LoggingThreadLoggingId.ps1](../src/Core/Logging/Private/Update-LoggingThreadLoggingId.ps1)*
 
 ---
 
@@ -908,31 +908,31 @@ by the logging daemon. It also assigns a per-message logging id for correlation.
 
 **`$Message`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Message | System.String | The log message text | |
+| Name    | Type          | Description          | Default |
+|---------|---------------|----------------------|---------|
+| Message | System.String | The log message text |         |
 
 **`$Level`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Level | System.String | Severity (Debug,Output,Audit,Info,Success,Warning,Error,Fatal) | 'Info' |
+| Name  | Type          | Description                                                    | Default |
+|-------|---------------|----------------------------------------------------------------|---------|
+| Level | System.String | Severity (Debug,Output,Audit,Info,Success,Warning,Error,Fatal) | 'Info'  |
 
 **`$EventId`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| EventId | System.Int32 | Numeric event identifier for the log entry | 15 |
+| Name    | Type         | Description                                | Default |
+|---------|--------------|--------------------------------------------|---------|
+| EventId | System.Int32 | Numeric event identifier for the log entry | 15      |
 
 **`$Data`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Data | System.Hashtable | Additional structured data to include with the log entry | @{} |
+| Name | Type             | Description                                              | Default |
+|------|------------------|----------------------------------------------------------|---------|
+| Data | System.Hashtable | Additional structured data to include with the log entry | @{}     |
 
 #### Outputs
 
-System.Management.Automation.PSCustomObject — The enqueued log object when called from a background daemon with Level 'Output'; None otherwise.
+System.Management.Automation.PSCustomObject -- The enqueued log object when called from a background daemon with Level 'Output'; None otherwise.
 
 #### Examples
 
@@ -945,6 +945,5 @@ PS> Write-LoggingEntry -Message 'Started processing' -Level 'Info' -EventId 100
 This function is intentionally non-blocking: it enqueues messages for a background
 consumer. It uses `(Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId` to tag messages.
 
-*Source: [src/Core/Logging/Private/Write-LoggingEntry.ps1](../../src/Core/Logging/Private/Write-LoggingEntry.ps1)*
-
+*Source: [src/Core/Logging/Private/Write-LoggingEntry.ps1](../src/Core/Logging/Private/Write-LoggingEntry.ps1)*
 

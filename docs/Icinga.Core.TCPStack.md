@@ -38,43 +38,43 @@ certificate file, thumbprint, CN, issuer, or alternative store settings.
 
 **`$CertPath`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertPath | System.String | Path to a PKCS#12/PFX certificate file to load. | |
+| Name     | Type          | Description                                     | Default |
+|----------|---------------|-------------------------------------------------|---------|
+| CertPath | System.String | Path to a PKCS#12/PFX certificate file to load. |         |
 
 **`$CertThumbprint`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertThumbprint | System.String | Thumbprint of a certificate to locate in a certificate store. | |
+| Name           | Type          | Description                                                   | Default |
+|----------------|---------------|---------------------------------------------------------------|---------|
+| CertThumbprint | System.String | Thumbprint of a certificate to locate in a certificate store. |         |
 
 **`$CertCN`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertCN | System.String | Common Name (CN) to match when searching certificate stores. | |
+| Name   | Type          | Description                                                  | Default |
+|--------|---------------|--------------------------------------------------------------|---------|
+| CertCN | System.String | Common Name (CN) to match when searching certificate stores. |         |
 
 **`$CertStore`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertStore | System.String | Certificate store name (for example: My, Root). | My |
+| Name      | Type          | Description                                     | Default |
+|-----------|---------------|-------------------------------------------------|---------|
+| CertStore | System.String | Certificate store name (for example: My, Root). | My      |
 
 **`$CertStoreLocation`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name              | Type          | Description                                                          | Default      |
+|-------------------|---------------|----------------------------------------------------------------------|--------------|
 | CertStoreLocation | System.String | Certificate store location (for example: LocalMachine, CurrentUser). | LocalMachine |
 
 **`$CertIssuer`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores. | |
+| Name       | Type         | Description                                                       | Default |
+|------------|--------------|-------------------------------------------------------------------|---------|
+| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores. |         |
 
 #### Outputs
 
-System.Object — TLS certificate configuration object for the TCP stack, returned from `New-TlsCertConfig`.
+System.Object -- TLS certificate configuration object for the TCP stack, returned from `New-TlsCertConfig`.
 
 #### Examples
 
@@ -88,7 +88,7 @@ This function is a thin Icinga-specific wrapper around `New-TlsCertConfig`. Refe
 `New-TlsCertConfig` for full validation rules and additional options. At least one of
 CertPath, CertThumbprint, CertCN or CertIssuer must be supplied.
 
-*Source: [src/Core/TCPStack/Public/New-IcingaTlsCertConfig.ps1](../../src/Core/TCPStack/Public/New-IcingaTlsCertConfig.ps1)*
+*Source: [src/Core/TCPStack/Public/New-IcingaTlsCertConfig.ps1](../src/Core/TCPStack/Public/New-IcingaTlsCertConfig.ps1)*
 
 ---
 
@@ -105,7 +105,7 @@ associated SSL stream stored in the global runtime variable, if present.
 
 #### Outputs
 
-None — Clears the SSL stream, TCP client and their references in the global state.
+None -- Clears the SSL stream, TCP client and their references in the global state.
 
 #### Examples
 
@@ -117,7 +117,7 @@ PS> Close-TCPConnection
 
 This is idempotent and swallows disposal exceptions.
 
-*Source: [src/Core/TCPStack/Private/Close-TCPConnection.ps1](../../src/Core/TCPStack/Private/Close-TCPConnection.ps1)*
+*Source: [src/Core/TCPStack/Private/Close-TCPConnection.ps1](../src/Core/TCPStack/Private/Close-TCPConnection.ps1)*
 
 ---
 
@@ -134,7 +134,7 @@ and clears the listener reference in the global runtime variable.
 
 #### Outputs
 
-None — Stops the listener and clears its reference in the global state.
+None -- Stops the listener and clears its reference in the global state.
 
 #### Examples
 
@@ -146,7 +146,7 @@ PS> Close-TCPSocket
 
 Requires privileges sufficient to stop the listener; exceptions are logged.
 
-*Source: [src/Core/TCPStack/Private/Close-TCPSocket.ps1](../../src/Core/TCPStack/Private/Close-TCPSocket.ps1)*
+*Source: [src/Core/TCPStack/Private/Close-TCPSocket.ps1](../src/Core/TCPStack/Private/Close-TCPSocket.ps1)*
 
 ---
 
@@ -166,13 +166,13 @@ the specified certificate store using thumbprint, common name or issuer filters.
 
 **`$TlsCertConfig`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertConfig | System.PSCustomObject | Configuration describing how to locate the certificate | |
+| Name          | Type                  | Description                                            | Default |
+|---------------|-----------------------|--------------------------------------------------------|---------|
+| TlsCertConfig | System.PSCustomObject | Configuration describing how to locate the certificate |         |
 
 #### Outputs
 
-System.Security.Cryptography.X509Certificates.X509Certificate2 — The loaded certificate, or $null on failure.
+System.Security.Cryptography.X509Certificates.X509Certificate2 -- The loaded certificate, or $null on failure.
 
 #### Examples
 
@@ -184,7 +184,7 @@ PS> Get-TlsCertificate -TlsCertConfig $cfg
 
 Uses `Write-FunctionReturnValue` to report detailed result codes for callers.
 
-*Source: [src/Core/TCPStack/Private/Get-TlsCertificate.ps1](../../src/Core/TCPStack/Private/Get-TlsCertificate.ps1)*
+*Source: [src/Core/TCPStack/Private/Get-TlsCertificate.ps1](../src/Core/TCPStack/Private/Get-TlsCertificate.ps1)*
 
 ---
 
@@ -204,43 +204,43 @@ It validates that at least one selector is provided.
 
 **`$CertPath`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertPath | System.String | Optional filesystem path to a certificate file | $null |
+| Name     | Type          | Description                                    | Default |
+|----------|---------------|------------------------------------------------|---------|
+| CertPath | System.String | Optional filesystem path to a certificate file | $null   |
 
 **`$CertThumbprint`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertThumbprint | System.String | Thumbprint to locate certificate in store | $null |
+| Name           | Type          | Description                               | Default |
+|----------------|---------------|-------------------------------------------|---------|
+| CertThumbprint | System.String | Thumbprint to locate certificate in store | $null   |
 
 **`$CertCN`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertCN | System.String | Common Name filter for certificate store search | $null |
+| Name   | Type          | Description                                     | Default |
+|--------|---------------|-------------------------------------------------|---------|
+| CertCN | System.String | Common Name filter for certificate store search | $null   |
 
 **`$CertStore`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertStore | System.String | Certificate store name (e.g. 'My') | 'My' |
+| Name      | Type          | Description                        | Default |
+|-----------|---------------|------------------------------------|---------|
+| CertStore | System.String | Certificate store name (e.g. 'My') | 'My'    |
 
 **`$CertStoreLocation`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name              | Type          | Description                          | Default        |
+|-------------------|---------------|--------------------------------------|----------------|
 | CertStoreLocation | System.String | Store location (e.g. 'LocalMachine') | 'LocalMachine' |
 
 **`$CertIssuer`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores | $null |
+| Name       | Type         | Description                                                      | Default |
+|------------|--------------|------------------------------------------------------------------|---------|
+| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores | $null   |
 
 #### Outputs
 
-System.Management.Automation.PSCustomObject — Constructed TLS configuration object, returned via `Write-FunctionReturnValue`.
+System.Management.Automation.PSCustomObject -- Constructed TLS configuration object, returned via `Write-FunctionReturnValue`.
 
 #### Examples
 
@@ -252,7 +252,7 @@ PS> New-TlsCertConfig -CertThumbprint 'ABCDEF...'
 
 At least one of `CertPath`, `CertThumbprint`, `CertCN` or `CertIssuer` must be provided.
 
-*Source: [src/Core/TCPStack/Private/New-TlsCertConfig.ps1](../../src/Core/TCPStack/Private/New-TlsCertConfig.ps1)*
+*Source: [src/Core/TCPStack/Private/New-TlsCertConfig.ps1](../src/Core/TCPStack/Private/New-TlsCertConfig.ps1)*
 
 ---
 
@@ -272,19 +272,19 @@ using the thread-local TLS certificate. On failure it closes the TCP connection.
 
 **`$Endpoint`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Endpoint | System.String | Expected remote endpoint name (required for client auth) | $null |
+| Name     | Type          | Description                                              | Default |
+|----------|---------------|----------------------------------------------------------|---------|
+| Endpoint | System.String | Expected remote endpoint name (required for client auth) | $null   |
 
 **`$IsClient`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsClient | System.SwitchParameter | When set perform client-side authentication | $false |
+| Name     | Type                   | Description                                 | Default |
+|----------|------------------------|---------------------------------------------|---------|
+| IsClient | System.SwitchParameter | When set perform client-side authentication | $false  |
 
 #### Outputs
 
-None — Stores the opened SslStream in the global state; result codes are reported via `Write-FunctionReturnValue`.
+None -- Stores the opened SslStream in the global state; result codes are reported via `Write-FunctionReturnValue`.
 
 #### Examples
 
@@ -296,7 +296,7 @@ PS> Open-SSLStream -Endpoint 'example.com' -IsClient
 
 Requires a valid certificate in `(Get-GlobalRuntimeVariable).Private.TCP.Certificate`.
 
-*Source: [src/Core/TCPStack/Private/Open-SSLStream.ps1](../../src/Core/TCPStack/Private/Open-SSLStream.ps1)*
+*Source: [src/Core/TCPStack/Private/Open-SSLStream.ps1](../src/Core/TCPStack/Private/Open-SSLStream.ps1)*
 
 ---
 
@@ -316,27 +316,27 @@ An optional TLS certificate can be associated for incoming connections.
 
 **`$Address`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Address | System.String | IP address to bind or empty for loopback | '' |
+| Name    | Type          | Description                              | Default |
+|---------|---------------|------------------------------------------|---------|
+| Address | System.String | IP address to bind or empty for loopback | ''      |
 
 **`$Port`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Port | System.Int32 | TCP port to bind | 0 |
+| Name | Type         | Description      | Default |
+|------|--------------|------------------|---------|
+| Port | System.Int32 | TCP port to bind | 0       |
 
 **`$Start`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Start | System.SwitchParameter | When set, immediately start the listener | $false |
+| Name  | Type                   | Description                              | Default |
+|-------|------------------------|------------------------------------------|---------|
+| Start | System.SwitchParameter | When set, immediately start the listener | $false  |
 
 **`$TlsCertificate`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Optional server certificate to attach | $null |
+| Name           | Type                                                           | Description                           | Default |
+|----------------|----------------------------------------------------------------|---------------------------------------|---------|
+| TlsCertificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Optional server certificate to attach | $null   |
 
 #### Outputs
 
@@ -352,7 +352,7 @@ PS> Open-TCPSocket -Port 8080 -Start
 
 Use `Close-TCPSocket` to stop and clear the listener.
 
-*Source: [src/Core/TCPStack/Private/Open-TCPSocket.ps1](../../src/Core/TCPStack/Private/Open-TCPSocket.ps1)*
+*Source: [src/Core/TCPStack/Private/Open-TCPSocket.ps1](../src/Core/TCPStack/Private/Open-TCPSocket.ps1)*
 
 ---
 
@@ -372,13 +372,13 @@ an error if no valid stream is available.
 
 **`$MsgObj`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| MsgObj | System.Object | Object with `message` (buffer) and `length` properties | $null |
+| Name   | Type          | Description                                            | Default |
+|--------|---------------|--------------------------------------------------------|---------|
+| MsgObj | System.Object | Object with `message` (buffer) and `length` properties | $null   |
 
 #### Outputs
 
-None — Writes the message buffer to the SSL stream and flushes it; logs an error if no valid stream is available.
+None -- Writes the message buffer to the SSL stream and flushes it; logs an error if no valid stream is available.
 
 #### Examples
 
@@ -390,7 +390,7 @@ PS> Send-TCPMessage -MsgObj $msg
 
 This helper assumes the active stream is an `SslStream` exposing `Write` and `Flush`.
 
-*Source: [src/Core/TCPStack/Private/Send-TCPMessage.ps1](../../src/Core/TCPStack/Private/Send-TCPMessage.ps1)*
+*Source: [src/Core/TCPStack/Private/Send-TCPMessage.ps1](../src/Core/TCPStack/Private/Send-TCPMessage.ps1)*
 
 ---
 
@@ -409,19 +409,19 @@ instances into the runtime private TCP container so other helpers can access the
 
 **`$TcpClient`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient | The connected TCP client instance | $null |
+| Name      | Type                         | Description                       | Default |
+|-----------|------------------------------|-----------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | The connected TCP client instance | $null   |
 
 **`$SslStream`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| SslStream | System.Net.Security.SslStream | The SSL stream wrapping the client's network stream | $null |
+| Name      | Type                          | Description                                         | Default |
+|-----------|-------------------------------|-----------------------------------------------------|---------|
+| SslStream | System.Net.Security.SslStream | The SSL stream wrapping the client's network stream | $null   |
 
 #### Outputs
 
-None — Updates the `TcpClient` and `SslStream` references in `(Get-GlobalRuntimeVariable).Private.TCP`.
+None -- Updates the `TcpClient` and `SslStream` references in `(Get-GlobalRuntimeVariable).Private.TCP`.
 
 #### Examples
 
@@ -433,7 +433,7 @@ PS> Set-TCPClientAndStream -TcpClient $c -SslStream $s
 
 This is a trivial assignment helper used after connection establishment.
 
-*Source: [src/Core/TCPStack/Private/Set-TCPClientAndStream.ps1](../../src/Core/TCPStack/Private/Set-TCPClientAndStream.ps1)*
+*Source: [src/Core/TCPStack/Private/Set-TCPClientAndStream.ps1](../src/Core/TCPStack/Private/Set-TCPClientAndStream.ps1)*
 
 ---
 
@@ -450,7 +450,7 @@ stream are present and returns the client's `Connected` state.
 
 #### Outputs
 
-System.Boolean — $true when connected and a valid client and stream are present; $false otherwise.
+System.Boolean -- $true when connected and a valid client and stream are present; $false otherwise.
 
 #### Examples
 
@@ -462,7 +462,7 @@ PS> Test-TCPConnection
 
 Used by thread health checks and higher-level network monitors.
 
-*Source: [src/Core/TCPStack/Private/Test-TCPConnection.ps1](../../src/Core/TCPStack/Private/Test-TCPConnection.ps1)*
+*Source: [src/Core/TCPStack/Private/Test-TCPConnection.ps1](../src/Core/TCPStack/Private/Test-TCPConnection.ps1)*
 
 ---
 
@@ -482,25 +482,25 @@ as client or server depending on the `IsClient` flag.
 
 **`$Client`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Client | System.Net.Sockets.TcpClient | Connected TCP client instance to register | $null |
+| Name   | Type                         | Description                               | Default |
+|--------|------------------------------|-------------------------------------------|---------|
+| Client | System.Net.Sockets.TcpClient | Connected TCP client instance to register | $null   |
 
 **`$Endpoint`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Endpoint | System.String | Remote endpoint name (used for client SSL auth) | $null |
+| Name     | Type          | Description                                     | Default |
+|----------|---------------|-------------------------------------------------|---------|
+| Endpoint | System.String | Remote endpoint name (used for client SSL auth) | $null   |
 
 **`$IsClient`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsClient | System.SwitchParameter | When set perform client-side SSL authentication | $false |
+| Name     | Type                   | Description                                     | Default |
+|----------|------------------------|-------------------------------------------------|---------|
+| IsClient | System.SwitchParameter | When set perform client-side SSL authentication | $false  |
 
 #### Outputs
 
-None — Result codes from `Open-SSLStream` are forwarded via `Write-FunctionReturnValue`.
+None -- Result codes from `Open-SSLStream` are forwarded via `Write-FunctionReturnValue`.
 
 #### Examples
 
@@ -512,6 +512,5 @@ PS> Update-TCPConnection -Client $c -Endpoint 'example.com' -IsClient
 
 Validates `$Client` and returns `UpdateTcpClientInvalid` when missing.
 
-*Source: [src/Core/TCPStack/Private/Update-TCPConnection.ps1](../../src/Core/TCPStack/Private/Update-TCPConnection.ps1)*
-
+*Source: [src/Core/TCPStack/Private/Update-TCPConnection.ps1](../src/Core/TCPStack/Private/Update-TCPConnection.ps1)*
 

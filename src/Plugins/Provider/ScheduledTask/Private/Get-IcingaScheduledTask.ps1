@@ -21,9 +21,9 @@ grouped by TaskPath and sorted by TaskName.
 | TaskName | System.Array | Only collect tasks matching these names (wildcards allowed). | @()     |
 
 .PARAMETER ExcludeTaskName
-| Name            | Type         | Description                                                  | Default |
-|-----------------|--------------|--------------------------------------------------------------|---------|
-| ExcludeTaskName | System.Array | Skip tasks matching these names (wildcards allowed).         | @()     |
+| Name            | Type         | Description                                          | Default |
+|-----------------|--------------|------------------------------------------------------|---------|
+| ExcludeTaskName | System.Array | Skip tasks matching these names (wildcards allowed). | @()     |
 
 .PARAMETER TaskPath
 | Name     | Type         | Description                                                  | Default |
@@ -31,9 +31,9 @@ grouped by TaskPath and sorted by TaskName.
 | TaskPath | System.Array | Only collect tasks matching these paths (wildcards allowed). | @()     |
 
 .PARAMETER ExcludeTaskPath
-| Name            | Type         | Description                                                  | Default |
-|-----------------|--------------|--------------------------------------------------------------|---------|
-| ExcludeTaskPath | System.Array | Skip tasks matching these paths (wildcards allowed).         | @()     |
+| Name            | Type         | Description                                          | Default |
+|-----------------|--------------|------------------------------------------------------|---------|
+| ExcludeTaskPath | System.Array | Skip tasks matching these paths (wildcards allowed). | @()     |
 
 .OUTPUTS
 System.Collections.Hashtable -- Hashtable with keys Tasks (hashtable keyed by
@@ -48,6 +48,9 @@ Returns all scheduled tasks under the \Icinga\ task path hierarchy.
 .NOTES
 Windows-only. Relies on Get-ScheduledTask and Get-ScheduledTaskInfo from the
 ScheduledTasks module.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaScheduledTask()
 {

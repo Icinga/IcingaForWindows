@@ -8,24 +8,24 @@ port, stores it in the global runtime variable and optionally starts listening.
 An optional TLS certificate can be associated for incoming connections.
 
 .PARAMETER Address
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Address | System.String | IP address to bind or empty for loopback | '' |
+| Name    | Type          | Description                              | Default |
+|---------|---------------|------------------------------------------|---------|
+| Address | System.String | IP address to bind or empty for loopback | ''      |
 
 .PARAMETER Port
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Port | System.Int32 | TCP port to bind | 0 |
+| Name | Type         | Description      | Default |
+|------|--------------|------------------|---------|
+| Port | System.Int32 | TCP port to bind | 0       |
 
 .PARAMETER Start
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Start | System.SwitchParameter | When set, immediately start the listener | $false |
+| Name  | Type                   | Description                              | Default |
+|-------|------------------------|------------------------------------------|---------|
+| Start | System.SwitchParameter | When set, immediately start the listener | $false  |
 
 .PARAMETER TlsCertificate
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Optional server certificate to attach | $null |
+| Name           | Type                                                           | Description                           | Default |
+|----------------|----------------------------------------------------------------|---------------------------------------|---------|
+| TlsCertificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Optional server certificate to attach | $null   |
 
 .OUTPUTS
 None. Stores listener and certificate in global runtime state.
@@ -35,6 +35,9 @@ PS> Open-TCPSocket -Port 8080 -Start
 
 .NOTES
 Use `Close-TCPSocket` to stop and clear the listener.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Open-TCPSocket()
 {

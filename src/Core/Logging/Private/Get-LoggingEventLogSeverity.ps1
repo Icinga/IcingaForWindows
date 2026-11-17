@@ -7,18 +7,21 @@ Map internal log severity to Windows EventLog entry types.
 Windows EventLog entry types such as 'Information' or 'Error'.
 
 .PARAMETER Severity
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Severity | System.String | Internal severity string (e.g. 'Debug', 'Info') | |
+| Name     | Type          | Description                                     | Default |
+|----------|---------------|-------------------------------------------------|---------|
+| Severity | System.String | Internal severity string (e.g. 'Debug', 'Info') |         |
 
 .OUTPUTS
-System.String — The Windows EventLog entry type name.
+System.String -- The Windows EventLog entry type name.
 
 .EXAMPLE
 PS> Get-LoggingEventLogSeverity -Severity 'Error'
 
 .NOTES
 Unknown severities default to 'Information'.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-LoggingEventLogSeverity()
 {

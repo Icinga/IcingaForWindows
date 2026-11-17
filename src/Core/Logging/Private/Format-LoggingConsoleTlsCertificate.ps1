@@ -8,23 +8,26 @@ Format an X509 certificate for console logging.
 them as a colorized multi-line string for inclusion in logs.
 
 .PARAMETER Certificate
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Certificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Certificate to format | |
+| Name        | Type                                                           | Description           | Default |
+|-------------|----------------------------------------------------------------|-----------------------|---------|
+| Certificate | System.Security.Cryptography.X509Certificates.X509Certificate2 | Certificate to format |         |
 
 .PARAMETER Indent
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 .OUTPUTS
-System.String — A formatted representation of the certificate.
+System.String -- A formatted representation of the certificate.
 
 .EXAMPLE
 PS> Format-LoggingConsoleTlsCertificate -Certificate $cert
 
 .NOTES
 Useful when logging TLS connection metadata.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleTlsCertificate()
 {

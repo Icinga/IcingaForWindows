@@ -12,9 +12,9 @@ selection. Null, empty or malformed JSON payloads emit structured return values
 and are dropped without throwing.
 
 .PARAMETER Message
-| Name    | Type          | Description                                                                  | Default |
-|---------|---------------|------------------------------------------------------------------------------|---------|
-| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty.  | $null   |
+| Name    | Type          | Description                                                                 | Default |
+|---------|---------------|-----------------------------------------------------------------------------|---------|
+| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty. | $null   |
 
 .OUTPUTS
 None -- Enqueues the parsed message object into WorkerQueue and returns nothing.
@@ -27,6 +27,9 @@ Parses the JSON-RPC message and dispatches it to the next protocol worker queue.
 .NOTES
 Caller must ensure WorkerCount and WorkerQueue are initialized in
 Public.IcingaProtocol before invoking this helper.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Add-IcingaRPCMessageToWorker()
 {

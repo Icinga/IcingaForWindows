@@ -8,18 +8,21 @@ currently configured global logging level and returns `$true` when the message
 should be written.
 
 .PARAMETER Level
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Level | System.String | The severity of the message to evaluate | 'Info' |
+| Name  | Type          | Description                             | Default |
+|-------|---------------|-----------------------------------------|---------|
+| Level | System.String | The severity of the message to evaluate | 'Info'  |
 
 .OUTPUTS
-System.Boolean — `$true` if the message should be written given the current logging level.
+System.Boolean -- `$true` if the message should be written given the current logging level.
 
 .EXAMPLE
 PS> Test-LoggingWriteLog -Level 'Debug'
 
 .NOTES
 Logging level hierarchy is implemented by explicit membership checks per level.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-LoggingWriteLog()
 {

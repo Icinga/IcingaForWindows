@@ -73,6 +73,9 @@ The conversion logic lives in the IcingaUnit class. Failures are surfaced throug
 Write-FunctionReturnValue, which logs at the severity registered for each return
 code in Set-InternalExitCodes (Error for failures, Debug for the successful
 conversion). No external services, credentials or configuration files are used.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-IcingaUnit()
 {

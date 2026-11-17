@@ -8,23 +8,26 @@ instances and caches it on the global runtime variable. If a pool already
 exists, the cached instance is returned.
 
 .PARAMETER MinInstances
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| MinInstances | System.Int32 | Minimum number of runspaces in the pool | 1 |
+| Name         | Type         | Description                             | Default |
+|--------------|--------------|-----------------------------------------|---------|
+| MinInstances | System.Int32 | Minimum number of runspaces in the pool | 1       |
 
 .PARAMETER MaxInstances
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name         | Type         | Description                             | Default                                                   |
+|--------------|--------------|-----------------------------------------|-----------------------------------------------------------|
 | MaxInstances | System.Int32 | Maximum number of runspaces in the pool | `(Get-GlobalRuntimeVariable).Public.Threading.MaxThreads` |
 
 .OUTPUTS
-System.Management.Automation.Runspaces.RunspacePool — The newly created or cached runspace pool.
+System.Management.Automation.Runspaces.RunspacePool -- The newly created or cached runspace pool.
 
 .EXAMPLE
 PS> New-ThreadPool -MinInstances 2 -MaxInstances 8
 
 .NOTES
 The function currently uses the default `InitialSessionState`. Future work may enable JEA.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-ThreadPool()
 {

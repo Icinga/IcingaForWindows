@@ -9,9 +9,9 @@ Write-FunctionReturnValue (ArrayFilterInvalidPattern) and counts as no match, so
 a broken filter argument never aborts a plugin.
 
 .PARAMETER Value
-| Name  | Type          | Description          | Default |
-|-------|---------------|----------------------|---------|
-| Value | System.String | The value to test.   |         |
+| Name  | Type          | Description        | Default |
+|-------|---------------|--------------------|---------|
+| Value | System.String | The value to test. |         |
 
 .PARAMETER Pattern
 | Name    | Type          | Description                | Default |
@@ -28,6 +28,9 @@ Returns $true.
 
 .NOTES
 Internal helper of Test-IcingaArrayFilter.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-ModuleWildcardMatch()
 {

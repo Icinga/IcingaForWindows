@@ -20,19 +20,19 @@ enumerated child items via -OverrideReturn on success or $null on error.
 | Filter | System.String | File name filter (for example '*.json'). | '*'     |
 
 .PARAMETER Include
-| Name    | Type         | Description                                     | Default |
-|---------|--------------|-------------------------------------------------|---------|
-| Include | System.Array | Additional include patterns for Get-ChildItem.  | @()     |
+| Name    | Type         | Description                                    | Default |
+|---------|--------------|------------------------------------------------|---------|
+| Include | System.Array | Additional include patterns for Get-ChildItem. | @()     |
 
 .PARAMETER File
-| Name | Type                                         | Description               | Default |
-|------|----------------------------------------------|---------------------------|---------|
-| File | System.Management.Automation.SwitchParameter | If set, only return files.| $false  |
+| Name | Type                                         | Description                | Default |
+|------|----------------------------------------------|----------------------------|---------|
+| File | System.Management.Automation.SwitchParameter | If set, only return files. | $false  |
 
 .PARAMETER Directory
-| Name      | Type                                         | Description                     | Default |
-|-----------|----------------------------------------------|---------------------------------|---------|
-| Directory | System.Management.Automation.SwitchParameter | If set, only return directories.| $false  |
+| Name      | Type                                         | Description                      | Default |
+|-----------|----------------------------------------------|----------------------------------|---------|
+| Directory | System.Management.Automation.SwitchParameter | If set, only return directories. | $false  |
 
 .PARAMETER Recurse
 | Name    | Type                                         | Description                  | Default |
@@ -49,6 +49,9 @@ PS> Get-SecureChildItem -Path (Get-ModuleConfigDirectory) -File
 
 .NOTES
 This helper logs attempted access to unapproved paths and returns AccessViolation.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-SecureChildItem()
 {

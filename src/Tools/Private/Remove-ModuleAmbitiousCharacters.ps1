@@ -8,17 +8,17 @@ Windows filenames. Optionally removes whitespace as well. Useful when
 deriving filenames from user-supplied role names or identifiers.
 
 .PARAMETER InputString
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InputString | System.String | Input string to sanitize. | $null |
+| Name        | Type          | Description               | Default |
+|-------------|---------------|---------------------------|---------|
+| InputString | System.String | Input string to sanitize. | $null   |
 
 .PARAMETER RemoveSpaces
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RemoveSpaces | System.Management.Automation.SwitchParameter | Remove all whitespace characters when set. | $false |
+| Name         | Type                                         | Description                                | Default |
+|--------------|----------------------------------------------|--------------------------------------------|---------|
+| RemoveSpaces | System.Management.Automation.SwitchParameter | Remove all whitespace characters when set. | $false  |
 
 .OUTPUTS
-System.String — The sanitized string suitable for use as a filename.
+System.String -- The sanitized string suitable for use as a filename.
 
 .EXAMPLE
 PS> Remove-ModuleAmbitiousCharacters -InputString 'Admin Role #1' -RemoveSpaces
@@ -26,6 +26,9 @@ PS> Remove-ModuleAmbitiousCharacters -InputString 'Admin Role #1' -RemoveSpaces
 .NOTES
 Only removes a restricted set of characters; callers may perform additional
 normalization (lowercasing, trimming) if needed.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Remove-ModuleAmbitiousCharacters()
 {

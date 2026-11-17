@@ -22,6 +22,9 @@ PS> [IcingaCheckResult]::new(2, '[CRITICAL] Load: 95%', @("load=95%;80;90;0;100"
 .NOTES
 Plain data container; performs no evaluation itself. Safe to construct in
 multi-threaded runspaces.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaCheckResult
 {
@@ -64,14 +67,14 @@ class IcingaCheckResult
     | ExitCode | System.Int32 | Icinga plugin state: 0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN. |         |
 
     .PARAMETER Output
-    | Name   | Type          | Description                                     | Default |
-    |--------|---------------|-------------------------------------------------|---------|
-    | Output | System.String | Rendered, possibly multi-line, plugin output.   |         |
+    | Name   | Type          | Description                                   | Default |
+    |--------|---------------|-----------------------------------------------|---------|
+    | Output | System.String | Rendered, possibly multi-line, plugin output. |         |
 
     .PARAMETER PerformanceData
-    | Name            | Type           | Description                                      | Default |
-    |-----------------|----------------|--------------------------------------------------|---------|
-    | PerformanceData | System.Array   | Performance-data metrics, one string per metric. |         |
+    | Name            | Type         | Description                                      | Default |
+    |-----------------|--------------|--------------------------------------------------|---------|
+    | PerformanceData | System.Array | Performance-data metrics, one string per metric. |         |
 
     .OUTPUTS
     IcingaCheckResult -- Configured result instance.

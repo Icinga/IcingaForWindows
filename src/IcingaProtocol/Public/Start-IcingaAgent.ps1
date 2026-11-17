@@ -9,7 +9,7 @@ Use this function to activate the protocol listener, connector and worker
 threads for Icinga JSON-RPC communication.
 
 .OUTPUTS
-None — Starts a background thread; no pipeline output.
+None -- Starts a background thread; no pipeline output.
 
 .EXAMPLE
 PS> Start-IcingaAgent
@@ -18,6 +18,9 @@ PS> Start-IcingaAgent
 This function requires New-IcingaAgentEnvironment and New-Thread to be available.
 The agent environment is initialized asynchronously in the spawned thread.
 Call this once during module startup after global configuration is in place.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaAgent()
 {

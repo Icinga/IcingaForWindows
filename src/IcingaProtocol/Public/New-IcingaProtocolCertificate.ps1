@@ -12,17 +12,17 @@ a passwordless PFX file (on Linux/macOS). When merging on Windows, the old
 certificate is removed from the store automatically.
 
 .PARAMETER CommonName
-| Name       | Type          | Description                                | Default |
-|------------|---------------|--------------------------------------------|---------|
-| CommonName | System.String | The common name (CN) for the certificate.  | $null   |
+| Name       | Type          | Description                               | Default |
+|------------|---------------|-------------------------------------------|---------|
+| CommonName | System.String | The common name (CN) for the certificate. | $null   |
 
 .PARAMETER SignedCert
-| Name       | Type          | Description                                | Default |
-|------------|---------------|--------------------------------------------|---------|
-| SignedCert | System.String | The PEM-formatted signed certificate.      | $null   |
+| Name       | Type          | Description                           | Default |
+|------------|---------------|---------------------------------------|---------|
+| SignedCert | System.String | The PEM-formatted signed certificate. | $null   |
 
 .OUTPUTS
-System.Object — Returns a structured result via Write-FunctionReturnValue containing the storage path.
+System.Object -- Returns a structured result via Write-FunctionReturnValue containing the storage path.
 
 .EXAMPLE
 PS> New-IcingaProtocolCertificate -CommonName 'IcingaNode'
@@ -37,6 +37,9 @@ Merges the signed certificate with the existing private key for 'IcingaNode'.
 .NOTES
 Requires administrative privileges on Windows to access the LocalMachine certificate store.
 Cross-platform compatible; relies on .NET cryptography classes.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaProtocolCertificate()
 {
@@ -54,10 +57,10 @@ function New-IcingaProtocolCertificate()
 
     if ([string]::IsNullOrEmpty($SignedCert)) {
         # Generate a new 4096-bit RSA private key
-        $rsa  = [System.Security.Cryptography.RSA]::Create(4096);
+        $rsa      = [System.Security.Cryptography.RSA]::Create(4096);
 
         # Create a new certificate request for the given Common Name
-        $req  = [System.Security.Cryptography.X509Certificates.CertificateRequest]::New(
+        $req      = [System.Security.Cryptography.X509Certificates.CertificateRequest]::New(
             [string]::Format('CN={0}', $CommonName),
             $rsa,
             [System.Security.Cryptography.HashAlgorithmName]::SHA256,
@@ -65,7 +68,7 @@ function New-IcingaProtocolCertificate()
         );
 
         # Create the self-signed certificate, valid for 3 months
-        $cert = $req.CreateSelfSigned([System.DateTimeOffset]::Now, [System.DateTimeOffset]::Now.AddMonths(3));
+        $cert     = $req.CreateSelfSigned([System.DateTimeOffset]::Now, [System.DateTimeOffset]::Now.AddMonths(3));
 
         # Export the certificate as a PFX/PKCS#12 payload.
         # By not providing a password string, the PFX is generated without password encryption.

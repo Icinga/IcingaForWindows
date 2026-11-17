@@ -37,6 +37,9 @@ PS> ConvertTo-IcingaPerformanceCounterInstanceStructure -Result $raw -Counter '\
 .NOTES
 Called by `Get-IcingaPerformanceCounter` when `-StructureByInstance` is set. Pure transform; touches
 no global state and reads no counters.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-IcingaPerformanceCounterInstanceStructure()
 {

@@ -6,7 +6,7 @@ Build a hierarchical tree of all registered threads as PSObjects.
 `Get-ThreadTree` collects every thread from the global thread registry and
 assembles it into a list of root-level tree nodes. Each node holds the
 resolved thread state, last-seen age, parameters and a `Children` array that
-contains the child nodes in the same format — forming a complete, self-contained
+contains the child nodes in the same format -- forming a complete, self-contained
 representation of the thread hierarchy without requiring further registry
 lookups.
 
@@ -19,7 +19,7 @@ PSObject with the following properties:
 | Id         | System.String    | Unique thread GUID                   |
 | Name       | System.String    | Display name of the thread           |
 | Command    | System.String    | Entry-point command name             |
-| State      | System.String    | Resolved state (RUNNING, IDLE, …)   |
+| State      | System.String    | Resolved state (RUNNING, IDLE, ...)  |
 | LastSeen   | System.Double    | Seconds since last heartbeat         |
 | KeepAlive  | System.Boolean   | Whether the thread is kept alive     |
 | Parameters | System.Hashtable | Parameters passed to the command     |
@@ -33,6 +33,9 @@ PS> $tree[0].Children
 .NOTES
 The function resolves state and last-seen values at call time via
 `Get-ThreadState` and `Get-ThreadLastSeen`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ThreadTree()
 {

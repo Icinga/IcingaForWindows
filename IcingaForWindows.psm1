@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Initializes the global IcingaForWindows runtime environment and default configuration.
+Initialize the global Icinga for Windows runtime environment and default configuration
 
 .DESCRIPTION
 New-ModuleBaseEnvironment creates and assigns a thread-safe, synchronized hashtable to the global variable $Global:IcingaForWindows.
@@ -13,44 +13,25 @@ This function is intended to be called once at module initialization to ensure a
 components to read from and modify. It purposely uses a synchronized hashtable for safe concurrent access from multiple
 threads or background jobs.
 
-.PARAMETER None
-This function does not accept parameters.
-
 .OUTPUTS
-System.Collections.Hashtable
-The function populates $Global:IcingaForWindows and does not return a value. Consumers should read and manipulate the
-global hashtable directly (for example: $Global:IcingaForWindows['Public']['Config']).
+None -- Populates $Global:IcingaForWindows in place and does not return a pipeline value.
+
+.EXAMPLE
+PS> New-ModuleBaseEnvironment
+PS> $Root = $Global:IcingaForWindows['Public']['Config']['Root']
+
+Initializes the base runtime state and reads the configured Icinga for Windows ProgramData root path.
 
 .NOTES
 - Global variable: $Global:IcingaForWindows
 - The configuration root is set to Join-Path -Path $env:ProgramData -ChildPath 'IcingaForWindows'.
 - Default theme: 'DefaultDark'.
-- Colors are represented as string names intended for console/ANSI color use (Font, Info, Success, Warning, Error, Text).
-- TLS protocols: combines SslProtocols.Tls12 and SslProtocols.Tls13 using bitwise OR. Availability of Tls13 depends on
-    the underlying .NET/Windows runtime; on platforms without Tls13 support you may need to adjust this setting.
-- The function overwrites any existing $Global:IcingaForWindows value.
+- Colors are represented as string names intended for console/ANSI color use (Debug, Audit, Info, Success, Warning, Error, Fatal, Text, Output).
+- Function is idempotent when $Global:IcingaForWindows is already initialized.
 
-.EXAMPLE
-# Initialize the base environment (run during module import/initialization)
-New-ModuleBaseEnvironment
-
-# Access configuration root path
-$root = $Global:IcingaForWindows['Public']['Config']['Root']
-
-# Register an Icinga protocol endpoint
-$Global:IcingaForWindows['Public']['IcingaProtocol']['Endpoints']['Default'] = @{
-        Host = '127.0.0.1'
-        Port = 5665
-        Secure = $true
-}
-
-# Check TLS protocols configured
-$Global:IcingaForWindows['Public']['Config']['TLS']['Protocol']
-
-# Note: This function is safe to call multiple times but will reinitialize the global structure,
-# so call carefully if other components hold references into the hashtable.
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
-
 function New-ModuleBaseEnvironment()
 {
     if ($null -ne $Global:IcingaForWindows) {
@@ -59,7 +40,7 @@ function New-ModuleBaseEnvironment()
 
     [string]$OSType = 'Windows';
 
-    # Fix for Linux and MacOS where ProgramData is not set by default, using a .ProgramData folder in the user's home directory as fallback
+    # Fix for Linux and macOS where ProgramData is not set by default, using a ProgramData folder in the user's home directory as fallback
     if ($null -eq $env:ProgramData) {
         $OSType          = 'Linux';
         $env:ProgramData = Join-Path -Path $env:HOME -ChildPath 'ProgramData';
@@ -257,6 +238,9 @@ Returns the approved Icinga for Windows binaries directory path.
 .NOTES
 Created automatically during startup by New-ModuleConfigEnvironment and
 whitelisted in Get-SecureChildItem.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ModuleBinaryDirectory()
 {
@@ -268,10 +252,10 @@ function Get-ModuleBinaryDirectory()
 Build and compile the Icinga for Windows module project
 
 .DESCRIPTION
-`Build-ModuleProject` is the public entry point to compile the Icinga for
-Windows module. It consolidates all source files into the kernel artifact
-under `lib/`, updates the module manifest, and optionally generates documentation
-or executes memory leak tests.
+`Build-ModuleProject` is the entry point to compile the Icinga for Windows
+module. It consolidates all source files into the classes and kernel artifacts
+under `lib/`, reloads the module manifest, and optionally generates API
+documentation or executes memory-leak and code-styling checks.
 
 .PARAMETER SkipTests
 | Name      | Type                                         | Description                                              | Default |
@@ -286,7 +270,12 @@ or executes memory leak tests.
 .PARAMETER TestDaemonMemoryLeaks
 | Name                  | Type                                         | Description                                    | Default |
 |-----------------------|----------------------------------------------|------------------------------------------------|---------|
-| TestDaemonMemoryLeaks | System.Management.Automation.SwitchParameter | When set, run daemon memory leak stress tests. | $false  |
+| TestDaemonMemoryLeaks | System.Management.Automation.SwitchParameter | When set, run daemon memory leak AST checks.   | $false  |
+
+.PARAMETER TestCodeStyling
+| Name            | Type                                         | Description                                               | Default |
+|-----------------|----------------------------------------------|-----------------------------------------------------------|---------|
+| TestCodeStyling | System.Management.Automation.SwitchParameter | When set, run repository code-styling and SPDX checks.    | $false  |
 
 .OUTPUTS
 None -- Side effects only: generates module artifacts under lib/ and docs/.
@@ -298,16 +287,20 @@ Compiles the module and generates API documentation.
 
 .NOTES
 Invokes build/Build-ModuleProject.ps1 in the module directory.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Build-ModuleProject()
 {
     param (
         [switch]$SkipTests             = $false,
         [switch]$GenerateDocs          = $false,
-        [switch]$TestDaemonMemoryLeaks = $false
+        [switch]$TestDaemonMemoryLeaks = $false,
+        [switch]$TestCodeStyling       = $false
     );
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path 'build' -ChildPath 'Build-ModuleProject.ps1')) -SkipTests:$SkipTests -GenerateDocs:$GenerateDocs -TestDaemonMemoryLeaks:$TestDaemonMemoryLeaks;
+    & (Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path 'build' -ChildPath 'Build-ModuleProject.ps1')) -SkipTests:$SkipTests -GenerateDocs:$GenerateDocs -TestDaemonMemoryLeaks:$TestDaemonMemoryLeaks -TestCodeStyling:$TestCodeStyling;
 }
 
 <#
@@ -339,6 +332,9 @@ Executes only the memory leak test suite.
 
 .NOTES
 Requires the Pester module (5.0 or newer) to be installed and available in the session.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaModuleTests()
 {
@@ -361,18 +357,18 @@ function Get-ModuleProjectName()
 
 <#
 .SYNOPSIS
-Initialize the IcingaForWindows runtime environment in the current session
+Initialize the Icinga for Windows runtime environment in the current session
 
 .DESCRIPTION
-`Use-IcingaForWindows` performs the necessary startup tasks for the Icinga
-PowerShell module. When called without `-NoNewShell` it spawns a new
+`Use-IcingaForWindows` performs the necessary startup tasks for the Icinga for
+Windows PowerShell module. When called without `-NoNewShell` it spawns a new
 PowerShell process (preferring pwsh over powershell.exe) and re-invokes
 itself with `-NoNewShell` in that child process. When called with
 `-NoNewShell` it initializes the base environment, applies the log level,
 loads configuration and access control, and starts the standard background
-daemon threads (logging, garbage collector, housekeeper, REST API, WebSocket
-and Icinga agent). The function is idempotent; repeated calls while already
-initialized return immediately.
+daemon threads (logging, garbage collector, housekeeper, performance counter,
+REST API, WebSocket and Icinga agent). The function is idempotent; repeated
+calls while already initialized return immediately.
 
 .PARAMETER LogLevel
 | Name     | Type          | Description                                                                                             | Default |
@@ -401,8 +397,10 @@ Depends on New-ModuleBaseEnvironment, New-ModuleConfigEnvironment,
 Read-ModuleAccessControl and the daemon functions being available in scope.
 The alias `ifw` maps to this function. When running without `-NoNewShell`
 the function blocks until the spawned child process exits.
-#>
 
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
+#>
 function Use-IcingaForWindows()
 {
     param (
@@ -422,7 +420,7 @@ function Use-IcingaForWindows()
         # Initialize the base environment
         New-ModuleBaseEnvironment;
 
-        # Apply te log level to our environment
+        # Apply the log level to our environment
         Set-LoggingLogLevel -Level $LogLevel;
 
         # Only apply this for the main, initial call.
@@ -456,21 +454,21 @@ function Use-IcingaForWindows()
             [string]$LogLevel           = $args[0];
             [bool]$RunBackgroundDaemons = [bool]$args[1];
 
-            # To prevent code duplication, just let this PowerShell session call
-            # IcingaForWindows, but do not start a new shell. This will ensure we
-            # have a proper call stack and can manage everything way easier
+            # To prevent code duplication, let this PowerShell session invoke
+            # Use-IcingaForWindows directly without spawning another child shell
+            # so the call stack and runtime state stay cleanly isolated.
             Use-IcingaForWindows -NoNewShell -LogLevel $LogLevel -RunBackgroundDaemons:$RunBackgroundDaemons;
 
             function prompt()
             {
                 Write-Host -Object 'icinga' -NoNewline;
-                return '> '
+                return '> ';
             }
         } -Args $LogLevel, $RunBackgroundDaemons;
     }
 }
 
-# Create an alias for us, which allows to simply use 'icinga' in the shell
+# Create an alias for us, which allows to simply use 'ifw' in the shell
 Set-Alias -Name 'ifw' -Value 'Use-IcingaForWindows';
 
 <#

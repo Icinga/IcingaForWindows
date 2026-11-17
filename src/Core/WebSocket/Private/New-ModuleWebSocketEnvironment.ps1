@@ -9,7 +9,7 @@ handler threads for each configured WebSocket instance. The function ensures
 that the public runtime structure is populated for subsequent operations.
 
 .OUTPUTS
-System.Object — Returns a structured `Write-FunctionReturnValue` indicating
+System.Object -- Returns a structured `Write-FunctionReturnValue` indicating
 success or the absence of any configurations to initialize.
 
 .EXAMPLE
@@ -20,6 +20,9 @@ Uses `Read-ModuleWebSocketConfig` to load persisted configurations and
 `New-Thread` to spawn a `Start-ModuleWebSocketHandler` thread per instance.
 Each instance receives its own `ReaderWorker` and `WriterWorker`
 `BlockingCollection` stored in `$Global:ModuleName.Public.WebSocket`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-ModuleWebSocketEnvironment()
 {

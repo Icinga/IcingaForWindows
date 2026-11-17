@@ -9,7 +9,7 @@ ladders to resolve unit tokens, map them to unit families, and scale values
 to and from base units (bytes for data, seconds for time).
 
 .OUTPUTS
-IcingaUnitEntry — Instantiated unit definition entry.
+IcingaUnitEntry -- Instantiated unit definition entry.
 
 .EXAMPLE
 PS> [IcingaUnitEntry]::new('KiB', [decimal]1024, 'Kibibyte', 'byte', 'Data')
@@ -19,6 +19,9 @@ Creates a unit entry representing Kibibytes with a base factor of 1024 bytes.
 .NOTES
 Internal data structure used exclusively by the IcingaUnit conversion system.
 No external dependencies or global state.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaUnitEntry
 {
@@ -37,9 +40,9 @@ class IcingaUnitEntry
     long name, kind category, and parent family.
 
     .PARAMETER Short
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Short | System.String | Short unit symbol (e.g. 'KiB', 's', 'B').|         |
+    | Name  | Type          | Description                               | Default |
+    |-------|---------------|-------------------------------------------|---------|
+    | Short | System.String | Short unit symbol (e.g. 'KiB', 's', 'B'). |         |
 
     .PARAMETER Factor
     | Name   | Type           | Description                                     | Default |
@@ -47,9 +50,9 @@ class IcingaUnitEntry
     | Factor | System.Decimal | Conversion factor relative to family base unit. |         |
 
     .PARAMETER Long
-    | Name | Type          | Description                                    | Default |
-    |------|---------------|------------------------------------------------|---------|
-    | Long | System.String | Full singular name (e.g. 'Kibibyte', 'Second').|         |
+    | Name | Type          | Description                                     | Default |
+    |------|---------------|-------------------------------------------------|---------|
+    | Long | System.String | Full singular name (e.g. 'Kibibyte', 'Second'). |         |
 
     .PARAMETER Kind
     | Name | Type          | Description                                    | Default |
@@ -62,7 +65,7 @@ class IcingaUnitEntry
     | Family | System.String | Major unit family ('Data' or 'Time'). |         |
 
     .OUTPUTS
-    IcingaUnitEntry — Configured unit definition instance.
+    IcingaUnitEntry -- Configured unit definition instance.
 
     .EXAMPLE
     PS> [IcingaUnitEntry]::new('MiB', [decimal]1048576, 'Mebibyte', 'byte', 'Data')
@@ -111,7 +114,7 @@ fully self-contained, thread-safe, and compatible with Windows PowerShell 5.1
 and PowerShell 7+.
 
 .OUTPUTS
-IcingaUnit — Value object describing the conversion result.
+IcingaUnit -- Value object describing the conversion result.
 
 .EXAMPLE
 PS> [IcingaUnit]::new('1024B', $null, $null, $false)
@@ -131,19 +134,22 @@ Converts 1000 bytes explicitly to GiB.
 .NOTES
 Self-contained value object. Does not modify global state or access external
 services. Safe to construct in multi-threaded runspaces.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaUnit
 {
-    [double]$InputValue        = 0;
-    [string]$InputUnit         = '';
-    [double]$OutputValue       = 0;
-    [string]$OutputUnit        = '';
-    [string]$OutputString      = '';
-    [double]$BaseValue         = 0;
-    [string]$Family            = '';
+    [double]$InputValue                                                                       = 0;
+    [string]$InputUnit                                                                        = '';
+    [double]$OutputValue                                                                      = 0;
+    [string]$OutputUnit                                                                       = '';
+    [string]$OutputString                                                                     = '';
+    [double]$BaseValue                                                                        = 0;
+    [string]$Family                                                                           = '';
 
-    hidden [bool]$Success      = $false;
-    hidden [string]$ReturnCode = '';
+    hidden [bool]$Success                                                                     = $false;
+    hidden [string]$ReturnCode                                                                = '';
 
     static hidden [regex]$ValueRegex                                                          = [regex]::new('^\s*(-?\d+(?:[.,]\d+)?)\s*([A-Za-z]+)?\s*$', [System.Text.RegularExpressions.RegexOptions]::Compiled);
     static hidden [System.Collections.Generic.Dictionary[string, IcingaUnitEntry]]$TimeLookup = $null;
@@ -164,7 +170,7 @@ class IcingaUnit
     expression. Safe to call multiple times (idempotent).
 
     .OUTPUTS
-    None — Populates static class fields.
+    None -- Populates static class fields.
 
     .EXAMPLE
     PS> [IcingaUnit]::InitializeUnitTables()
@@ -194,11 +200,11 @@ class IcingaUnit
         );
         [IcingaUnit]::SecondsEntry = [IcingaUnit]::TimeLadder[6];
 
-        $LocalTimeLookup = [System.Collections.Generic.Dictionary[string, IcingaUnitEntry]]::new([System.StringComparer]::Ordinal);
+        $LocalTimeLookup           = [System.Collections.Generic.Dictionary[string, IcingaUnitEntry]]::new([System.StringComparer]::Ordinal);
         foreach ($Entry in [IcingaUnit]::TimeLadder) {
             $LocalTimeLookup[$Entry.Short] = $Entry;
         }
-        [IcingaUnit]::TimeLookup = $LocalTimeLookup;
+        [IcingaUnit]::TimeLookup      = $LocalTimeLookup;
 
         # Factors are expressed in bytes. 'Kind' selects the auto ladder: byte
         # input auto-formats against the binary ladder, bit input against bits.
@@ -221,11 +227,11 @@ class IcingaUnit
             [IcingaUnitEntry]::new('Tbit', [decimal]125000000000,     'Terabit',  'bit',  'Data')
         );
 
-        $LocalDataLookup = [System.Collections.Generic.Dictionary[string, IcingaUnitEntry]]::new([System.StringComparer]::OrdinalIgnoreCase);
+        $LocalDataLookup              = [System.Collections.Generic.Dictionary[string, IcingaUnitEntry]]::new([System.StringComparer]::OrdinalIgnoreCase);
         foreach ($Entry in $DataUnits) {
             $LocalDataLookup[$Entry.Short] = $Entry;
         }
-        [IcingaUnit]::DataLookup = $LocalDataLookup;
+        [IcingaUnit]::DataLookup       = $LocalDataLookup;
 
         [IcingaUnit]::DataBinaryLadder = @(
             $LocalDataLookup['PiB'],
@@ -236,7 +242,7 @@ class IcingaUnit
             $LocalDataLookup['B']
         );
 
-        [IcingaUnit]::DataBitLadder = @(
+        [IcingaUnit]::DataBitLadder    = @(
             $LocalDataLookup['Tbit'],
             $LocalDataLookup['Gbit'],
             $LocalDataLookup['Mbit'],
@@ -269,8 +275,8 @@ class IcingaUnit
     | InputUnit | System.String | Fallback unit when InputValue does not contain a unit suffix. |         |
 
     .PARAMETER TargetUnit
-    | Name       | Type          | Description                                                  | Default |
-    |------------|---------------|--------------------------------------------------------------|---------|
+    | Name       | Type          | Description                                                   | Default |
+    |------------|---------------|---------------------------------------------------------------|---------|
     | TargetUnit | System.String | Target unit for conversion. When omitted, best-fit is chosen. |         |
 
     .PARAMETER AsHumanReadable
@@ -279,7 +285,7 @@ class IcingaUnit
     | AsHumanReadable | System.Boolean | When $true, formats OutputString with full pluralized names. |         |
 
     .OUTPUTS
-    IcingaUnit — Configured instance containing conversion status and results.
+    IcingaUnit -- Configured instance containing conversion status and results.
 
     .EXAMPLE
     PS> [IcingaUnit]::new('1024B', '', '', $false)
@@ -338,11 +344,11 @@ class IcingaUnit
             return;
         }
 
-        [string]$InputFamily = $InputEntry.Family;
+        [string]$InputFamily    = $InputEntry.Family;
 
-        $this.InputValue = [double]$Number;
-        $this.InputUnit  = $InputEntry.Short;
-        $this.Family     = $InputFamily;
+        $this.InputValue        = [double]$Number;
+        $this.InputUnit         = $InputEntry.Short;
+        $this.Family            = $InputFamily;
 
         # Convert the input into the family base unit (bytes for data, seconds for
         # time) so every following calculation shares a common scale.
@@ -369,11 +375,11 @@ class IcingaUnit
 
             [decimal]$Converted = $BaseUnitValue / $TargetEntry.Factor;
 
-            $this.OutputValue  = $Sign * [double][System.Math]::Round($Converted, 2);
-            $this.OutputUnit   = $TargetEntry.Short;
-            $this.OutputString = $this.ApplySign($Sign, $this.FormatSingle($Converted, $TargetEntry, $AsHumanReadable));
-            $this.Success      = $true;
-            $this.ReturnCode   = 'IcingaUnitConverted';
+            $this.OutputValue   = $Sign * [double][System.Math]::Round($Converted, 2);
+            $this.OutputUnit    = $TargetEntry.Short;
+            $this.OutputString  = $this.ApplySign($Sign, $this.FormatSingle($Converted, $TargetEntry, $AsHumanReadable));
+            $this.Success       = $true;
+            $this.ReturnCode    = 'IcingaUnitConverted';
             return;
         }
 
@@ -398,12 +404,12 @@ class IcingaUnit
     error code in ReturnCode for downstream error propagation.
 
     .PARAMETER Code
-    | Name | Type          | Description                                  | Default |
-    |------|---------------|----------------------------------------------|---------|
-    | Code | System.String | Semantic return code identifying the failure.|         |
+    | Name | Type          | Description                                   | Default |
+    |------|---------------|-----------------------------------------------|---------|
+    | Code | System.String | Semantic return code identifying the failure. |         |
 
     .OUTPUTS
-    None — Updates instance state.
+    None -- Updates instance state.
 
     .EXAMPLE
     PS> $this.Fail('IcingaUnitInvalidInputValue')
@@ -432,7 +438,7 @@ class IcingaUnit
     | Token | System.String | Unit symbol or identifier to resolve. |         |
 
     .OUTPUTS
-    IcingaUnitEntry — Matching unit definition entry, or $null if unknown.
+    IcingaUnitEntry -- Matching unit definition entry, or $null if unknown.
 
     .EXAMPLE
     PS> [IcingaUnit]::ResolveUnit('GiB')
@@ -469,14 +475,14 @@ class IcingaUnit
     greater than or equal to 1. Sets OutputValue, OutputUnit, and OutputString.
 
     .PARAMETER BaseValue
-    | Name      | Type           | Description                           | Default |
-    |-----------|----------------|---------------------------------------|---------|
-    | BaseValue | System.Decimal | Value scaled to the base unit (bytes).|         |
+    | Name      | Type           | Description                            | Default |
+    |-----------|----------------|----------------------------------------|---------|
+    | BaseValue | System.Decimal | Value scaled to the base unit (bytes). |         |
 
     .PARAMETER Sign
-    | Name | Type         | Description                                        | Default |
-    |------|--------------|----------------------------------------------------|---------|
-    | Sign | System.Int32 | Numeric sign multiplier (1 for positive, -1 for -).|         |
+    | Name | Type         | Description                                         | Default |
+    |------|--------------|-----------------------------------------------------|---------|
+    | Sign | System.Int32 | Numeric sign multiplier (1 for positive, -1 for -). |         |
 
     .PARAMETER InputEntry
     | Name       | Type            | Description                               | Default |
@@ -489,7 +495,7 @@ class IcingaUnit
     | AsHumanReadable | System.Boolean | When $true, formats OutputString with full pluralized names. |         |
 
     .OUTPUTS
-    None — Updates instance output properties.
+    None -- Updates instance output properties.
 
     .EXAMPLE
     PS> $this.BuildDataBestFit([decimal]1048576, 1, $inputEntry, $false)
@@ -521,9 +527,9 @@ class IcingaUnit
 
         [decimal]$Converted = $BaseValue / $Chosen.Factor;
 
-        $this.OutputValue  = $Sign * [double][System.Math]::Round($Converted, 2);
-        $this.OutputUnit   = $Chosen.Short;
-        $this.OutputString = $this.ApplySign($Sign, $this.FormatSingle($Converted, $Chosen, $AsHumanReadable));
+        $this.OutputValue   = $Sign * [double][System.Math]::Round($Converted, 2);
+        $this.OutputUnit    = $Chosen.Short;
+        $this.OutputString  = $this.ApplySign($Sign, $this.FormatSingle($Converted, $Chosen, $AsHumanReadable));
     }
 
     <#
@@ -541,9 +547,9 @@ class IcingaUnit
     | BaseValue | System.Decimal | Time duration scaled to base seconds. |         |
 
     .PARAMETER Sign
-    | Name | Type         | Description                                        | Default |
-    |------|--------------|----------------------------------------------------|---------|
-    | Sign | System.Int32 | Numeric sign multiplier (1 for positive, -1 for -).|         |
+    | Name | Type         | Description                                         | Default |
+    |------|--------------|-----------------------------------------------------|---------|
+    | Sign | System.Int32 | Numeric sign multiplier (1 for positive, -1 for -). |         |
 
     .PARAMETER AsHumanReadable
     | Name            | Type           | Description                                                  | Default |
@@ -551,7 +557,7 @@ class IcingaUnit
     | AsHumanReadable | System.Boolean | When $true, formats OutputString with full pluralized names. |         |
 
     .OUTPUTS
-    None — Updates instance output properties.
+    None -- Updates instance output properties.
 
     .EXAMPLE
     PS> $this.BuildTimeDecomposition([decimal]8600, 1, $true)
@@ -608,14 +614,14 @@ class IcingaUnit
     either the short symbol or the long pluralized name of the unit entry.
 
     .PARAMETER Value
-    | Name  | Type           | Description                 | Default |
-    |-------|----------------|-----------------------------|---------|
-    | Value | System.Decimal | Numeric value to format.    |         |
+    | Name  | Type           | Description              | Default |
+    |-------|----------------|--------------------------|---------|
+    | Value | System.Decimal | Numeric value to format. |         |
 
     .PARAMETER Entry
-    | Name  | Type            | Description                 | Default |
-    |-------|-----------------|-----------------------------|---------|
-    | Entry | IcingaUnitEntry | Target unit definition entry|         |
+    | Name  | Type            | Description                  | Default |
+    |-------|-----------------|------------------------------|---------|
+    | Entry | IcingaUnitEntry | Target unit definition entry |         |
 
     .PARAMETER AsHumanReadable
     | Name            | Type           | Description                                         | Default |
@@ -623,7 +629,7 @@ class IcingaUnit
     | AsHumanReadable | System.Boolean | When $true, uses full unit name with pluralization. |         |
 
     .OUTPUTS
-    System.String — Formatted display string representing the value and unit.
+    System.String -- Formatted display string representing the value and unit.
 
     .EXAMPLE
     PS> $this.FormatSingle([decimal]1.5, $entry, $false)
@@ -652,9 +658,9 @@ class IcingaUnit
     appends an 's' suffix to produce the regular English plural form.
 
     .PARAMETER Long
-    | Name | Type          | Description                   | Default |
-    |------|---------------|-------------------------------|---------|
-    | Long | System.String | Singular unit name in English.|         |
+    | Name | Type          | Description                    | Default |
+    |------|---------------|--------------------------------|---------|
+    | Long | System.String | Singular unit name in English. |         |
 
     .PARAMETER Value
     | Name  | Type           | Description                                | Default |
@@ -662,7 +668,7 @@ class IcingaUnit
     | Value | System.Decimal | Numeric value evaluated for pluralization. |         |
 
     .OUTPUTS
-    System.String — Appropriately inflected unit name string.
+    System.String -- Appropriately inflected unit name string.
 
     .EXAMPLE
     PS> $this.Pluralize('Hour', [decimal]2)
@@ -688,9 +694,9 @@ class IcingaUnit
     unmodified when positive.
 
     .PARAMETER Sign
-    | Name | Type         | Description                                        | Default |
-    |------|--------------|----------------------------------------------------|---------|
-    | Sign | System.Int32 | Numeric sign multiplier (1 for positive, -1 for -).|         |
+    | Name | Type         | Description                                         | Default |
+    |------|--------------|-----------------------------------------------------|---------|
+    | Sign | System.Int32 | Numeric sign multiplier (1 for positive, -1 for -). |         |
 
     .PARAMETER Text
     | Name | Type          | Description                      | Default |
@@ -698,7 +704,7 @@ class IcingaUnit
     | Text | System.String | Formatted text string to prefix. |         |
 
     .OUTPUTS
-    System.String — Sign-adjusted text string.
+    System.String -- Sign-adjusted text string.
 
     .EXAMPLE
     PS> $this.ApplySign(-1, '500MB')

@@ -9,13 +9,16 @@ and attempts restarts for keep-alive threads. It sleeps between cycles to
 reduce resource usage.
 
 .OUTPUTS
-None — Performs side-effect operations on the global thread registry and logs actions.
+None -- Performs side-effect operations on the global thread registry and logs actions.
 
 .EXAMPLE
 PS> Start-ThreadHouseKeeper
 
 .NOTES
 This function is intended to run as a background supervisory thread.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-ThreadHouseKeeper()
 {

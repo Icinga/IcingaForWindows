@@ -62,6 +62,9 @@ Functions create instances only through New-IcingaPlugin, never with
 literal inside a function resolves to the type of the main runspace; on Windows
 PowerShell 5.1 the methods of such an instance stall in a background thread until
 the main runspace is idle.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaPlugin
 {
@@ -134,9 +137,9 @@ class IcingaPlugin
     aggregates child checks added with AddCheck.
 
     .PARAMETER Name
-    | Name | Type          | Description                          | Default |
-    |------|---------------|--------------------------------------|---------|
-    | Name | System.String | Display name of the plugin node.     |         |
+    | Name | Type          | Description                      | Default |
+    |------|---------------|----------------------------------|---------|
+    | Name | System.String | Display name of the plugin node. |         |
 
     .OUTPUTS
     IcingaPlugin -- Configured plugin node.
@@ -162,14 +165,14 @@ class IcingaPlugin
     afterwards through the fluent setters and comparison methods.
 
     .PARAMETER Name
-    | Name | Type          | Description                       | Default |
-    |------|---------------|-----------------------------------|---------|
-    | Name | System.String | Display name of the check.        |         |
+    | Name | Type          | Description                | Default |
+    |------|---------------|----------------------------|---------|
+    | Name | System.String | Display name of the check. |         |
 
     .PARAMETER Value
-    | Name  | Type          | Description                                   | Default |
-    |-------|---------------|-----------------------------------------------|---------|
-    | Value | System.Object | Measured value; number or '<number><unit>'.   |         |
+    | Name  | Type          | Description                                 | Default |
+    |-------|---------------|---------------------------------------------|---------|
+    | Value | System.Object | Measured value; number or '<number><unit>'. |         |
 
     .OUTPUTS
     IcingaPlugin -- Configured plugin node.
@@ -196,19 +199,19 @@ class IcingaPlugin
     threshold comparison.
 
     .PARAMETER Name
-    | Name | Type          | Description                       | Default |
-    |------|---------------|-----------------------------------|---------|
-    | Name | System.String | Display name of the check.        |         |
+    | Name | Type          | Description                | Default |
+    |------|---------------|----------------------------|---------|
+    | Name | System.String | Display name of the check. |         |
 
     .PARAMETER Value
-    | Name  | Type          | Description                                   | Default |
-    |-------|---------------|-----------------------------------------------|---------|
-    | Value | System.Object | Measured value; number or '<number><unit>'.   |         |
+    | Name  | Type          | Description                                 | Default |
+    |-------|---------------|---------------------------------------------|---------|
+    | Value | System.Object | Measured value; number or '<number><unit>'. |         |
 
     .PARAMETER Unit
-    | Name | Type          | Description                        | Default |
-    |------|---------------|------------------------------------|---------|
-    | Unit | System.String | Icinga unit appended to perfdata.  |         |
+    | Name | Type          | Description                       | Default |
+    |------|---------------|-----------------------------------|---------|
+    | Unit | System.String | Icinga unit appended to perfdata. |         |
 
     .OUTPUTS
     IcingaPlugin -- Configured plugin node.
@@ -234,19 +237,19 @@ class IcingaPlugin
     a single helper so every constructor overload behaves identically.
 
     .PARAMETER Name
-    | Name | Type          | Description                    | Default |
-    |------|---------------|--------------------------------|---------|
-    | Name | System.String | Display name of the node.      |         |
+    | Name | Type          | Description               | Default |
+    |------|---------------|---------------------------|---------|
+    | Name | System.String | Display name of the node. |         |
 
     .PARAMETER Value
-    | Name  | Type          | Description                   | Default |
-    |-------|---------------|-------------------------------|---------|
-    | Value | System.Object | Measured value or $null.      |         |
+    | Name  | Type          | Description              | Default |
+    |-------|---------------|--------------------------|---------|
+    | Value | System.Object | Measured value or $null. |         |
 
     .PARAMETER Unit
-    | Name | Type          | Description        | Default |
-    |------|---------------|--------------------|---------|
-    | Unit | System.String | Icinga unit.       |         |
+    | Name | Type          | Description  | Default |
+    |------|---------------|--------------|---------|
+    | Unit | System.String | Icinga unit. |         |
 
     .OUTPUTS
     None -- Updates instance state.
@@ -286,9 +289,9 @@ class IcingaPlugin
     CheckGreater, ...) is called.
 
     .PARAMETER Warning
-    | Name    | Type          | Description                              | Default |
-    |---------|---------------|------------------------------------------|---------|
-    | Warning | System.String | Warning threshold string ('' = unset).   |         |
+    | Name    | Type          | Description                            | Default |
+    |---------|---------------|----------------------------------------|---------|
+    | Warning | System.String | Warning threshold string ('' = unset). |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -319,9 +322,9 @@ class IcingaPlugin
     comma-separated display string in WarningThreshold.
 
     .PARAMETER Warning
-    | Name    | Type         | Description                                     | Default |
-    |---------|--------------|-------------------------------------------------|---------|
-    | Warning | System.Array | Array of warning threshold values or patterns.  |         |
+    | Name    | Type         | Description                                    | Default |
+    |---------|--------------|------------------------------------------------|---------|
+    | Warning | System.Array | Array of warning threshold values or patterns. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -361,9 +364,9 @@ class IcingaPlugin
     through an untyped variable.
 
     .PARAMETER Warning
-    | Name    | Type          | Description                                      | Default |
-    |---------|---------------|--------------------------------------------------|---------|
-    | Warning | System.Object | Warning threshold value (number, enum, TimeSpan).|         |
+    | Name    | Type          | Description                                       | Default |
+    |---------|---------------|---------------------------------------------------|---------|
+    | Warning | System.Object | Warning threshold value (number, enum, TimeSpan). |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -427,9 +430,9 @@ class IcingaPlugin
     comma-separated display string in CriticalThreshold.
 
     .PARAMETER Critical
-    | Name     | Type         | Description                                      | Default |
-    |----------|--------------|--------------------------------------------------|---------|
-    | Critical | System.Array | Array of critical threshold values or patterns.  |         |
+    | Name     | Type         | Description                                     | Default |
+    |----------|--------------|-------------------------------------------------|---------|
+    | Critical | System.Array | Array of critical threshold values or patterns. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -469,9 +472,9 @@ class IcingaPlugin
     through an untyped variable.
 
     .PARAMETER Critical
-    | Name     | Type          | Description                                       | Default |
-    |----------|---------------|---------------------------------------------------|---------|
-    | Critical | System.Object | Critical threshold value (number, enum, TimeSpan).|         |
+    | Name     | Type          | Description                                        | Default |
+    |----------|---------------|----------------------------------------------------|---------|
+    | Critical | System.Object | Critical threshold value (number, enum, TimeSpan). |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -504,9 +507,9 @@ class IcingaPlugin
     other non-null values use their string representation.
 
     .PARAMETER Entry
-    | Name  | Type          | Description                        | Default |
-    |-------|---------------|------------------------------------|---------|
-    | Entry | System.Object | Threshold list item to normalize.  |         |
+    | Name  | Type          | Description                       | Default |
+    |-------|---------------|-----------------------------------|---------|
+    | Entry | System.Object | Threshold list item to normalize. |         |
 
     .OUTPUTS
     System.String -- Normalized threshold string, or '' when null.
@@ -583,9 +586,9 @@ class IcingaPlugin
     data. Accepts a number or string; does not influence the threshold evaluation.
 
     .PARAMETER Minimum
-    | Name    | Type          | Description                         | Default |
-    |---------|---------------|-------------------------------------|---------|
-    | Minimum | System.Object | Perfdata minimum ('' = unset).      |         |
+    | Name    | Type          | Description                    | Default |
+    |---------|---------------|--------------------------------|---------|
+    | Minimum | System.Object | Perfdata minimum ('' = unset). |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -620,9 +623,9 @@ class IcingaPlugin
     data. Accepts a number or string; does not influence the threshold evaluation.
 
     .PARAMETER Maximum
-    | Name    | Type          | Description                         | Default |
-    |---------|---------------|-------------------------------------|---------|
-    | Maximum | System.Object | Perfdata maximum ('' = unset).      |         |
+    | Name    | Type          | Description                    | Default |
+    |---------|---------------|--------------------------------|---------|
+    | Maximum | System.Object | Perfdata maximum ('' = unset). |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -658,9 +661,9 @@ class IcingaPlugin
     IcingaThresholds when a comparison method is called.
 
     .PARAMETER BaseValue
-    | Name      | Type          | Description                                    | Default |
-    |-----------|---------------|------------------------------------------------|---------|
-    | BaseValue | System.Object | Base/maximum value; number or unit string.     |         |
+    | Name      | Type          | Description                                | Default |
+    |-----------|---------------|--------------------------------------------|---------|
+    | BaseValue | System.Object | Base/maximum value; number or unit string. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -692,9 +695,9 @@ class IcingaPlugin
     as a CPU core number or a disk letter. Defaults to 'default' when left unset.
 
     .PARAMETER Index
-    | Name  | Type          | Description                                | Default |
-    |-------|---------------|--------------------------------------------|---------|
-    | Index | System.String | Metric index / instance identifier.        |         |
+    | Name  | Type          | Description                         | Default |
+    |-------|---------------|-------------------------------------|---------|
+    | Index | System.String | Metric index / instance identifier. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -810,9 +813,9 @@ class IcingaPlugin
     numeric value in the performance data.
 
     .PARAMETER Translation
-    | Name        | Type                         | Description                                    | Default |
-    |-------------|------------------------------|------------------------------------------------|---------|
-    | Translation | System.Collections.Hashtable | Mapping of raw values to display strings.      |         |
+    | Name        | Type                         | Description                               | Default |
+    |-------------|------------------------------|-------------------------------------------|---------|
+    | Translation | System.Collections.Hashtable | Mapping of raw values to display strings. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -844,9 +847,9 @@ class IcingaPlugin
     performance data.
 
     .PARAMETER Text
-    | Name | Type          | Description                                      | Default |
-    |------|---------------|--------------------------------------------------|---------|
-    | Text | System.String | Human-readable display representation of Value.  |         |
+    | Name | Type          | Description                                     | Default |
+    |------|---------------|-------------------------------------------------|---------|
+    | Text | System.String | Human-readable display representation of Value. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -872,9 +875,9 @@ class IcingaPlugin
     2 all checks, 3 all checks plus operator configuration) and returns the node.
 
     .PARAMETER Verbose
-    | Name    | Type         | Description                  | Default |
-    |---------|--------------|------------------------------|---------|
-    | Verbose | System.Int32 | Verbosity level (0..3).      |         |
+    | Name    | Type         | Description             | Default |
+    |---------|--------------|-------------------------|---------|
+    | Verbose | System.Int32 | Verbosity level (0..3). |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -921,9 +924,9 @@ class IcingaPlugin
     Sets NoPerfData to the supplied boolean and returns the node for chaining.
 
     .PARAMETER NoPerfData
-    | Name       | Type           | Description                                | Default |
-    |------------|----------------|--------------------------------------------|---------|
-    | NoPerfData | System.Boolean | When true, suppress performance data.      |         |
+    | Name       | Type           | Description                           | Default |
+    |------------|----------------|---------------------------------------|---------|
+    | NoPerfData | System.Boolean | When true, suppress performance data. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -970,9 +973,9 @@ class IcingaPlugin
     Sets IsHidden to the supplied boolean and returns the node for chaining.
 
     .PARAMETER Hidden
-    | Name   | Type           | Description                                | Default |
-    |--------|----------------|--------------------------------------------|---------|
-    | Hidden | System.Boolean | When true, hide the node from output.      |         |
+    | Name   | Type           | Description                           | Default |
+    |--------|----------------|---------------------------------------|---------|
+    | Hidden | System.Boolean | When true, hide the node from output. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -1020,9 +1023,9 @@ class IcingaPlugin
     Sets IgnoreEmptyPackage to the supplied boolean and returns the node for chaining.
 
     .PARAMETER Ignore
-    | Name   | Type           | Description                                      | Default |
-    |--------|----------------|--------------------------------------------------|---------|
-    | Ignore | System.Boolean | When true, an empty package resolves to OK.      |         |
+    | Name   | Type           | Description                                 | Default |
+    |--------|----------------|---------------------------------------------|---------|
+    | Ignore | System.Boolean | When true, an empty package resolves to OK. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -1069,9 +1072,9 @@ class IcingaPlugin
     Sets AddSummaryHeader to the supplied boolean and returns the node for chaining.
 
     .PARAMETER AddHeader
-    | Name      | Type           | Description                                    | Default |
-    |-----------|----------------|------------------------------------------------|---------|
-    | AddHeader | System.Boolean | When true, include the summary header.         |         |
+    | Name      | Type           | Description                            | Default |
+    |-----------|----------------|----------------------------------------|---------|
+    | AddHeader | System.Boolean | When true, include the summary header. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -1119,9 +1122,9 @@ class IcingaPlugin
     Sets SkipSummary to the supplied boolean and returns the node for chaining.
 
     .PARAMETER Skip
-    | Name | Type           | Description                                          | Default |
-    |------|----------------|------------------------------------------------------|---------|
-    | Skip | System.Boolean | When true, omit from the container summary header.   |         |
+    | Name | Type           | Description                                        | Default |
+    |------|----------------|----------------------------------------------------|---------|
+    | Skip | System.Boolean | When true, omit from the container summary header. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -1510,9 +1513,9 @@ class IcingaPlugin
     ResolveTranslation when a translation applies.
 
     .PARAMETER List
-    | Name | Type         | Description                               | Default |
-    |------|--------------|-------------------------------------------|---------|
-    | List | System.Array | Multi-value threshold list on the node.   |         |
+    | Name | Type         | Description                             | Default |
+    |------|--------------|-----------------------------------------|---------|
+    | List | System.Array | Multi-value threshold list on the node. |         |
 
     .PARAMETER Fallback
     | Name     | Type          | Description                              | Default |
@@ -1563,9 +1566,9 @@ class IcingaPlugin
     pattern string, or $null when no entry matches.
 
     .PARAMETER InputValue
-    | Name       | Type          | Description                  | Default |
-    |------------|---------------|------------------------------|---------|
-    | InputValue | System.String | String value to test.        |         |
+    | Name       | Type          | Description           | Default |
+    |------------|---------------|-----------------------|---------|
+    | InputValue | System.String | String value to test. |         |
 
     .PARAMETER Patterns
     | Name     | Type         | Description                  | Default |
@@ -1831,9 +1834,9 @@ class IcingaPlugin
     translation applies.
 
     .PARAMETER Item
-    | Name | Type          | Description                        | Default |
-    |------|---------------|------------------------------------|---------|
-    | Item | System.Object | Value or threshold token to map.   |         |
+    | Name | Type          | Description                      | Default |
+    |------|---------------|----------------------------------|---------|
+    | Item | System.Object | Value or threshold token to map. |         |
 
     .OUTPUTS
     System.String -- Translated display string, or $null when none applies.
@@ -1926,9 +1929,9 @@ class IcingaPlugin
     unchanged.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Measured value or base value to adjust.  |         |
+    | Name  | Type          | Description                             | Default |
+    |-------|---------------|-----------------------------------------|---------|
+    | Value | System.Object | Measured value or base value to adjust. |         |
 
     .OUTPUTS
     System.Object -- The value with the unit attached, or the unchanged value.
@@ -2041,9 +2044,9 @@ class IcingaPlugin
     rendered value token in the threshold message with the translated string.
 
     .PARAMETER Message
-    | Name    | Type          | Description                            | Default |
-    |---------|---------------|----------------------------------------|---------|
-    | Message | System.String | Output message after unit formatting.  |         |
+    | Name    | Type          | Description                           | Default |
+    |---------|---------------|---------------------------------------|---------|
+    | Message | System.String | Output message after unit formatting. |         |
 
     .OUTPUTS
     System.String -- Message with the translated value applied when configured.
@@ -2093,9 +2096,9 @@ class IcingaPlugin
     percentages are left untouched.
 
     .PARAMETER Message
-    | Name    | Type          | Description                    | Default |
-    |---------|---------------|--------------------------------|---------|
-    | Message | System.String | The threshold output message.  |         |
+    | Name    | Type          | Description                   | Default |
+    |---------|---------------|-------------------------------|---------|
+    | Message | System.String | The threshold output message. |         |
 
     .OUTPUTS
     System.String -- The message with byte figures converted to their best-fit unit.
@@ -2139,9 +2142,9 @@ class IcingaPlugin
     percentages are left untouched.
 
     .PARAMETER Message
-    | Name    | Type          | Description                    | Default |
-    |---------|---------------|--------------------------------|---------|
-    | Message | System.String | The threshold output message.  |         |
+    | Name    | Type          | Description                   | Default |
+    |---------|---------------|-------------------------------|---------|
+    | Message | System.String | The threshold output message. |         |
 
     .OUTPUTS
     System.String -- The message with second figures converted to durations.
@@ -2187,9 +2190,9 @@ class IcingaPlugin
     counter perfdata unit 'c' is not appended to display text.
 
     .PARAMETER Message
-    | Name    | Type          | Description                    | Default |
-    |---------|---------------|--------------------------------|---------|
-    | Message | System.String | The threshold output message.  |         |
+    | Name    | Type          | Description                   | Default |
+    |---------|---------------|-------------------------------|---------|
+    | Message | System.String | The threshold output message. |         |
 
     .OUTPUTS
     System.String -- The message with the unit appended to each bare number.
@@ -2292,9 +2295,9 @@ class IcingaPlugin
     the output message or locking the node.
 
     .PARAMETER State
-    | Name  | Type         | Description                                     | Default |
-    |-------|--------------|-------------------------------------------------|---------|
-    | State | System.Int32 | Forced state (0 OK, 1 WARN, 2 CRIT, 3 UNKN).    |         |
+    | Name  | Type         | Description                                  | Default |
+    |-------|--------------|----------------------------------------------|---------|
+    | State | System.Int32 | Forced state (0 OK, 1 WARN, 2 CRIT, 3 UNKN). |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2319,14 +2322,14 @@ class IcingaPlugin
     output message when one is given, without locking the node.
 
     .PARAMETER State
-    | Name  | Type         | Description                                     | Default |
-    |-------|--------------|-------------------------------------------------|---------|
-    | State | System.Int32 | Forced state (0 OK, 1 WARN, 2 CRIT, 3 UNKN).    |         |
+    | Name  | Type         | Description                                  | Default |
+    |-------|--------------|----------------------------------------------|---------|
+    | State | System.Int32 | Forced state (0 OK, 1 WARN, 2 CRIT, 3 UNKN). |         |
 
     .PARAMETER Message
-    | Name    | Type          | Description                                      | Default |
-    |---------|---------------|--------------------------------------------------|---------|
-    | Message | System.String | Output message; '' keeps the existing message.   |         |
+    | Name    | Type          | Description                                    | Default |
+    |---------|---------------|------------------------------------------------|---------|
+    | Message | System.String | Output message; '' keeps the existing message. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2354,14 +2357,14 @@ class IcingaPlugin
     change it. Returns the node so overrides chain.
 
     .PARAMETER State
-    | Name  | Type         | Description                                     | Default |
-    |-------|--------------|-------------------------------------------------|---------|
-    | State | System.Int32 | Forced state (0 OK, 1 WARN, 2 CRIT, 3 UNKN).    |         |
+    | Name  | Type         | Description                                  | Default |
+    |-------|--------------|----------------------------------------------|---------|
+    | State | System.Int32 | Forced state (0 OK, 1 WARN, 2 CRIT, 3 UNKN). |         |
 
     .PARAMETER Message
-    | Name    | Type          | Description                                      | Default |
-    |---------|---------------|--------------------------------------------------|---------|
-    | Message | System.String | Output message; '' keeps the existing message.   |         |
+    | Name    | Type          | Description                                    | Default |
+    |---------|---------------|------------------------------------------------|---------|
+    | Message | System.String | Output message; '' keeps the existing message. |         |
 
     .PARAMETER Lock
     | Name | Type           | Description                                        | Default |
@@ -2436,9 +2439,9 @@ class IcingaPlugin
     | State | System.String | Forced state ('Ok', 'Warning', 'Critical', 'Unknown'). |         |
 
     .PARAMETER Message
-    | Name    | Type          | Description                                      | Default |
-    |---------|---------------|--------------------------------------------------|---------|
-    | Message | System.String | Output message; '' keeps the existing message.   |         |
+    | Name    | Type          | Description                                    | Default |
+    |---------|---------------|------------------------------------------------|---------|
+    | Message | System.String | Output message; '' keeps the existing message. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2469,9 +2472,9 @@ class IcingaPlugin
     | State | System.String | Forced state ('Ok', 'Warning', 'Critical', 'Unknown'). |         |
 
     .PARAMETER Message
-    | Name    | Type          | Description                                      | Default |
-    |---------|---------------|--------------------------------------------------|---------|
-    | Message | System.String | Output message; '' keeps the existing message.   |         |
+    | Name    | Type          | Description                                    | Default |
+    |---------|---------------|------------------------------------------------|---------|
+    | Message | System.String | Output message; '' keeps the existing message. |         |
 
     .PARAMETER Lock
     | Name | Type           | Description                                        | Default |
@@ -2522,9 +2525,9 @@ class IcingaPlugin
     Overrides the node state to OK with the given message.
 
     .PARAMETER Message
-    | Name    | Type          | Description                        | Default |
-    |---------|---------------|------------------------------------|---------|
-    | Message | System.String | Output message for the OK state.   |         |
+    | Name    | Type          | Description                      | Default |
+    |---------|---------------|----------------------------------|---------|
+    | Message | System.String | Output message for the OK state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2549,14 +2552,14 @@ class IcingaPlugin
     freezes the state against later changes.
 
     .PARAMETER Message
-    | Name    | Type          | Description                        | Default |
-    |---------|---------------|------------------------------------|---------|
-    | Message | System.String | Output message for the OK state.   |         |
+    | Name    | Type          | Description                      | Default |
+    |---------|---------------|----------------------------------|---------|
+    | Message | System.String | Output message for the OK state. |         |
 
     .PARAMETER Lock
-    | Name | Type           | Description                         | Default |
-    |------|----------------|-------------------------------------|---------|
-    | Lock | System.Boolean | When true, freeze the state.        |         |
+    | Name | Type           | Description                  | Default |
+    |------|----------------|------------------------------|---------|
+    | Lock | System.Boolean | When true, freeze the state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2602,9 +2605,9 @@ class IcingaPlugin
     Overrides the node state to WARNING with the given message.
 
     .PARAMETER Message
-    | Name    | Type          | Description                            | Default |
-    |---------|---------------|----------------------------------------|---------|
-    | Message | System.String | Output message for the WARNING state.  |         |
+    | Name    | Type          | Description                           | Default |
+    |---------|---------------|---------------------------------------|---------|
+    | Message | System.String | Output message for the WARNING state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2629,14 +2632,14 @@ class IcingaPlugin
     true, freezes the state against later changes.
 
     .PARAMETER Message
-    | Name    | Type          | Description                            | Default |
-    |---------|---------------|----------------------------------------|---------|
-    | Message | System.String | Output message for the WARNING state.  |         |
+    | Name    | Type          | Description                           | Default |
+    |---------|---------------|---------------------------------------|---------|
+    | Message | System.String | Output message for the WARNING state. |         |
 
     .PARAMETER Lock
-    | Name | Type           | Description                         | Default |
-    |------|----------------|-------------------------------------|---------|
-    | Lock | System.Boolean | When true, freeze the state.        |         |
+    | Name | Type           | Description                  | Default |
+    |------|----------------|------------------------------|---------|
+    | Lock | System.Boolean | When true, freeze the state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2682,9 +2685,9 @@ class IcingaPlugin
     Overrides the node state to CRITICAL with the given message.
 
     .PARAMETER Message
-    | Name    | Type          | Description                             | Default |
-    |---------|---------------|-----------------------------------------|---------|
-    | Message | System.String | Output message for the CRITICAL state.  |         |
+    | Name    | Type          | Description                            | Default |
+    |---------|---------------|----------------------------------------|---------|
+    | Message | System.String | Output message for the CRITICAL state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2709,14 +2712,14 @@ class IcingaPlugin
     true, freezes the state against later changes.
 
     .PARAMETER Message
-    | Name    | Type          | Description                             | Default |
-    |---------|---------------|-----------------------------------------|---------|
-    | Message | System.String | Output message for the CRITICAL state.  |         |
+    | Name    | Type          | Description                            | Default |
+    |---------|---------------|----------------------------------------|---------|
+    | Message | System.String | Output message for the CRITICAL state. |         |
 
     .PARAMETER Lock
-    | Name | Type           | Description                         | Default |
-    |------|----------------|-------------------------------------|---------|
-    | Lock | System.Boolean | When true, freeze the state.        |         |
+    | Name | Type           | Description                  | Default |
+    |------|----------------|------------------------------|---------|
+    | Lock | System.Boolean | When true, freeze the state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2762,9 +2765,9 @@ class IcingaPlugin
     Overrides the node state to UNKNOWN with the given message.
 
     .PARAMETER Message
-    | Name    | Type          | Description                            | Default |
-    |---------|---------------|----------------------------------------|---------|
-    | Message | System.String | Output message for the UNKNOWN state.  |         |
+    | Name    | Type          | Description                           | Default |
+    |---------|---------------|---------------------------------------|---------|
+    | Message | System.String | Output message for the UNKNOWN state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2789,14 +2792,14 @@ class IcingaPlugin
     true, freezes the state against later changes.
 
     .PARAMETER Message
-    | Name    | Type          | Description                            | Default |
-    |---------|---------------|----------------------------------------|---------|
-    | Message | System.String | Output message for the UNKNOWN state.  |         |
+    | Name    | Type          | Description                           | Default |
+    |---------|---------------|---------------------------------------|---------|
+    | Message | System.String | Output message for the UNKNOWN state. |         |
 
     .PARAMETER Lock
-    | Name | Type           | Description                         | Default |
-    |------|----------------|-------------------------------------|---------|
-    | Lock | System.Boolean | When true, freeze the state.        |         |
+    | Name | Type           | Description                  | Default |
+    |------|----------------|------------------------------|---------|
+    | Lock | System.Boolean | When true, freeze the state. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2823,9 +2826,9 @@ class IcingaPlugin
     node's output line even when the node is a container with children.
 
     .PARAMETER Message
-    | Name    | Type          | Description             | Default |
-    |---------|---------------|-------------------------|---------|
-    | Message | System.String | Error message to show.  |         |
+    | Name    | Type          | Description            | Default |
+    |---------|---------------|------------------------|---------|
+    | Message | System.String | Error message to show. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2855,9 +2858,9 @@ class IcingaPlugin
     | Message | System.String | Format string with a '{0}' placeholder. |         |
 
     .PARAMETER Argument
-    | Name     | Type          | Description                    | Default |
-    |----------|---------------|--------------------------------|---------|
-    | Argument | System.Object | Value inserted for '{0}'.      |         |
+    | Name     | Type          | Description               | Default |
+    |----------|---------------|---------------------------|---------|
+    | Argument | System.Object | Value inserted for '{0}'. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -2882,9 +2885,9 @@ class IcingaPlugin
     replaced by the arguments in the style of [string]::Format.
 
     .PARAMETER Message
-    | Name    | Type          | Description                                | Default |
-    |---------|---------------|--------------------------------------------|---------|
-    | Message | System.String | Format string with '{0}' and '{1}'.        |         |
+    | Name    | Type          | Description                         | Default |
+    |---------|---------------|-------------------------------------|---------|
+    | Message | System.String | Format string with '{0}' and '{1}'. |         |
 
     .PARAMETER Argument1
     | Name      | Type          | Description               | Default |
@@ -2919,9 +2922,9 @@ class IcingaPlugin
     message replaced by the arguments in the style of [string]::Format.
 
     .PARAMETER Message
-    | Name    | Type          | Description                              | Default |
-    |---------|---------------|------------------------------------------|---------|
-    | Message | System.String | Format string with '{0}', '{1}', '{2}'.  |         |
+    | Name    | Type          | Description                             | Default |
+    |---------|---------------|-----------------------------------------|---------|
+    | Message | System.String | Format string with '{0}', '{1}', '{2}'. |         |
 
     .PARAMETER Argument1
     | Name      | Type          | Description               | Default |
@@ -2993,9 +2996,9 @@ class IcingaPlugin
     and shows its message, so a plugin reports the failure with a single call.
 
     .PARAMETER IcingaError
-    | Name        | Type        | Description                           | Default |
-    |-------------|-------------|---------------------------------------|---------|
-    | IcingaError | IcingaError | Error returned by a data collection.  |         |
+    | Name        | Type        | Description                          | Default |
+    |-------------|-------------|--------------------------------------|---------|
+    | IcingaError | IcingaError | Error returned by a data collection. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -3025,9 +3028,9 @@ class IcingaPlugin
     locked keeps its state and message.
 
     .PARAMETER Message
-    | Name    | Type          | Description             | Default |
-    |---------|---------------|-------------------------|---------|
-    | Message | System.String | Final error message.    |         |
+    | Name    | Type          | Description          | Default |
+    |---------|---------------|----------------------|---------|
+    | Message | System.String | Final error message. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -3116,9 +3119,9 @@ class IcingaPlugin
     | Message | System.String | Informational message to display. |         |
 
     .PARAMETER Lock
-    | Name | Type           | Description                    | Default |
-    |------|----------------|--------------------------------|---------|
-    | Lock | System.Boolean | When true, freeze the node.    |         |
+    | Name | Type           | Description                 | Default |
+    |------|----------------|-----------------------------|---------|
+    | Lock | System.Boolean | When true, freeze the node. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -3273,9 +3276,9 @@ class IcingaPlugin
     Sets the container so it becomes not-OK when more than Count children are OK.
 
     .PARAMETER Count
-    | Name  | Type         | Description                                 | Default |
-    |-------|--------------|---------------------------------------------|---------|
-    | Count | System.Int32 | Maximum number of children that may be OK.  |         |
+    | Name  | Type         | Description                                | Default |
+    |-------|--------------|--------------------------------------------|---------|
+    | Count | System.Int32 | Maximum number of children that may be OK. |         |
 
     .OUTPUTS
     IcingaPlugin -- The same node, for chaining.
@@ -3302,9 +3305,9 @@ class IcingaPlugin
     Returns this container so multiple AddCheck calls chain.
 
     .PARAMETER Check
-    | Name  | Type         | Description                    | Default |
-    |-------|--------------|--------------------------------|---------|
-    | Check | IcingaPlugin | Child plugin to add.           |         |
+    | Name  | Type         | Description          | Default |
+    |-------|--------------|----------------------|---------|
+    | Check | IcingaPlugin | Child plugin to add. |         |
 
     .OUTPUTS
     IcingaPlugin -- This container, for chaining.
@@ -3339,9 +3342,9 @@ class IcingaPlugin
     container so the call chains.
 
     .PARAMETER Checks
-    | Name   | Type         | Description                   | Default |
-    |--------|--------------|-------------------------------|---------|
-    | Checks | System.Array | Child plugins to add.         |         |
+    | Name   | Type         | Description           | Default |
+    |--------|--------------|-----------------------|---------|
+    | Checks | System.Array | Child plugins to add. |         |
 
     .OUTPUTS
     IcingaPlugin -- This container, for chaining.
@@ -3454,9 +3457,9 @@ class IcingaPlugin
     | State | System.Int32 | State of the missing checks (0 OK, 1 WARN, 2 CRIT, 3 UNKN). |         |
 
     .PARAMETER NormalizePattern
-    | Name             | Type          | Description                                        | Default |
-    |------------------|---------------|----------------------------------------------------|---------|
-    | NormalizePattern | System.String | Regex removed from each entry; '' keeps it as is.  |         |
+    | Name             | Type          | Description                                       | Default |
+    |------------------|---------------|---------------------------------------------------|---------|
+    | NormalizePattern | System.String | Regex removed from each entry; '' keeps it as is. |         |
 
     .OUTPUTS
     IcingaPlugin -- This container, for chaining.
@@ -3526,9 +3529,9 @@ class IcingaPlugin
     | Message | System.String | Output message of every missing check. |         |
 
     .PARAMETER State
-    | Name  | Type          | Description                                               | Default |
-    |-------|---------------|-----------------------------------------------------------|---------|
-    | State | System.String | State name ('Ok', 'Warning', 'Critical', 'Unknown').      |         |
+    | Name  | Type          | Description                                          | Default |
+    |-------|---------------|------------------------------------------------------|---------|
+    | State | System.String | State name ('Ok', 'Warning', 'Critical', 'Unknown'). |         |
 
     .OUTPUTS
     IcingaPlugin -- This container, for chaining.
@@ -3573,14 +3576,14 @@ class IcingaPlugin
     | Message | System.String | Output message of every missing check. |         |
 
     .PARAMETER State
-    | Name  | Type          | Description                                               | Default |
-    |-------|---------------|-----------------------------------------------------------|---------|
-    | State | System.String | State name ('Ok', 'Warning', 'Critical', 'Unknown').      |         |
+    | Name  | Type          | Description                                          | Default |
+    |-------|---------------|------------------------------------------------------|---------|
+    | State | System.String | State name ('Ok', 'Warning', 'Critical', 'Unknown'). |         |
 
     .PARAMETER NormalizePattern
-    | Name             | Type          | Description                                        | Default |
-    |------------------|---------------|----------------------------------------------------|---------|
-    | NormalizePattern | System.String | Regex removed from each entry; '' keeps it as is.  |         |
+    | Name             | Type          | Description                                       | Default |
+    |------------------|---------------|---------------------------------------------------|---------|
+    | NormalizePattern | System.String | Regex removed from each entry; '' keeps it as is. |         |
 
     .OUTPUTS
     IcingaPlugin -- This container, for chaining.
@@ -3605,9 +3608,9 @@ class IcingaPlugin
     wildcard pattern. An invalid pattern matches nothing instead of throwing.
 
     .PARAMETER Entries
-    | Name    | Type         | Description           | Default |
-    |---------|--------------|-----------------------|---------|
-    | Entries | System.Array | Entries to compare.   |         |
+    | Name    | Type         | Description         | Default |
+    |---------|--------------|---------------------|---------|
+    | Entries | System.Array | Entries to compare. |         |
 
     .PARAMETER Pattern
     | Name    | Type          | Description                | Default |
@@ -4055,9 +4058,9 @@ class IcingaPlugin
     matching the classic Icinga for Windows nested output. Level 0 has no prefix.
 
     .PARAMETER Indention
-    | Name      | Type         | Description                    | Default |
-    |-----------|--------------|--------------------------------|---------|
-    | Indention | System.Int32 | Zero-based tree depth.         |         |
+    | Name      | Type         | Description            | Default |
+    |-----------|--------------|------------------------|---------|
+    | Indention | System.Int32 | Zero-based tree depth. |         |
 
     .OUTPUTS
     System.String -- The indentation prefix.
@@ -4378,9 +4381,9 @@ class IcingaPlugin
     the value unchanged when it is already numeric or has no numeric representation.
 
     .PARAMETER Item
-    | Name | Type          | Description                  | Default |
-    |------|---------------|------------------------------|---------|
-    | Item | System.Object | Value to resolve numerically.|         |
+    | Name | Type          | Description                   | Default |
+    |------|---------------|-------------------------------|---------|
+    | Item | System.Object | Value to resolve numerically. |         |
 
     .OUTPUTS
     System.Object -- The numeric representation, or the original value.
@@ -4429,14 +4432,14 @@ class IcingaPlugin
     data by returning an empty string.
 
     .PARAMETER Threshold
-    | Name      | Type          | Description                        | Default |
-    |-----------|---------------|------------------------------------|---------|
-    | Threshold | System.String | Configured threshold string.       |         |
+    | Name      | Type          | Description                  | Default |
+    |-----------|---------------|------------------------------|---------|
+    | Threshold | System.String | Configured threshold string. |         |
 
     .PARAMETER Resolved
-    | Name     | Type          | Description                        | Default |
-    |----------|---------------|------------------------------------|---------|
-    | Resolved | System.String | Threshold resolved by comparison.  |         |
+    | Name     | Type          | Description                       | Default |
+    |----------|---------------|-----------------------------------|---------|
+    | Resolved | System.String | Threshold resolved by comparison. |         |
 
     .OUTPUTS
     System.String -- Numeric Icinga threshold string, or '' when non-numeric.
@@ -4588,9 +4591,9 @@ class IcingaPlugin
     a safe, space-free token for the check_multi label. Underscores are preserved.
 
     .PARAMETER Value
-    | Name  | Type          | Description                 | Default |
-    |-------|---------------|-----------------------------|---------|
-    | Value | System.String | The raw metric segment.     |         |
+    | Name  | Type          | Description             | Default |
+    |-------|---------------|-------------------------|---------|
+    | Value | System.String | The raw metric segment. |         |
 
     .OUTPUTS
     System.String -- The sanitized, lower-cased segment.
@@ -4730,9 +4733,9 @@ class IcingaPlugin
     performance data.
 
     .PARAMETER Value
-    | Name  | Type          | Description               | Default |
-    |-------|---------------|---------------------------|---------|
-    | Value | System.Object | Value to test.            |         |
+    | Name  | Type          | Description    | Default |
+    |-------|---------------|----------------|---------|
+    | Value | System.Object | Value to test. |         |
 
     .OUTPUTS
     System.Boolean -- True when the value is numeric.
@@ -4764,9 +4767,9 @@ class IcingaPlugin
     value is not numeric.
 
     .PARAMETER Value
-    | Name  | Type          | Description               | Default |
-    |-------|---------------|---------------------------|---------|
-    | Value | System.Object | Value to format.          |         |
+    | Name  | Type          | Description      | Default |
+    |-------|---------------|------------------|---------|
+    | Value | System.Object | Value to format. |         |
 
     .OUTPUTS
     System.String -- The formatted value.
@@ -4803,14 +4806,14 @@ class IcingaPlugin
     this and leaves the result in the thread-local runtime state.
 
     .PARAMETER Output
-    | Name   | Type          | Description                  | Default |
-    |--------|---------------|------------------------------|---------|
-    | Output | System.String | Rendered plugin output.      |         |
+    | Name   | Type          | Description             | Default |
+    |--------|---------------|-------------------------|---------|
+    | Output | System.String | Rendered plugin output. |         |
 
     .PARAMETER Perf
-    | Name | Type         | Description                          | Default |
-    |------|--------------|--------------------------------------|---------|
-    | Perf | System.Array | Performance-data metric strings.     |         |
+    | Name | Type         | Description                      | Default |
+    |------|--------------|----------------------------------|---------|
+    | Perf | System.Array | Performance-data metric strings. |         |
 
     .OUTPUTS
     None -- Writes to the console.

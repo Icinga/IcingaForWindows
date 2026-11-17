@@ -21,6 +21,9 @@ PS> Register-IcingaPerformanceCounterFromComponents
 .NOTES
 Only literal array/string arguments are discoverable. The kernel file is produced by
 `Build-ModuleProject`; if it is missing the discovery step is skipped.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Register-IcingaPerformanceCounterFromComponents()
 {

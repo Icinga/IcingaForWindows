@@ -10,7 +10,7 @@ file is not found, the function returns a standardized result object via
 Write-FunctionReturnValue with return value IcingaClientConfigNotFound.
 
 .OUTPUTS
-PSCustomObject — Parsed JSON connection configuration.
+PSCustomObject -- Parsed JSON connection configuration.
 Returns a Write-FunctionReturnValue result object when the file is missing.
 
 .EXAMPLE
@@ -19,6 +19,9 @@ PS> $cfg = Read-IcingaProtocolConnection
 .NOTES
 Placeholder substitution uses [System.Net.Dns]::GetHostEntry and GetHostName.
 The configuration file is read through Read-SecureFile to enforce path approval.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-IcingaProtocolConnection()
 {

@@ -7,13 +7,16 @@ Return the current thread identifier used by our runtime.
 container. It is a convenience helper to avoid repeating the global variable path.
 
 .OUTPUTS
-System.String — The current thread GUID string, or $null if not set.
+System.String -- The current thread GUID string, or $null if not set.
 
 .EXAMPLE
 PS> Get-ThreadId
 
 .NOTES
 The value is read from `(Get-GlobalRuntimeVariable).Private.Threading.ThreadId`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ThreadId()
 {

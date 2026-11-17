@@ -14,7 +14,7 @@ logged and do not stop the overall loop. The loop pauses for 5 seconds between f
 scans. Because the function runs indefinitely, it must always be started in a background thread.
 
 .OUTPUTS
-None — Manages connections, global state and log entries; no pipeline output.
+None -- Manages connections, global state and log entries; no pipeline output.
 
 .EXAMPLE
 PS> New-Thread -Command 'Start-IcingaProtocolConnector' -Start
@@ -28,6 +28,9 @@ The function is intentionally long-running and blocking; always run it in a back
 thread. Exceptions during individual connection attempts are logged and do not stop the
 overall loop. The loop pauses for 5 seconds between full endpoint scans to avoid tight
 reconnect cycles.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaProtocolConnector()
 {
@@ -69,7 +72,7 @@ function Start-IcingaProtocolConnector()
                 Write-LoggingEntry -Message 'Successfully connected to Icinga endpoint' -Level 'Info' -Data @{ 'EndpointAddress' = "$($EndpointConfig.Address):$($EndpointConfig.Port)"; };
 
                 # Start the socket reader in a new thread
-                New-Thread -Command 'Start-IcingaProtocolSocketReader' -Parameters @{ '-Client' =  $TcpClient; 'IsClient' = $true; 'Endpoint' = $EndpointName } -Start;
+                New-Thread -Command 'Start-IcingaProtocolSocketReader' -Parameters @{ '-Client' = $TcpClient; 'IsClient' = $true; 'Endpoint' = $EndpointName } -Start;
             } catch {
                 if ($null -ne $TcpClient) {
                     $TcpClient.Dispose();

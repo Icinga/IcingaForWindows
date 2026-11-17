@@ -18,6 +18,9 @@ PS> Register-IcingaDefaultPerformanceCounter
 .NOTES
 The literal counter list here is what the discovery step reads from the compiled kernel. The
 set is intentionally minimal and generic; it is an example, not a fixed contract.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Register-IcingaDefaultPerformanceCounter()
 {

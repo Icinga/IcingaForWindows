@@ -8,17 +8,17 @@ whether the target path starts with any approved path prefix. Logs an audit
 entry for each check and returns standardized return values.
 
 .PARAMETER Path
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to validate. | $null |
+| Name | Type          | Description       | Default |
+|------|---------------|-------------------|---------|
+| Path | System.String | Path to validate. | $null   |
 
 .PARAMETER ApprovedPath
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ApprovedPath | System.Array | Array of allowed directory paths (strings). | @() |
+| Name         | Type         | Description                                 | Default |
+|--------------|--------------|---------------------------------------------|---------|
+| ApprovedPath | System.Array | Array of allowed directory paths (strings). | @()     |
 
 .OUTPUTS
-PSCustomObject — Function return value via Write-FunctionReturnValue.
+PSCustomObject -- Function return value via Write-FunctionReturnValue.
 AccessGranted when the path is within an approved directory.
 AccessViolation or DirectoryArgumentEmpty otherwise.
 
@@ -27,6 +27,9 @@ PS> Test-SecureApprovedPath -Path (Join-Path (Get-ModuleConfigDirectory) 'x') -A
 
 .NOTES
 Uses `Resolve-Path` to normalize paths; callers should ensure ApprovedPath entries exist.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-SecureApprovedPath()
 {

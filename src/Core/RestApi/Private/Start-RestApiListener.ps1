@@ -16,6 +16,9 @@ PS> Start-RestApiListener
 .NOTES
 This function runs on a dedicated thread and uses global runtime state
 for configuration and worker management.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-RestApiListener()
 {

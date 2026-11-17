@@ -28,13 +28,13 @@ exit.
 
 **`$ExitCode`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ExitCode | System.Int32 | Process exit code to return | 0 |
+| Name     | Type         | Description                 | Default |
+|----------|--------------|-----------------------------|---------|
+| ExitCode | System.Int32 | Process exit code to return | 0       |
 
 #### Outputs
 
-None — The process is terminated immediately; no value is returned.
+None -- The process is terminated immediately; no value is returned.
 
 #### Examples
 
@@ -46,7 +46,7 @@ PS> Exit-Icinga
 
 Uses `[System.Environment]::Exit($ExitCode)` to ensure the process exits cleanly with the desired exit code.
 
-*Source: [src/Core/Runtime/Public/Exit-Icinga.ps1](../../src/Core/Runtime/Public/Exit-Icinga.ps1)*
+*Source: [src/Core/Runtime/Public/Exit-Icinga.ps1](../src/Core/Runtime/Public/Exit-Icinga.ps1)*
 
 ---
 
@@ -63,7 +63,7 @@ while the runtime thread is running. Intended to run as a background helper thre
 
 #### Outputs
 
-None — Periodically runs garbage collection and clears the error buffer in the background.
+None -- Periodically runs garbage collection and clears the error buffer in the background.
 
 #### Examples
 
@@ -75,6 +75,5 @@ PS> Start-ModuleGarbageCollector
 
 This helper should be run in a dedicated thread and relies on `Test-ThreadRunning`.
 
-*Source: [src/Core/Runtime/Private/Start-ModuleGarbageCollector.ps1](../../src/Core/Runtime/Private/Start-ModuleGarbageCollector.ps1)*
-
+*Source: [src/Core/Runtime/Private/Start-ModuleGarbageCollector.ps1](../src/Core/Runtime/Private/Start-ModuleGarbageCollector.ps1)*
 

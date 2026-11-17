@@ -8,18 +8,21 @@ marks (BOM) and falls back to heuristics to distinguish ASCII and UTF8 when no B
 is present. Returns a short encoding identifier string.
 
 .PARAMETER Path
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to the file to inspect | '' |
+| Name | Type          | Description                 | Default |
+|------|---------------|-----------------------------|---------|
+| Path | System.String | Path to the file to inspect | ''      |
 
 .OUTPUTS
-System.String — One of: UTF8-BOM, UTF8, Unicode, BigEndianUnicode, UTF7, UTF32, ASCII.
+System.String -- One of: UTF8-BOM, UTF8, Unicode, BigEndianUnicode, UTF7, UTF32, ASCII.
 
 .EXAMPLE
 Get-FileEncoding -Path (Join-Path (Get-ModuleConfigDirectory) 'settings.json')
 
 .NOTES
 - Returns a cmdlet-style error via `Write-FunctionReturnValue` when the file is not found.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-FileEncoding()
 {

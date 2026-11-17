@@ -10,10 +10,13 @@ while the runtime thread is running. Intended to run as a background helper thre
 PS> Start-ModuleGarbageCollector
 
 .OUTPUTS
-None — Periodically runs garbage collection and clears the error buffer in the background.
+None -- Periodically runs garbage collection and clears the error buffer in the background.
 
 .NOTES
 This helper should be run in a dedicated thread and relies on `Test-ThreadRunning`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-ModuleGarbageCollector()
 {

@@ -9,25 +9,32 @@ active `ClientWebSocket`. The function retries queueing when the socket
 is not connected and emits structured return values on errors.
 
 .PARAMETER Name
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection to write to | |
+| Name | Type          | Description                                          | Default |
+|------|---------------|------------------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection to write to |         |
 
 .PARAMETER ClientWebSocket
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance | |
+| Name            | Type                                  | Description                      | Default |
+|-----------------|---------------------------------------|----------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance |         |
 
 .PARAMETER CancellationTokenSource
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel send operations | |
+| Name                    | Type                                     | Description                                 | Default |
+|-------------------------|------------------------------------------|---------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel send operations |         |
 
 .OUTPUTS
-System.Object — Emits structured `Write-FunctionReturnValue` values on send errors.
+System.Object -- Emits structured `Write-FunctionReturnValue` values on send errors.
 
 .EXAMPLE
 PS> Write-ModuleWebSocket -Name 'MyWebSocket' -ClientWebSocket $ws -CancellationTokenSource $cts
+
+.NOTES
+Runs on a dedicated background writer runspace and disposes `SendAsync` task
+handles after each frame to prevent memory leaks.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Write-ModuleWebSocket()
 {
@@ -45,7 +52,7 @@ function Write-ModuleWebSocket()
 
     [string]$WebSocketName = $GlobalVariable.Private.WebSocket.Name;
 
-     # If the WebSocket is not open, we don't need to proceed and close the thread
+    # If the WebSocket is not open, we don't need to proceed and close the thread
     while (Test-ThreadRunning -CheckWebSocket) {
         try {
             [string]$WebSocketMessage = $null;
@@ -75,11 +82,11 @@ function Write-ModuleWebSocket()
                 continue;
             }
 
-            $Bytes = [System.Text.Encoding]::UTF8.GetBytes($WebSocketMessage);
+            $Bytes                         = [System.Text.Encoding]::UTF8.GetBytes($WebSocketMessage);
 
             [ArraySegment[byte]]$SocketMsg = $Bytes;
 
-            $RequestProgress = $GlobalVariable.Private.WebSocket.ClientWebSocket.SendAsync(
+            $RequestProgress               = $GlobalVariable.Private.WebSocket.ClientWebSocket.SendAsync(
                 $SocketMsg,
                 [System.Net.WebSockets.WebSocketMessageType]::Text,
                 $TRUE,

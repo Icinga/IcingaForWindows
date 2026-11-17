@@ -24,6 +24,9 @@ PS> [IcingaPerformanceCounterEntry]::new('\Processor(_Total)\% Processor Time', 
 .NOTES
 `System.Diagnostics.PerformanceCounter` is IDisposable; the handle is created on the
 `Handle` field and released in `Dispose`. Never share a single instance across threads.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaPerformanceCounterEntry
 {
@@ -232,6 +235,9 @@ PS> $Snapshot.Read('svchost', '% Processor Time')
 Holds no native counter handles. The counter help texts are read once through
 `GetCounters` and those handles are disposed right away. Like the counter entries an
 instance is used on one thread only.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaPerformanceCounterCategory
 {
@@ -603,6 +609,9 @@ PS> $manager.Resolve(@('\Processor(_Total)\% Processor Time'))
 Every handle is created, sampled and disposed on one thread. All class methods are
 self-contained and perform no logging or global-state access so they remain safe under
 the module's runspace model.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaPerformanceCounter
 {

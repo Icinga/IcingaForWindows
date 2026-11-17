@@ -11,12 +11,12 @@ are read from `(Get-GlobalRuntimeVariable).Private.RestApi`. Returns the
 function result or a structured error object on failure.
 
 .PARAMETER Space
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Space | PSCustomObject | ApiCommandExecution configuration object with `Function`, `Method` and `Parameters` properties. | $null |
+| Name  | Type           | Description                                                                                     | Default |
+|-------|----------------|-------------------------------------------------------------------------------------------------|---------|
+| Space | PSCustomObject | ApiCommandExecution configuration object with `Function`, `Method` and `Parameters` properties. | $null   |
 
 .OUTPUTS
-System.Object — the return value of the invoked function, or a hashtable
+System.Object -- the return value of the invoked function, or a hashtable
 with an `error` key when the invocation fails or is not permitted.
 
 .EXAMPLE
@@ -27,6 +27,9 @@ Parameter type mapping supports `int`, `string`, `bool` and `array`.
 Array values in GET query strings are split on commas while respecting
 quoted strings. Must only be called from within a RestApi worker thread
 after `Private.RestApi.WebPath` and `Private.RestApi.Header` are set.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-RestApiCommandExecutionField()
 {

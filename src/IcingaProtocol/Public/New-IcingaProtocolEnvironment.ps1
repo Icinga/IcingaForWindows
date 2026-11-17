@@ -8,32 +8,32 @@ and TLS certificate configuration. It either saves the configuration to 'IcingaP
 or returns a diff against the current configuration if -DryRun is used.
 
 .PARAMETER Endpoints
-| Name      | Type         | Description                                | Default |
-|-----------|--------------|--------------------------------------------|---------|
-| Endpoints | System.Array | An array of endpoint hashtables.           | @()     |
+| Name      | Type         | Description                      | Default |
+|-----------|--------------|----------------------------------|---------|
+| Endpoints | System.Array | An array of endpoint hashtables. | @()     |
 
 .PARAMETER Zone
-| Name | Type          | Description                                | Default  |
-|------|---------------|--------------------------------------------|----------|
-| Zone | System.String | The name of the Icinga zone.               | 'master' |
+| Name | Type          | Description                  | Default  |
+|------|---------------|------------------------------|----------|
+| Zone | System.String | The name of the Icinga zone. | 'master' |
 
 .PARAMETER Hostname
-| Name     | Type          | Description                                | Default     |
-|----------|---------------|--------------------------------------------|-------------|
-| Hostname | System.String | The local hostname for this node.          | '$hostname' |
+| Name     | Type          | Description                       | Default     |
+|----------|---------------|-----------------------------------|-------------|
+| Hostname | System.String | The local hostname for this node. | '$hostname' |
 
 .PARAMETER TlsCertConfig
-| Name          | Type           | Description                                | Default |
-|---------------|----------------|--------------------------------------------|---------|
-| TlsCertConfig | PSCustomObject | The TLS certificate configuration object.  | $null   |
+| Name          | Type           | Description                               | Default |
+|---------------|----------------|-------------------------------------------|---------|
+| TlsCertConfig | PSCustomObject | The TLS certificate configuration object. | $null   |
 
 .PARAMETER DryRun
-| Name   | Type   | Description                                | Default |
-|--------|--------|--------------------------------------------|---------|
-| DryRun | switch | Outputs a diff without saving the file.    | $false  |
+| Name   | Type   | Description                             | Default |
+|--------|--------|-----------------------------------------|---------|
+| DryRun | switch | Outputs a diff without saving the file. | $false  |
 
 .OUTPUTS
-System.Object — Returns a status object from Write-FunctionReturnValue or a diff string.
+System.Object -- Returns a status object from Write-FunctionReturnValue or a diff string.
 
 .EXAMPLE
 PS> $Endpoints = @(New-IcingaProtocolEndpoint -Name 'master' -Address '10.0.0.1' -Port 5665)
@@ -43,6 +43,9 @@ Generates the protocol configuration and writes it to disk.
 
 .NOTES
 Writes configuration data to the internal Icinga Protocol connection JSON file.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaProtocolEnvironment()
 {
