@@ -9,22 +9,22 @@ checks the thread state and optionally validates TCP/WebSocket connectivity.
 It also enforces lightweight sleeps to reduce CPU usage.
 
 .PARAMETER CheckTcpConnection
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CheckTcpConnection | System.SwitchParameter | When set test the global TCP connection status | $false |
+| Name               | Type                   | Description                                    | Default |
+|--------------------|------------------------|------------------------------------------------|---------|
+| CheckTcpConnection | System.SwitchParameter | When set test the global TCP connection status | $false  |
 
 .PARAMETER CheckWebSocket
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CheckWebSocket | System.SwitchParameter | When set test the WebSocket connectivity | $false |
+| Name           | Type                   | Description                              | Default |
+|----------------|------------------------|------------------------------------------|---------|
+| CheckWebSocket | System.SwitchParameter | When set test the WebSocket connectivity | $false  |
 
 .PARAMETER NoSleep
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| NoSleep | System.SwitchParameter | When set skip the default short sleep at loop start | $false |
+| Name    | Type                   | Description                                         | Default |
+|---------|------------------------|-----------------------------------------------------|---------|
+| NoSleep | System.SwitchParameter | When set skip the default short sleep at loop start | $false  |
 
 .OUTPUTS
-System.Boolean — $true when the thread should continue, $false otherwise.
+System.Boolean -- $true when the thread should continue, $false otherwise.
 
 .EXAMPLE
 while (Test-ThreadRunning) { Do-Work }
@@ -32,13 +32,16 @@ while (Test-ThreadRunning) { Do-Work }
 .NOTES
 This function performs multiple side effects (timestamp updates, logging id rotation)
 and is central to thread lifecycle management.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-ThreadRunning()
 {
     param (
         [switch]$CheckTcpConnection = $false,
         [switch]$CheckWebSocket     = $false,
-        [switch]$NoSleep             = $false
+        [switch]$NoSleep            = $false
     );
 
     # At first, before we do anything, lets sleep for 100 milliseconds to keep the entire CPU from spiking
@@ -62,7 +65,7 @@ function Test-ThreadRunning()
     # If we are TERMINATED, we should already have reached the ending point, which means we should be fine
     # If we are in state ZOMBIE, we should return false as this state only applies if we are meant to be KeepAlive
     # Shutdown simply means we are in the process of stopping, so we should also return false
-    $ThreadState = $GlobalVariable.Public.Threading.Threads.$ThreadId.State;
+    $ThreadState    = $GlobalVariable.Public.Threading.Threads.$ThreadId.State;
     switch ($ThreadState) {
         'RUNNING' {
             # If we are a thread that is required to wait for jobs, the first state we reach is RUNNING after
@@ -123,7 +126,7 @@ function Test-ThreadRunning()
             break;
         };
         'SHUTDOWN' {
-             # If our thread does close, we should also make sure all Tcp connections are closed properly
+            # If our thread does close, we should also make sure all Tcp connections are closed properly
             Close-TCPConnection;
             # In case we provide a Tcp-Socket, make sure it is closed properly
             Close-TCPSocket;

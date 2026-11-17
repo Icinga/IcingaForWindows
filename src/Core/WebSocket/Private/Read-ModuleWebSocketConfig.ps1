@@ -9,7 +9,7 @@ referenced type-specific configuration using `Read-ModuleConfigFile`.
 Parsed configurations are stored in `$Global:ModuleName.Public.WebSocket.Config`.
 
 .OUTPUTS
-System.Object — Emits structured `Write-FunctionReturnValue` values indicating
+System.Object -- Emits structured `Write-FunctionReturnValue` values indicating
 load results and returns the populated config object on success.
 
 .EXAMPLE
@@ -20,6 +20,9 @@ Each WebSocket configuration file must include a `Name` property and a `Config`
 pointer referencing the type-specific configuration file. Parsed configurations
 are stored in `$Global:ModuleName.Public.WebSocket.Config` and accessed via
 `Get-GlobalRuntimeVariable`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-ModuleWebSocketConfig()
 {

@@ -6,22 +6,22 @@ Starts a background loop that reads JSON-RPC framed messages from an established
 Start-IcingaProtocolSocketReader initializes and manages reading from a provided System.Net.Sockets.TcpClient. It validates and registers the TCP client in the module's global connection state, spawns a heartbeat sender thread, optionally sends an initial Hello when acting as a client, and then continuously reads from the associated SSL stream. Incoming data is assembled into framed JSON-RPC messages (using a length-prefixed framing scheme), complete messages are enqueued for worker processing, and partial messages are preserved between reads. The reader loop runs until the TCP connection becomes invalid or an unrecoverable read error occurs; on exit, the connection is closed and the reader thread is stopped.
 
 .PARAMETER Client
-| Name   | Type                         | Description                                                               | Default |
-|--------|------------------------------|---------------------------------------------------------------------------|---------|
+| Name   | Type                         | Description                                                                | Default |
+|--------|------------------------------|----------------------------------------------------------------------------|---------|
 | Client | System.Net.Sockets.TcpClient | Established TCP connection to read from. Required; null causes early exit. | $null   |
 
 .PARAMETER Endpoint
-| Name     | Type          | Description                                                                     | Default |
-|----------|---------------|---------------------------------------------------------------------------------|---------|
-| Endpoint | System.String | Endpoint name used for SSL authentication with the IcingaProtocol certificate.  | $null   |
+| Name     | Type          | Description                                                                    | Default |
+|----------|---------------|--------------------------------------------------------------------------------|---------|
+| Endpoint | System.String | Endpoint name used for SSL authentication with the IcingaProtocol certificate. | $null   |
 
 .PARAMETER IsClient
-| Name     | Type                                             | Description                                                          | Default |
-|----------|--------------------------------------------------|----------------------------------------------------------------------|---------|
-| IsClient | System.Management.Automation.SwitchParameter     | When set, the reader sends an initial Hello after TLS handshake.     | $false  |
+| Name     | Type                                         | Description                                                      | Default |
+|----------|----------------------------------------------|------------------------------------------------------------------|---------|
+| IsClient | System.Management.Automation.SwitchParameter | When set, the reader sends an initial Hello after TLS handshake. | $false  |
 
 .OUTPUTS
-None — Enqueues parsed JSON-RPC payloads for worker processing and updates global connection state.
+None -- Enqueues parsed JSON-RPC payloads for worker processing and updates global connection state.
 
 .EXAMPLE
 PS> New-Thread -Command 'Start-IcingaProtocolSocketReader' -Parameters @{ '-Client' = $client } -Start
@@ -39,6 +39,8 @@ Uses a 4096-byte read buffer per iteration. Partial frames are accumulated and p
 to Read-IcingaRPCMessage on subsequent reads. Heartbeat and writer threads are started via
 New-Thread before the read loop begins.
 
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaProtocolSocketReader()
 {

@@ -245,7 +245,7 @@ $CheckResultData = @{
 };
 ```
 
-The rule applies to all code outside `src/Classes` (see `CLAUDE.md`, section 2.9) and is checked by `Tests/ClassLiteral.Tests.ps1`. Enums are exempt, as they contain no script code and convert by value.
+The rule applies to all code outside `src/Classes` (see [01-Instruction.md](../../Agents/guidelines/01-Instruction.md#29-classes-and-threads), section 2.9) and is checked by `Tests/ClassLiteral.Tests.ps1`. Enums are exempt, as they contain no script code and convert by value.
 
 ## Current Thread Status
 

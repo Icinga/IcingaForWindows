@@ -7,23 +7,26 @@ Format a `TcpListener` object for console logging.
 `System.Net.Sockets.TcpListener` and returns a colorized string for logging.
 
 .PARAMETER TcpListener
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TcpListener | System.Net.Sockets.TcpListener | The listener to format | |
+| Name        | Type                           | Description            | Default |
+|-------------|--------------------------------|------------------------|---------|
+| TcpListener | System.Net.Sockets.TcpListener | The listener to format |         |
 
 .PARAMETER Indent
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 .OUTPUTS
-System.String — A formatted string describing listener properties.
+System.String -- A formatted string describing listener properties.
 
 .EXAMPLE
 PS> Format-LoggingConsoleTcpListener -TcpListener $listener
 
 .NOTES
 Used to present network listener details consistently in logs.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleTcpListener()
 {

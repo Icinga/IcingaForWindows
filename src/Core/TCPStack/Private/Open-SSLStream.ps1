@@ -8,23 +8,26 @@ Create and authenticate an SSL stream for the active TCP client.
 using the thread-local TLS certificate. On failure it closes the TCP connection.
 
 .PARAMETER Endpoint
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Endpoint | System.String | Expected remote endpoint name (required for client auth) | $null |
+| Name     | Type          | Description                                              | Default |
+|----------|---------------|----------------------------------------------------------|---------|
+| Endpoint | System.String | Expected remote endpoint name (required for client auth) | $null   |
 
 .PARAMETER IsClient
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsClient | System.SwitchParameter | When set perform client-side authentication | $false |
+| Name     | Type                   | Description                                 | Default |
+|----------|------------------------|---------------------------------------------|---------|
+| IsClient | System.SwitchParameter | When set perform client-side authentication | $false  |
 
 .OUTPUTS
-None — Stores the opened SslStream in the global state; result codes are reported via `Write-FunctionReturnValue`.
+None -- Stores the opened SslStream in the global state; result codes are reported via `Write-FunctionReturnValue`.
 
 .EXAMPLE
 PS> Open-SSLStream -Endpoint 'example.com' -IsClient
 
 .NOTES
 Requires a valid certificate in `(Get-GlobalRuntimeVariable).Private.TCP.Certificate`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Open-SSLStream()
 {
@@ -47,7 +50,7 @@ function Open-SSLStream()
     # otherwise silently drop our certificate when the remote side's CertificateRequest lists
     # a CA that doesn't match our cert's issuer chain (common with self-signed Icinga PKI).
     # [IcingaIgnoreDisposeCheck]
-    $sslStream              = New-Object System.Net.Security.SslStream(
+    $sslStream = New-Object System.Net.Security.SslStream(
         $GlobalVariable.Private.TCP.Client.GetStream(),
         $false,
         $null,

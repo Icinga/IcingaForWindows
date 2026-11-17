@@ -17,19 +17,19 @@ UseShellExecute = $false:
 5. Splits output and performance data via Split-IcingaBinaryPluginOutput.
 
 .PARAMETER BinaryPath
-| Name       | Type          | Description                                               | Default |
-|------------|---------------|-----------------------------------------------------------|---------|
-| BinaryPath | System.String | Full canonical path to the approved binary executable.    | ''      |
+| Name       | Type          | Description                                            | Default |
+|------------|---------------|--------------------------------------------------------|---------|
+| BinaryPath | System.String | Full canonical path to the approved binary executable. | ''      |
 
 .PARAMETER CommandName
-| Name        | Type          | Description                                               | Default |
-|-------------|---------------|-----------------------------------------------------------|---------|
-| CommandName | System.String | Display file name of the binary for status messages.      | ''      |
+| Name        | Type          | Description                                          | Default |
+|-------------|---------------|------------------------------------------------------|---------|
+| CommandName | System.String | Display file name of the binary for status messages. | ''      |
 
 .PARAMETER BinaryArguments
-| Name            | Type            | Description                                           | Default |
-|-----------------|-----------------|-------------------------------------------------------|---------|
-| BinaryArguments | System.String[] | Ordered CLI argument tokens to pass to the process.   | @()     |
+| Name            | Type            | Description                                         | Default |
+|-----------------|-----------------|-----------------------------------------------------|---------|
+| BinaryArguments | System.String[] | Ordered CLI argument tokens to pass to the process. | @()     |
 
 .PARAMETER TimeoutMs
 | Name      | Type         | Description                                                  | Default |
@@ -52,6 +52,9 @@ Executes check_load.exe with a 60s timeout and splits its Nagios output.
 
 .NOTES
 Always disposes the root Process handle in finally.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaProtocolBinaryProcess()
 {

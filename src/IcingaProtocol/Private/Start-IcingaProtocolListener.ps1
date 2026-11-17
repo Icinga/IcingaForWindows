@@ -13,7 +13,7 @@ are caught and logged to keep the listener loop alive. The function runs until t
 hosting process is stopped and must always be started in a background thread.
 
 .OUTPUTS
-None — Side-effect driven: opens a network listener, updates global state, writes log entries and spawns threads.
+None -- Side-effect driven: opens a network listener, updates global state, writes log entries and spawns threads.
 
 .EXAMPLE
 PS> New-Thread -Command 'Start-IcingaProtocolListener' -Start
@@ -26,6 +26,9 @@ and ListenPort. The function is intentionally long-running and blocking; always 
 background thread. Requires Open-TCPSocket, Close-TCPConnection, Test-IcingaProtocolClientStatus,
 Add-IcingaProtocolClient, New-Thread, Start-IcingaProtocolSocketReader and Write-LoggingEntry.
 Exceptions are caught per iteration to keep the listener loop alive.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaProtocolListener()
 {
@@ -66,7 +69,7 @@ function Start-IcingaProtocolListener()
             Add-IcingaProtocolClient -Address $Global:IcingaForWindows.Private.TCP.Client.Client.RemoteEndPoint.Address.ToString() -TcpClient $Global:IcingaForWindows.Private.TCP.Client;
 
             # Start the socket reader in a new thread
-            New-Thread -Command 'Start-IcingaProtocolSocketReader' -Parameters @{ '-Client' =  $Global:IcingaForWindows.Private.TCP.Client } -Start;
+            New-Thread -Command 'Start-IcingaProtocolSocketReader' -Parameters @{ '-Client' = $Global:IcingaForWindows.Private.TCP.Client } -Start;
         } catch {
             Write-LoggingEntry -Message 'Exception caught in Icinga Protocol Listener: {0}' -Level 'Error' -Data @{ 'ExceptionMessage' = $_.Exception.Message; };
         }

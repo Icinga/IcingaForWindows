@@ -21,6 +21,9 @@ is already populated.
 .NOTES
 Private helper used by error-handling and logging routines; safe to call
 multiple times because it will not overwrite an existing table.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Set-InternalExitCodes()
 {

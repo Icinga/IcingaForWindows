@@ -18,9 +18,9 @@ to emit a standardized operation result object indicating success or failure.
 | Address | System.String | String key (typically an IP address) used to index the TcpClient in the connections table. | $null   |
 
 .PARAMETER TcpClient
-| Name      | Type                             | Description                                             | Default |
-|-----------|----------------------------------|---------------------------------------------------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient     | Active TcpClient instance to store in the connections table. | $null   |
+| Name      | Type                         | Description                                                  | Default |
+|-----------|------------------------------|--------------------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Active TcpClient instance to store in the connections table. | $null   |
 
 .EXAMPLE
 PS> $tcp = New-Object System.Net.Sockets.TcpClient
@@ -33,13 +33,16 @@ PS> Add-IcingaProtocolClient -Address '10.0.0.5' -TcpClient $newTcp
 Replaces an existing connection entry for the same address with a new TcpClient.
 
 .OUTPUTS
-PSCustomObject — Return value produced by Write-FunctionReturnValue.
+PSCustomObject -- Return value produced by Write-FunctionReturnValue.
 Possible tokens: IcingaClientAddingFailed (validation failed) or IcingaClientAdded (success).
 
 .NOTES
 This function modifies $Global:IcingaForWindows.Public.IcingaProtocol.Connections directly.
 The caller is responsible for the lifetime and disposal of the TcpClient objects.
 No additional connectivity checks are performed; the function only stores the provided instance.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Add-IcingaProtocolClient()
 {

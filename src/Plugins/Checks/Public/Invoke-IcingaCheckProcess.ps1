@@ -29,44 +29,44 @@ Performance data is written for the summary only, with the labels
 '<name>::ifw_process::cpu', '::memory', '::pagefile', '::threads' and '::count'.
 
 .PARAMETER PageFileWarning
-| Name            | Type          | Description                                                     | Default |
-|-----------------|---------------|-----------------------------------------------------------------|---------|
-| PageFileWarning | System.String | Warning threshold for the page file usage of each process.      |         |
+| Name            | Type          | Description                                                | Default |
+|-----------------|---------------|------------------------------------------------------------|---------|
+| PageFileWarning | System.String | Warning threshold for the page file usage of each process. |         |
 
 .PARAMETER PageFileCritical
-| Name             | Type          | Description                                                     | Default |
-|------------------|---------------|-----------------------------------------------------------------|---------|
-| PageFileCritical | System.String | Critical threshold for the page file usage of each process.     |         |
+| Name             | Type          | Description                                                 | Default |
+|------------------|---------------|-------------------------------------------------------------|---------|
+| PageFileCritical | System.String | Critical threshold for the page file usage of each process. |         |
 
 .PARAMETER MemoryWarning
-| Name          | Type          | Description                                                 | Default |
-|---------------|---------------|-------------------------------------------------------------|---------|
-| MemoryWarning | System.String | Warning threshold for the memory usage of each process.     |         |
+| Name          | Type          | Description                                             | Default |
+|---------------|---------------|---------------------------------------------------------|---------|
+| MemoryWarning | System.String | Warning threshold for the memory usage of each process. |         |
 
 .PARAMETER MemoryCritical
-| Name           | Type          | Description                                                 | Default |
-|----------------|---------------|-------------------------------------------------------------|---------|
-| MemoryCritical | System.String | Critical threshold for the memory usage of each process.    |         |
+| Name           | Type          | Description                                              | Default |
+|----------------|---------------|----------------------------------------------------------|---------|
+| MemoryCritical | System.String | Critical threshold for the memory usage of each process. |         |
 
 .PARAMETER CPUWarning
-| Name       | Type          | Description                                              | Default |
-|------------|---------------|----------------------------------------------------------|---------|
-| CPUWarning | System.String | Warning threshold for the CPU usage of each process.     |         |
+| Name       | Type          | Description                                          | Default |
+|------------|---------------|------------------------------------------------------|---------|
+| CPUWarning | System.String | Warning threshold for the CPU usage of each process. |         |
 
 .PARAMETER CPUCritical
-| Name        | Type          | Description                                              | Default |
-|-------------|---------------|----------------------------------------------------------|---------|
-| CPUCritical | System.String | Critical threshold for the CPU usage of each process.    |         |
+| Name        | Type          | Description                                           | Default |
+|-------------|---------------|-------------------------------------------------------|---------|
+| CPUCritical | System.String | Critical threshold for the CPU usage of each process. |         |
 
 .PARAMETER ThreadCountWarning
-| Name               | Type          | Description                                                | Default |
-|--------------------|---------------|------------------------------------------------------------|---------|
-| ThreadCountWarning | System.String | Warning threshold for the thread count of each process.    |         |
+| Name               | Type          | Description                                             | Default |
+|--------------------|---------------|---------------------------------------------------------|---------|
+| ThreadCountWarning | System.String | Warning threshold for the thread count of each process. |         |
 
 .PARAMETER ThreadCountCritical
-| Name                | Type          | Description                                                | Default |
-|---------------------|---------------|------------------------------------------------------------|---------|
-| ThreadCountCritical | System.String | Critical threshold for the thread count of each process.   |         |
+| Name                | Type          | Description                                              | Default |
+|---------------------|---------------|----------------------------------------------------------|---------|
+| ThreadCountCritical | System.String | Critical threshold for the thread count of each process. |         |
 
 .PARAMETER TotalPageFileWarning
 | Name                 | Type          | Description                                                           | Default |
@@ -99,14 +99,14 @@ Performance data is written for the summary only, with the labels
 | TotalCPUCritical | System.String | Critical threshold for the CPU usage of all processes of a name. |         |
 
 .PARAMETER TotalThreadCountWarning
-| Name                    | Type          | Description                                                       | Default |
-|-------------------------|---------------|-------------------------------------------------------------------|---------|
-| TotalThreadCountWarning | System.String | Warning threshold for the thread count of all processes of a name.|         |
+| Name                    | Type          | Description                                                        | Default |
+|-------------------------|---------------|--------------------------------------------------------------------|---------|
+| TotalThreadCountWarning | System.String | Warning threshold for the thread count of all processes of a name. |         |
 
 .PARAMETER TotalThreadCountCritical
-| Name                     | Type          | Description                                                        | Default |
-|--------------------------|---------------|--------------------------------------------------------------------|---------|
-| TotalThreadCountCritical | System.String | Critical threshold for the thread count of all processes of a name.|         |
+| Name                     | Type          | Description                                                         | Default |
+|--------------------------|---------------|---------------------------------------------------------------------|---------|
+| TotalThreadCountCritical | System.String | Critical threshold for the thread count of all processes of a name. |         |
 
 .PARAMETER TotalProcessCountWarning
 | Name                     | Type          | Description                                              | Default |
@@ -129,14 +129,14 @@ Performance data is written for the summary only, with the labels
 | ExcludeProcess | System.Array | Process names to skip, wildcards allowed. | @()     |
 
 .PARAMETER OverrideNotFound
-| Name             | Type          | Description                                                                   | Default |
-|------------------|---------------|-------------------------------------------------------------------------------|---------|
-| OverrideNotFound | System.String | State for a Process entry without a match: Ok, Warning, Critical or Unknown.  | Unknown |
+| Name             | Type          | Description                                                                  | Default |
+|------------------|---------------|------------------------------------------------------------------------------|---------|
+| OverrideNotFound | System.String | State for a Process entry without a match: Ok, Warning, Critical or Unknown. | Unknown |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -162,6 +162,9 @@ Windows-only. Reads the '\Process(*)' performance counters ('Performance Monitor
 Users'), '\Memory\Commit Limit' and the Win32_ComputerSystem CIM class through
 Get-IcingaProcessInformation. The integer exit code is the return value; an Icinga
 command wrapper is expected to exit with it.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaCheckProcess()
 {

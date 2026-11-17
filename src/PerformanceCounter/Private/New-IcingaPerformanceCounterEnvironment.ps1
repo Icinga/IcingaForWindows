@@ -22,6 +22,9 @@ PS> New-IcingaPerformanceCounterEnvironment
 .NOTES
 All shared state is read through `Get-GlobalRuntimeVariable`. The manager is stored on the
 `Manager` slot of the global store and is only ever touched by the daemon thread.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaPerformanceCounterEnvironment()
 {

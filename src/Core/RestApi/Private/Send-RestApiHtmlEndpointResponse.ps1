@@ -8,18 +8,21 @@ provided space object or, if no space is given, lists all configured
 spaces. The HTML is returned to the client as an HTTP response.
 
 .PARAMETER SpaceObj
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| SpaceObj | PSCustomObject | Optional space configuration object to enumerate endpoints for. | |
+| Name     | Type           | Description                                                     | Default |
+|----------|----------------|-----------------------------------------------------------------|---------|
+| SpaceObj | PSCustomObject | Optional space configuration object to enumerate endpoints for. |         |
 
 .OUTPUTS
-None — sends an HTTP response with `Content-Type: text/html` via `Send-TCPMessage`.
+None -- sends an HTTP response with `Content-Type: text/html` via `Send-TCPMessage`.
 
 .EXAMPLE
 PS> Send-RestApiHtmlEndpointResponse -SpaceObj $space
 
 .NOTES
 Intended to be used by browser-based exploration of the RestApi.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Send-RestApiHtmlEndpointResponse()
 {
@@ -27,9 +30,9 @@ function Send-RestApiHtmlEndpointResponse()
         [PSCustomObject]$SpaceObj = $null
     );
 
-    $GlobalVariable     = Get-GlobalRuntimeVariable;
-    [hashtable]$Spaces  = $GlobalVariable.Private.RestApi.Spaces;
-    [hashtable]$WebPath = $GlobalVariable.Private.RestApi.WebPath;
+    $GlobalVariable            = Get-GlobalRuntimeVariable;
+    [hashtable]$Spaces         = $GlobalVariable.Private.RestApi.Spaces;
+    [hashtable]$WebPath        = $GlobalVariable.Private.RestApi.WebPath;
 
     # Since we found a SpaceObj but no return value, there was nothing to be executed from
     # this path. However, we have sub-entries. We should help the user and provide an output

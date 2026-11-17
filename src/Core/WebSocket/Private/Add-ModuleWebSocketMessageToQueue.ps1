@@ -9,17 +9,17 @@ override) and the message payload, logs the enqueue operation and returns a
 structured module return on error conditions.
 
 .PARAMETER Message
-| Name    | Type         | Description                        | Default |
-|---------|--------------|------------------------------------|---------|
-| Message | System.String| Message payload to enqueue.        |         |
+| Name    | Type          | Description                 | Default |
+|---------|---------------|-----------------------------|---------|
+| Message | System.String | Message payload to enqueue. |         |
 
 .PARAMETER OverrideWebSocketName
-| Name                  | Type         | Description                               | Default |
-|-----------------------|--------------|-------------------------------------------|---------|
-| OverrideWebSocketName  | System.String| Optional runtime websocket name override.|         |
+| Name                  | Type          | Description                               | Default |
+|-----------------------|---------------|-------------------------------------------|---------|
+| OverrideWebSocketName | System.String | Optional runtime websocket name override. |         |
 
 .OUTPUTS
-System.Object — Emits module structured return values on error; otherwise the
+System.Object -- Emits module structured return values on error; otherwise the
 message is placed in the BlockingCollection and the function returns without
 an explicit value.
 
@@ -33,6 +33,9 @@ consumed by `Write-ModuleWebSocket` running in a separate worker thread. The
 function must be called from within a worker context where
 `Get-GlobalRuntimeVariable` provides a valid WebSocket name via
 `Private.WebSocket.Name`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Add-ModuleWebSocketMessageToQueue()
 {

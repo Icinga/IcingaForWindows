@@ -10,7 +10,7 @@ and a timeout parameter of 120 seconds, sends it via the module's TCP send routi
 updates the global heartbeat timestamp.
 
 .OUTPUTS
-None — Performs side effects: sends a TCP heartbeat message, writes log entries and updates the global heartbeat timestamp.
+None -- Performs side effects: sends a TCP heartbeat message, writes log entries and updates the global heartbeat timestamp.
 
 .EXAMPLE
 PS> Send-IcingaProtocolHeartbeat
@@ -22,6 +22,9 @@ Relies on $Global:IcingaForWindows.Private.TCP.HeartbeatTimer and HeartbeatInter
 being present and correctly configured. Requires Write-LoggingEntry, New-IcingaRPCMessage
 and Send-TCPMessage. The heartbeat message includes a parameter timeout set to 120 seconds.
 Time comparisons use Get-Date and TotalSeconds to determine interval expiry.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Send-IcingaProtocolHeartbeat()
 {
@@ -32,8 +35,8 @@ function Send-IcingaProtocolHeartbeat()
     # Check if we need to send a heartbeat based on the configured interval
     if ($null -eq $LastHeartbeat -or ($TimeNow - $LastHeartbeat).TotalSeconds -ge $Global:IcingaForWindows.Private.TCP.HeartbeatInterval) {
         # Send the heartbeat message
-        Write-LoggingEntry -Message '  → Sending IcingaProtocol Heartbeat' -Level 'Debug';
-        $MsgObj = New-IcingaRPCMessage -Method 'event::Heartbeat' -Parameters @{ 'timeout' = 120 };
+        Write-LoggingEntry -Message '  -> Sending IcingaProtocol Heartbeat' -Level 'Debug';
+        $MsgObj                                             = New-IcingaRPCMessage -Method 'event::Heartbeat' -Parameters @{ 'timeout' = 120 };
         Add-IcingaRPCMessageToWriterQueue -MsgObj $MsgObj;
         # Update the last heartbeat time
         $Global:IcingaForWindows.Private.TCP.HeartbeatTimer = $TimeNow;

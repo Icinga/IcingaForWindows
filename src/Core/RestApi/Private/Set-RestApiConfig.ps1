@@ -9,32 +9,32 @@ configuration and writes the configuration to the module config directory as
 `Write-FunctionReturnValue`.
 
 .PARAMETER ListenAddress
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name          | Type          | Description                                                                                | Default   |
+|---------------|---------------|--------------------------------------------------------------------------------------------|-----------|
 | ListenAddress | System.String | IP address or hostname to bind the RestApi listener. Use '0.0.0.0' to bind all interfaces. | '0.0.0.0' |
 
 .PARAMETER ListenPort
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 10000 |
+| Name       | Type         | Description                      | Default |
+|------------|--------------|----------------------------------|---------|
+| ListenPort | System.Int32 | TCP port to listen on (1-65535). | 10000   |
 
 .PARAMETER TlsCertConfig
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-TlsCertConfig`. | $null |
+| Name          | Type                  | Description                                                   | Default |
+|---------------|-----------------------|---------------------------------------------------------------|---------|
+| TlsCertConfig | System.PSCustomObject | TLS certificate configuration created by `New-TlsCertConfig`. | $null   |
 
 .PARAMETER WorkerCount
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5 |
+| Name        | Type         | Description                                                 | Default |
+|-------------|--------------|-------------------------------------------------------------|---------|
+| WorkerCount | System.Int32 | Number of worker threads to spawn for handling connections. | 5       |
 
 .PARAMETER DryRun
-| Name   | Type                                         | Description                                                                                       | Default |
-|--------|----------------------------------------------|---------------------------------------------------------------------------------------------------|---------|
-| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false |
+| Name   | Type                                         | Description                                                                                                                    | Default |
+|--------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | When set, returns a unified diff of the pending configuration versus the persisted restapi.json instead of writing the change. | $false  |
 
 .OUTPUTS
-PSCustomObject — Function return value via `Write-FunctionReturnValue`.
+PSCustomObject -- Function return value via `Write-FunctionReturnValue`.
 - `RestApiConfigConfigured`: Data contains `Config`.
 - `NoRestApiListenAddressProvided`: invalid listen address.
 - `NoRestApiListenPortProvided`: invalid port.
@@ -47,6 +47,9 @@ PS> Set-RestApiConfig -ListenAddress '127.0.0.1' -ListenPort 10443 -WorkerCount 
 Persists the configuration to `restapi.json` under the module config directory
 using `Write-SecureFile` and `Get-ModuleConfigDirectory`. `WorkerCount` is
 bounded by the global `Threading.MaxThreads` setting.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Set-RestApiConfig()
 {

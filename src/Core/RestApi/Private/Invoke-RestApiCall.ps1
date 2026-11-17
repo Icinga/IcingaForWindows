@@ -5,16 +5,16 @@ Resolve the REST API path to a configured handler and execute it.
 .DESCRIPTION
 Core dispatcher of the Icinga for Windows REST API. Reads the parsed web-path
 and headers from `$Global.Private.RestApi.*`, walks the configured
-spaces hashtable (Space → Action → Resource) to locate an
+spaces hashtable (Space -> Action -> Resource) to locate an
 `ApiCommandExecution` field and invokes the bound PowerShell function
 via `Invoke-RestApiCommandExecutionField`. Emits the appropriate JSON
 response on success and well-formed error responses on failure
-(missing space → 404, invalid path depth → 400, command error → 500,
-no spaces configured → 500, no command at all → HTML endpoint listing
+(missing space -> 404, invalid path depth -> 400, command error -> 500,
+no spaces configured -> 500, no command at all -> HTML endpoint listing
 or 200 / 404 for JSON callers).
 
 .OUTPUTS
-System.Int32 — A semantic return code resolved through
+System.Int32 -- A semantic return code resolved through
 `Write-FunctionReturnValue` for downstream diagnostics. The HTTP
 response is sent directly over the worker's TCP stream.
 
@@ -28,6 +28,9 @@ been parsed; arguments are taken from worker-private state.
 Path schema is `/v1/<Space>/<Action>/<Resource>`. The actual
 `ApiCommandExecution` lookup supports 2, 3 or 4 segments (segment
 count is checked before the handler runs).
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-RestApiCall()
 {

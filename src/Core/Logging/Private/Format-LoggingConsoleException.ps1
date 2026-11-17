@@ -7,23 +7,26 @@ Format an exception object for console output.
 using `Format-LoggingConsoleObjectProperties` and a predefined set of properties.
 
 .PARAMETER Exception
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Exception | System.Exception | The exception to format | |
+| Name      | Type             | Description             | Default |
+|-----------|------------------|-------------------------|---------|
+| Exception | System.Exception | The exception to format |         |
 
 .PARAMETER Indent
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation string for nested formatting | '' |
+| Name   | Type          | Description                                       | Default |
+|--------|---------------|---------------------------------------------------|---------|
+| Indent | System.String | Optional indentation string for nested formatting | ''      |
 
 .OUTPUTS
-System.String — A formatted multiline string describing the exception.
+System.String -- A formatted multiline string describing the exception.
 
 .EXAMPLE
 PS> Format-LoggingConsoleException -Exception $ex -Indent '  '
 
 .NOTES
 Uses `Format-LoggingConsoleObjectProperties` to extract common exception details.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleException()
 {

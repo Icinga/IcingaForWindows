@@ -10,14 +10,14 @@ This helper is useful for normalizing user lists for case-insensitive or
 consistent comparisons.
 
 .PARAMETER InputArray
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InputArray | System.Object[] | Array of items to normalize; string items will be case-normalized | @() |
+| Name       | Type            | Description                                                       | Default |
+|------------|-----------------|-------------------------------------------------------------------|---------|
+| InputArray | System.Object[] | Array of items to normalize; string items will be case-normalized | @()     |
 
 .PARAMETER UpperCase
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| UpperCase | Switch | When set, convert string items to upper-case instead of lower-case | $false |
+| Name      | Type   | Description                                                        | Default |
+|-----------|--------|--------------------------------------------------------------------|---------|
+| UpperCase | Switch | When set, convert string items to upper-case instead of lower-case | $false  |
 
 .OUTPUTS
 Array of the same length with string items converted to the selected case.
@@ -30,6 +30,9 @@ $normUpper = ConvertTo-StringNormalizedArray -InputArray @('Alice','BOB') -Upper
 
 .NOTES
 - Non-string items are returned unchanged.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-StringNormalizedArray()
 {

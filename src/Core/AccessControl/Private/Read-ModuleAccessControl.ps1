@@ -9,7 +9,7 @@ stored in the global runtime variable `Protected.AccessControl` for runtime use.
 Parsing and IO errors are logged and reported via `Write-FunctionReturnValue`.
 
 .OUTPUTS
-System.Object — Structured return object from Write-FunctionReturnValue when the
+System.Object -- Structured return object from Write-FunctionReturnValue when the
 AccessRoles folder is not found; otherwise None (populates
 (Get-GlobalRuntimeVariable).Protected.AccessControl as a side effect).
 
@@ -23,6 +23,9 @@ resulting objects in the global runtime variable.
 Role files are expected to be valid JSON and are read with Read-SecureFile.
 Parsing errors for individual files do not abort the overall loading process;
 they are logged and the loader continues with the remaining files.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-ModuleAccessControl()
 {

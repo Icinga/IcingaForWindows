@@ -8,13 +8,16 @@ human-readable thread name by joining function names with '`::`'. It normalizes
 scriptblock entries and removes internal `Set-ThreadData` frames.
 
 .OUTPUTS
-System.String — A single-line thread name derived from the call stack.
+System.String -- A single-line thread name derived from the call stack.
 
 .EXAMPLE
 PS> Get-ThreadCallStack
 
 .NOTES
 Used for naming threads created with `New-Thread` to aid diagnostics and tracing.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ThreadCallStack()
 {

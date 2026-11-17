@@ -10,17 +10,17 @@ use by reader/writer workers. It validates parameters and returns structured
 module return values.
 
 .PARAMETER Name
-| Name | Type         | Description                          | Default |
-|------|--------------|--------------------------------------|---------|
-| Name | System.String| Logical name for the WebSocket entry.|         |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Name | System.String | Logical name for the WebSocket entry. |         |
 
 .PARAMETER Address
-| Name    | Type         | Description                               | Default |
-|---------|--------------|-------------------------------------------|---------|
-| Address | System.String| WebSocket URI to connect to.              |         |
+| Name    | Type          | Description                  | Default |
+|---------|---------------|------------------------------|---------|
+| Address | System.String | WebSocket URI to connect to. |         |
 
 .OUTPUTS
-System.Object — Emits `Write-FunctionReturnValue` results describing success or failure.
+System.Object -- Emits `Write-FunctionReturnValue` results describing success or failure.
 
 .EXAMPLE
 PS> Connect-ModuleWebSocket -Name 'MyWebSocket' -Address 'wss://example.com'
@@ -30,6 +30,9 @@ Any existing connection is cleaned up via `Disconnect-ModuleWebSocket` before a
 new one is established. The resulting `ClientWebSocket` and
 `CancellationTokenSource` are stored in `$Global:ModuleName.Private.WebSocket`
 and must be accessed via `Get-GlobalRuntimeVariable` from worker threads.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Connect-ModuleWebSocket()
 {
@@ -73,7 +76,7 @@ function Connect-ModuleWebSocket()
     # cannot establish a connection to the remote server, this function is called frequently
     # and will then cause endless request progress states to be created
     $RequestProgress.Dispose();
-    $RequestProgress = $null;
+    $RequestProgress                                          = $null;
 
     $GlobalVariable.Private.WebSocket.Name                    = $Name;
     $GlobalVariable.Private.WebSocket.ClientWebSocket         = $WebSocketClient;

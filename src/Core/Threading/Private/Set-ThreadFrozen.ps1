@@ -8,18 +8,21 @@ it exceeds the configured keep-alive threshold, sets the thread state to
 `FROZEN` and emits a warning log entry.
 
 .PARAMETER ThreadId
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name     | Type          | Description                                           | Default        |
+|----------|---------------|-------------------------------------------------------|----------------|
 | ThreadId | System.String | The thread id to inspect. Defaults to current thread. | (Get-ThreadId) |
 
 .OUTPUTS
-None — Updates the thread state in the global registry and emits a warning log entry when frozen.
+None -- Updates the thread state in the global registry and emits a warning log entry when frozen.
 
 .EXAMPLE
 PS> Set-ThreadFrozen -ThreadId $tid
 
 .NOTES
 This helper is used by the housekeeper loop to detect and flag unresponsive threads.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Set-ThreadFrozen()
 {

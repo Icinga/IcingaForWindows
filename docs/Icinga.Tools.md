@@ -62,25 +62,25 @@ tools or modules are required.
 
 **`$OldConfig`**
 
-| Name      | Type          | Description                                           | Default |
-|-----------|---------------|-------------------------------------------------------|---------|
-| OldConfig | System.String | The baseline content as a JSON string or plain text.  | $null   |
+| Name      | Type          | Description                                          | Default |
+|-----------|---------------|------------------------------------------------------|---------|
+| OldConfig | System.String | The baseline content as a JSON string or plain text. | $null   |
 
 **`$OldFile`**
 
-| Name    | Type          | Description                                                           | Default |
-|---------|---------------|-----------------------------------------------------------------------|---------|
-| OldFile | System.String | File path to the baseline; read via Read-SecureFile when provided.    | $null   |
+| Name    | Type          | Description                                                        | Default |
+|---------|---------------|--------------------------------------------------------------------|---------|
+| OldFile | System.String | File path to the baseline; read via Read-SecureFile when provided. | $null   |
 
 **`$Colorized`**
 
-| Name      | Type                                         | Description                                                    | Default |
-|-----------|----------------------------------------------|----------------------------------------------------------------|---------|
+| Name      | Type                                         | Description                                                   | Default |
+|-----------|----------------------------------------------|---------------------------------------------------------------|---------|
 | Colorized | System.Management.Automation.SwitchParameter | When set, embeds ANSI color codes (green/red/cyan) in output. | $false  |
 
 #### Outputs
 
-System.Collections.Hashtable — Always returns @{ ExitCode = System.Int32; Output = System.String }.
+System.Collections.Hashtable -- Always returns @{ ExitCode = System.Int32; Output = System.String }.
 ExitCode is 0 when both inputs are identical after normalization, 1 when they differ.
 Output is an empty string when identical; otherwise a unified diff with header lines
 (--- old / +++ new), @@ hunk headers and +/-/space-prefixed content lines.
@@ -111,7 +111,7 @@ matrix; inputs beyond a few thousand lines will consume significant memory, whic
 is acceptable for config-file comparison. No external binaries, modules, or .NET
 packages beyond the PowerShell standard library are used.
 
-*Source: [src/Tools/Public/Compare-IcingaTextContent.ps1](../../src/Tools/Public/Compare-IcingaTextContent.ps1)*
+*Source: [src/Tools/Public/Compare-IcingaTextContent.ps1](../src/Tools/Public/Compare-IcingaTextContent.ps1)*
 
 ---
 
@@ -141,9 +141,9 @@ member name.
 
 **`$InputObject`**
 
-| Name        | Type         | Description            | Default |
-|-------------|--------------|------------------------|---------|
-| InputObject | System.Array | The elements to sort.  | @()     |
+| Name        | Type         | Description           | Default |
+|-------------|--------------|-----------------------|---------|
+| InputObject | System.Array | The elements to sort. | @()     |
 
 **`$Property`**
 
@@ -180,7 +180,7 @@ Sorts Win32_Service instances by their name.
 No external dependencies. Replaces 'Sort-Object -Property { ... }' in plugin
 code. The verb follows the approved PowerShell verbs; 'Sort' is not one of them.
 
-*Source: [src/Tools/Public/ConvertTo-IcingaSortedArray.ps1](../../src/Tools/Public/ConvertTo-IcingaSortedArray.ps1)*
+*Source: [src/Tools/Public/ConvertTo-IcingaSortedArray.ps1](../src/Tools/Public/ConvertTo-IcingaSortedArray.ps1)*
 
 ---
 
@@ -276,7 +276,7 @@ Write-FunctionReturnValue, which logs at the severity registered for each return
 code in Set-InternalExitCodes (Error for failures, Debug for the successful
 conversion). No external services, credentials or configuration files are used.
 
-*Source: [src/Tools/Public/ConvertTo-IcingaUnit.ps1](../../src/Tools/Public/ConvertTo-IcingaUnit.ps1)*
+*Source: [src/Tools/Public/ConvertTo-IcingaUnit.ps1](../src/Tools/Public/ConvertTo-IcingaUnit.ps1)*
 
 ---
 
@@ -299,9 +299,9 @@ Icinga 2 check result payloads (execution_start and execution_end).
 
 **`$Milliseconds`**
 
-| Name         | Type                                         | Description                                                                   | Default |
-|--------------|----------------------------------------------|-------------------------------------------------------------------------------|---------|
-| Milliseconds | System.Management.Automation.SwitchParameter | When set, returns fractional Unix seconds with millisecond precision (Double).| $false  |
+| Name         | Type                                         | Description                                                                    | Default |
+|--------------|----------------------------------------------|--------------------------------------------------------------------------------|---------|
+| Milliseconds | System.Management.Automation.SwitchParameter | When set, returns fractional Unix seconds with millisecond precision (Double). | $false  |
 
 #### Outputs
 
@@ -328,7 +328,7 @@ Returns the current UTC Unix time in seconds with millisecond precision.
 
 Uses System.DateTimeOffset.UtcNow across Windows PowerShell 5.1 and PowerShell 7+.
 
-*Source: [src/Tools/Public/Get-IcingaUnixTime.ps1](../../src/Tools/Public/Get-IcingaUnixTime.ps1)*
+*Source: [src/Tools/Public/Get-IcingaUnixTime.ps1](../src/Tools/Public/Get-IcingaUnixTime.ps1)*
 
 ---
 
@@ -363,15 +363,15 @@ the ReturnCode of the IcingaError.
 
 **`$ClassName`**
 
-| Name      | Type          | Description                             | Default |
-|-----------|---------------|-----------------------------------------|---------|
-| ClassName | System.String | Name of the CIM class to query.         |         |
+| Name      | Type          | Description                     | Default |
+|-----------|---------------|---------------------------------|---------|
+| ClassName | System.String | Name of the CIM class to query. |         |
 
 **`$Namespace`**
 
-| Name      | Type          | Description                    | Default    |
-|-----------|---------------|--------------------------------|------------|
-| Namespace | System.String | CIM namespace of the class.    | root/cimv2 |
+| Name      | Type          | Description                 | Default    |
+|-----------|---------------|-----------------------------|------------|
+| Namespace | System.String | CIM namespace of the class. | root/cimv2 |
 
 **`$Filter`**
 
@@ -412,7 +412,7 @@ the class; standard users can read most root/cimv2 classes. Unknown classes and
 namespaces are logged at Debug level only, because optional classes are probed
 on purpose.
 
-*Source: [src/Tools/Public/Get-IcingaWindowsInformation.ps1](../../src/Tools/Public/Get-IcingaWindowsInformation.ps1)*
+*Source: [src/Tools/Public/Get-IcingaWindowsInformation.ps1](../src/Tools/Public/Get-IcingaWindowsInformation.ps1)*
 
 ---
 
@@ -431,19 +431,19 @@ URL query parameters and avoiding duplicate slashes. Preserves scheme endings li
 
 **`$Path`**
 
-| Name | Type          | Description                  | Default |
-|------|---------------|------------------------------|---------|
+| Name | Type          | Description                     | Default |
+|------|---------------|---------------------------------|---------|
 | Path | System.String | Base path or URL to start from. | $null   |
 
 **`$ChildPath`**
 
-| Name      | Type         | Description                                                                          | Default |
-|-----------|--------------|--------------------------------------------------------------------------------------|---------|
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
 | ChildPath | System.Array | Child path segments to append. Segments may start with /, ? or & for query strings. | $null   |
 
 #### Outputs
 
-System.String — The assembled web path or URL.
+System.String -- The assembled web path or URL.
 
 #### Examples
 
@@ -463,7 +463,7 @@ Returns 'http://example.com/search?q=test&page=2'.
 
 No external dependencies.
 
-*Source: [src/Tools/Public/Join-WebPath.ps1](../../src/Tools/Public/Join-WebPath.ps1)*
+*Source: [src/Tools/Public/Join-WebPath.ps1](../src/Tools/Public/Join-WebPath.ps1)*
 
 ---
 
@@ -486,13 +486,13 @@ mechanism to emit a standardized return value and typically returns $null.
 
 **`$Address`**
 
-| Name    | Type          | Description                                                                  | Default |
-|---------|---------------|------------------------------------------------------------------------------|---------|
+| Name    | Type          | Description                                                                     | Default |
+|---------|---------------|---------------------------------------------------------------------------------|---------|
 | Address | System.String | Hostname or IP address to resolve. Empty or null triggers IPAddressLookupEmpty. | $null   |
 
 #### Outputs
 
-System.String — IPv4 or IPv6 address string on success.
+System.String -- IPv4 or IPv6 address string on success.
 Returns $null via Write-FunctionReturnValue on failure with tokens
 IPAddressLookupEmpty, IPAddressLookupFailure, IPAddressLookupFailedForV4AndV6
 or IPAddressLookupException.
@@ -519,7 +519,7 @@ are preferred; the function returns the first IPv4 found, otherwise the first IP
 Simple regex literal checks are performed before DNS resolution to avoid unnecessary
 lookups. Error conditions are surfaced via Write-FunctionReturnValue.
 
-*Source: [src/Tools/Public/Resolve-IcingaIPAddress.ps1](../../src/Tools/Public/Resolve-IcingaIPAddress.ps1)*
+*Source: [src/Tools/Public/Resolve-IcingaIPAddress.ps1](../src/Tools/Public/Resolve-IcingaIPAddress.ps1)*
 
 ---
 
@@ -548,21 +548,21 @@ pattern.
 
 **`$InputObject`**
 
-| Name        | Type          | Description                                  | Default |
-|-------------|---------------|----------------------------------------------|---------|
-| InputObject | System.Object | Value, or array of values, to test.          | $null   |
+| Name        | Type          | Description                         | Default |
+|-------------|---------------|-------------------------------------|---------|
+| InputObject | System.Object | Value, or array of values, to test. | $null   |
 
 **`$Include`**
 
-| Name    | Type         | Description                                            | Default |
-|---------|--------------|--------------------------------------------------------|---------|
-| Include | System.Array | Wildcard patterns of which at least one has to match.  | @()     |
+| Name    | Type         | Description                                           | Default |
+|---------|--------------|-------------------------------------------------------|---------|
+| Include | System.Array | Wildcard patterns of which at least one has to match. | @()     |
 
 **`$Exclude`**
 
-| Name    | Type         | Description                                   | Default |
-|---------|--------------|-----------------------------------------------|---------|
-| Exclude | System.Array | Wildcard patterns of which none may match.    | @()     |
+| Name    | Type         | Description                                | Default |
+|---------|--------------|--------------------------------------------|---------|
+| Exclude | System.Array | Wildcard patterns of which none may match. | @()     |
 
 #### Outputs
 
@@ -589,7 +589,7 @@ No external dependencies. A $null value never passes. Used by the plugins for
 their -Include/-Exclude parameters, which must not rely on script blocks so the
 plugins stay usable in JEA sessions.
 
-*Source: [src/Tools/Public/Test-IcingaArrayFilter.ps1](../../src/Tools/Public/Test-IcingaArrayFilter.ps1)*
+*Source: [src/Tools/Public/Test-IcingaArrayFilter.ps1](../src/Tools/Public/Test-IcingaArrayFilter.ps1)*
 
 ---
 
@@ -613,9 +613,9 @@ and evaluate to $false.
 
 **`$Value`**
 
-| Name  | Type          | Description                                               | Default |
-|-------|---------------|-----------------------------------------------------------|---------|
-| Value | System.Object | Input value from JSON or Icinga macros to convert.        | $null   |
+| Name  | Type          | Description                                        | Default |
+|-------|---------------|----------------------------------------------------|---------|
+| Value | System.Object | Input value from JSON or Icinga macros to convert. | $null   |
 
 #### Outputs
 
@@ -636,7 +636,7 @@ string truthiness.
 Uses Write-FunctionReturnValue with key StringToBoolConversionInvalidValue when
 an unrecognized value is supplied.
 
-*Source: [src/Tools/Private/ConvertFrom-ModuleBoolean.ps1](../../src/Tools/Private/ConvertFrom-ModuleBoolean.ps1)*
+*Source: [src/Tools/Private/ConvertFrom-ModuleBoolean.ps1](../src/Tools/Private/ConvertFrom-ModuleBoolean.ps1)*
 
 ---
 
@@ -658,13 +658,13 @@ it uses the native ConvertFrom-Json cmdlet with the -AsHashtable switch.
 
 **`$InputObject`**
 
-| Name        | Type          | Description                                | Default |
-|-------------|---------------|--------------------------------------------|---------|
-| InputObject | System.String | The JSON string to deserialize.            | ''      |
+| Name        | Type          | Description                     | Default |
+|-------------|---------------|---------------------------------|---------|
+| InputObject | System.String | The JSON string to deserialize. | ''      |
 
 #### Outputs
 
-System.Collections.Hashtable — Returns a hashtable (or dictionary) representation of the JSON string.
+System.Collections.Hashtable -- Returns a hashtable (or dictionary) representation of the JSON string.
 Returns `$null` if the input is empty or parsing fails.
 
 #### Examples
@@ -678,7 +678,7 @@ PS> $hashtable = ConvertFrom-ModuleJson -InputObject '{"key": "value"}'
 In Windows PowerShell 5.1, this function dynamically loads the System.Web.Extensions
 assembly if it is not already loaded in the current runspace.
 
-*Source: [src/Tools/Private/ConvertFrom-ModuleJson.ps1](../../src/Tools/Private/ConvertFrom-ModuleJson.ps1)*
+*Source: [src/Tools/Private/ConvertFrom-ModuleJson.ps1](../src/Tools/Private/ConvertFrom-ModuleJson.ps1)*
 
 ---
 
@@ -700,13 +700,13 @@ and higher, it uses the native ConvertTo-Json cmdlet.
 
 **`$InputObject`**
 
-| Name        | Type          | Description                                | Default |
-|-------------|---------------|--------------------------------------------|---------|
-| InputObject | System.Object | The object to serialize.                   | $null   |
+| Name        | Type          | Description              | Default |
+|-------------|---------------|--------------------------|---------|
+| InputObject | System.Object | The object to serialize. | $null   |
 
 #### Outputs
 
-System.String — Returns a JSON string representation of the object.
+System.String -- Returns a JSON string representation of the object.
 Returns an empty string if the input is null or serialization fails.
 
 #### Examples
@@ -720,7 +720,7 @@ PS> $json = ConvertTo-ModuleJson -InputObject @{ key = "value" }
 In Windows PowerShell 5.1, this function dynamically loads the System.Web.Extensions
 assembly if it is not already loaded.
 
-*Source: [src/Tools/Private/ConvertTo-ModuleJson.ps1](../../src/Tools/Private/ConvertTo-ModuleJson.ps1)*
+*Source: [src/Tools/Private/ConvertTo-ModuleJson.ps1](../src/Tools/Private/ConvertTo-ModuleJson.ps1)*
 
 ---
 
@@ -744,15 +744,15 @@ placeholder macros) are omitted.
 
 **`$InputObject`**
 
-| Name        | Type          | Description                                     | Default |
-|-------------|---------------|-------------------------------------------------|---------|
-| InputObject | System.Object | Dictionary or object to copy entries from.      | $null   |
+| Name        | Type          | Description                                | Default |
+|-------------|---------------|--------------------------------------------|---------|
+| InputObject | System.Object | Dictionary or object to copy entries from. | $null   |
 
 **`$SkipEmptyKeys`**
 
-| Name          | Type                                         | Description                                           | Default |
-|---------------|----------------------------------------------|-------------------------------------------------------|---------|
-| SkipEmptyKeys | System.Management.Automation.SwitchParameter | Omit null, empty or whitespace-only keys when set.    | $false  |
+| Name          | Type                                         | Description                                        | Default |
+|---------------|----------------------------------------------|----------------------------------------------------|---------|
+| SkipEmptyKeys | System.Management.Automation.SwitchParameter | Omit null, empty or whitespace-only keys when set. | $false  |
 
 #### Outputs
 
@@ -771,7 +771,7 @@ Creates an ordinal OrderedDictionary preserving exact key casing.
 
 Compatible with Windows PowerShell 5.1 and PowerShell 7+.
 
-*Source: [src/Tools/Private/ConvertTo-ModuleOrderedDictionary.ps1](../../src/Tools/Private/ConvertTo-ModuleOrderedDictionary.ps1)*
+*Source: [src/Tools/Private/ConvertTo-ModuleOrderedDictionary.ps1](../src/Tools/Private/ConvertTo-ModuleOrderedDictionary.ps1)*
 
 ---
 
@@ -830,7 +830,7 @@ Coerces the string '2' into Int32 2 with Status 'Bound'.
 Callers must call Dispose() on AllocatedSecret when non-null once command
 execution completes.
 
-*Source: [src/Tools/Private/ConvertTo-ModuleParameterValue.ps1](../../src/Tools/Private/ConvertTo-ModuleParameterValue.ps1)*
+*Source: [src/Tools/Private/ConvertTo-ModuleParameterValue.ps1](../src/Tools/Private/ConvertTo-ModuleParameterValue.ps1)*
 
 ---
 
@@ -878,7 +878,7 @@ Compatible with Windows PowerShell 5.1 and PowerShell 7+. Callers that allocate
 temporary SecureString instances for check execution should call Dispose() once
 the check finishes.
 
-*Source: [src/Tools/Private/ConvertTo-ModuleSecureString.ps1](../../src/Tools/Private/ConvertTo-ModuleSecureString.ps1)*
+*Source: [src/Tools/Private/ConvertTo-ModuleSecureString.ps1](../src/Tools/Private/ConvertTo-ModuleSecureString.ps1)*
 
 ---
 
@@ -900,15 +900,15 @@ consistent comparisons.
 
 **`$InputArray`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InputArray | System.Object[] | Array of items to normalize; string items will be case-normalized | @() |
+| Name       | Type            | Description                                                       | Default |
+|------------|-----------------|-------------------------------------------------------------------|---------|
+| InputArray | System.Object[] | Array of items to normalize; string items will be case-normalized | @()     |
 
 **`$UpperCase`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| UpperCase | Switch | When set, convert string items to upper-case instead of lower-case | $false |
+| Name      | Type   | Description                                                        | Default |
+|-----------|--------|--------------------------------------------------------------------|---------|
+| UpperCase | Switch | When set, convert string items to upper-case instead of lower-case | $false  |
 
 #### Outputs
 
@@ -928,7 +928,7 @@ $normUpper = ConvertTo-StringNormalizedArray -InputArray @('Alice','BOB') -Upper
 
 - Non-string items are returned unchanged.
 
-*Source: [src/Tools/Private/ConvertTo-StringNormalizedArray.ps1](../../src/Tools/Private/ConvertTo-StringNormalizedArray.ps1)*
+*Source: [src/Tools/Private/ConvertTo-StringNormalizedArray.ps1](../src/Tools/Private/ConvertTo-StringNormalizedArray.ps1)*
 
 ---
 
@@ -951,9 +951,9 @@ before the closing quote.
 
 **`$Arguments`**
 
-| Name      | Type         | Description                                     | Default |
-|-----------|--------------|-------------------------------------------------|---------|
-| Arguments | System.Array | Ordered CLI argument tokens to quote and join.  | @()     |
+| Name      | Type         | Description                                    | Default |
+|-----------|--------------|------------------------------------------------|---------|
+| Arguments | System.Array | Ordered CLI argument tokens to quote and join. | @()     |
 
 #### Outputs
 
@@ -972,7 +972,7 @@ Quotes tokens containing spaces or quotes while leaving simple tokens intact.
 
 Pure string formatter with no external dependencies or global state access.
 
-*Source: [src/Tools/Private/Format-ModuleCommandLineArguments.ps1](../../src/Tools/Private/Format-ModuleCommandLineArguments.ps1)*
+*Source: [src/Tools/Private/Format-ModuleCommandLineArguments.ps1](../src/Tools/Private/Format-ModuleCommandLineArguments.ps1)*
 
 ---
 
@@ -1018,7 +1018,7 @@ Builds the canonical/alias lookup map and positional list for the command.
 
 Pure metadata helper with no external dependencies or side effects.
 
-*Source: [src/Tools/Private/Get-ModuleCommandParameterMap.ps1](../../src/Tools/Private/Get-ModuleCommandParameterMap.ps1)*
+*Source: [src/Tools/Private/Get-ModuleCommandParameterMap.ps1](../src/Tools/Private/Get-ModuleCommandParameterMap.ps1)*
 
 ---
 
@@ -1078,7 +1078,7 @@ Reads the value of 'Check_Timeout' case-insensitively from the dictionary.
 Compatible with Windows PowerShell 5.1 and PowerShell 7+. Does not mutate global
 state.
 
-*Source: [src/Tools/Private/Get-ModuleObjectValue.ps1](../../src/Tools/Private/Get-ModuleObjectValue.ps1)*
+*Source: [src/Tools/Private/Get-ModuleObjectValue.ps1](../src/Tools/Private/Get-ModuleObjectValue.ps1)*
 
 ---
 
@@ -1107,7 +1107,7 @@ empty input returns an empty string without attempting any conversion.
 
 #### Outputs
 
-System.String — Re-serialized JSON string when the input is valid JSON, the
+System.String -- Re-serialized JSON string when the input is valid JSON, the
 original input string when it is not, or an empty string for null or empty input.
 
 #### Examples
@@ -1124,7 +1124,7 @@ Used by Compare-IcingaTextContent to ensure both sides of a diff use identical
 formatting before line-level comparison. Relies only on ConvertFrom-Json and
 ConvertTo-Json from the PowerShell standard library; no external dependencies.
 
-*Source: [src/Tools/Private/Get-NormalizedTextContent.ps1](../../src/Tools/Private/Get-NormalizedTextContent.ps1)*
+*Source: [src/Tools/Private/Get-NormalizedTextContent.ps1](../src/Tools/Private/Get-NormalizedTextContent.ps1)*
 
 ---
 
@@ -1161,33 +1161,33 @@ Get-ModuleBinaryDirectory:
 
 **`$NamedArguments`**
 
-| Name           | Type                         | Description                                  | Default |
-|----------------|------------------------------|----------------------------------------------|---------|
-| NamedArguments | System.Collections.Hashtable | Named parameter splatting hashtable.         | @{}     |
+| Name           | Type                         | Description                          | Default |
+|----------------|------------------------------|--------------------------------------|---------|
+| NamedArguments | System.Collections.Hashtable | Named parameter splatting hashtable. | @{}     |
 
 **`$PositionalArguments`**
 
-| Name                | Type         | Description                                     | Default |
-|---------------------|--------------|-------------------------------------------------|---------|
-| PositionalArguments | System.Array | Optional positional arguments to pass after @.  | @()     |
+| Name                | Type         | Description                                    | Default |
+|---------------------|--------------|------------------------------------------------|---------|
+| PositionalArguments | System.Array | Optional positional arguments to pass after @. | @()     |
 
 **`$AllocatedSecrets`**
 
-| Name             | Type         | Description                                              | Default |
-|------------------|--------------|----------------------------------------------------------|---------|
-| AllocatedSecrets | System.Array | Temporary SecureString instances to dispose in finally.  | @()     |
+| Name             | Type         | Description                                             | Default |
+|------------------|--------------|---------------------------------------------------------|---------|
+| AllocatedSecrets | System.Array | Temporary SecureString instances to dispose in finally. | @()     |
 
 **`$UseLastExitCode`**
 
-| Name            | Type                                         | Description                                                 | Default |
-|-----------------|----------------------------------------------|-------------------------------------------------------------|---------|
-| UseLastExitCode | System.Management.Automation.SwitchParameter | Fall back to $global:LASTEXITCODE for external .ps1 scripts.| $false  |
+| Name            | Type                                         | Description                                                  | Default |
+|-----------------|----------------------------------------------|--------------------------------------------------------------|---------|
+| UseLastExitCode | System.Management.Automation.SwitchParameter | Fall back to $global:LASTEXITCODE for external .ps1 scripts. | $false  |
 
 **`$ErrorContext`**
 
-| Name         | Type          | Description                                                     | Default |
-|--------------|---------------|-----------------------------------------------------------------|---------|
-| ErrorContext | System.String | Optional custom prefix for [UNKNOWN] unhandled error messages.  | ''      |
+| Name         | Type          | Description                                                    | Default |
+|--------------|---------------|----------------------------------------------------------------|---------|
+| ErrorContext | System.String | Optional custom prefix for [UNKNOWN] unhandled error messages. | ''      |
 
 #### Outputs
 
@@ -1208,7 +1208,7 @@ result hashtable.
 Accesses runtime state exclusively via Get-GlobalRuntimeVariable. Never returns
 PowerShell class instances across thread boundaries.
 
-*Source: [src/Tools/Private/Invoke-ModulePowerShellCommand.ps1](../../src/Tools/Private/Invoke-ModulePowerShellCommand.ps1)*
+*Source: [src/Tools/Private/Invoke-ModulePowerShellCommand.ps1](../src/Tools/Private/Invoke-ModulePowerShellCommand.ps1)*
 
 ---
 
@@ -1228,19 +1228,19 @@ deriving filenames from user-supplied role names or identifiers.
 
 **`$InputString`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InputString | System.String | Input string to sanitize. | $null |
+| Name        | Type          | Description               | Default |
+|-------------|---------------|---------------------------|---------|
+| InputString | System.String | Input string to sanitize. | $null   |
 
 **`$RemoveSpaces`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RemoveSpaces | System.Management.Automation.SwitchParameter | Remove all whitespace characters when set. | $false |
+| Name         | Type                                         | Description                                | Default |
+|--------------|----------------------------------------------|--------------------------------------------|---------|
+| RemoveSpaces | System.Management.Automation.SwitchParameter | Remove all whitespace characters when set. | $false  |
 
 #### Outputs
 
-System.String — The sanitized string suitable for use as a filename.
+System.String -- The sanitized string suitable for use as a filename.
 
 #### Examples
 
@@ -1253,7 +1253,7 @@ PS> Remove-ModuleAmbitiousCharacters -InputString 'Admin Role #1' -RemoveSpaces
 Only removes a restricted set of characters; callers may perform additional
 normalization (lowercasing, trimming) if needed.
 
-*Source: [src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1](../../src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1)*
+*Source: [src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1](../src/Tools/Private/Remove-ModuleAmbitiousCharacters.ps1)*
 
 ---
 
@@ -1274,9 +1274,9 @@ a broken filter argument never aborts a plugin.
 
 **`$Value`**
 
-| Name  | Type          | Description          | Default |
-|-------|---------------|----------------------|---------|
-| Value | System.String | The value to test.   |         |
+| Name  | Type          | Description        | Default |
+|-------|---------------|--------------------|---------|
+| Value | System.String | The value to test. |         |
 
 **`$Pattern`**
 
@@ -1300,5 +1300,5 @@ Returns $true.
 
 Internal helper of Test-IcingaArrayFilter.
 
-*Source: [src/Tools/Private/Test-ModuleWildcardMatch.ps1](../../src/Tools/Private/Test-ModuleWildcardMatch.ps1)*
+*Source: [src/Tools/Private/Test-ModuleWildcardMatch.ps1](../src/Tools/Private/Test-ModuleWildcardMatch.ps1)*
 

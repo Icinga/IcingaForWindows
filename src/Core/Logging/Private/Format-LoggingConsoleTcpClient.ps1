@@ -7,23 +7,26 @@ Format a `TcpClient` for console logging.
 `System.Net.Sockets.TcpClient`, including connection status and endpoints.
 
 .PARAMETER Client
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Client | System.Net.Sockets.TcpClient | The TCP client instance to format | |
+| Name   | Type                         | Description                       | Default |
+|--------|------------------------------|-----------------------------------|---------|
+| Client | System.Net.Sockets.TcpClient | The TCP client instance to format |         |
 
 .PARAMETER Indent
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 .OUTPUTS
-System.String — A formatted multi-line description of the `TcpClient`.
+System.String -- A formatted multi-line description of the `TcpClient`.
 
 .EXAMPLE
 PS> Format-LoggingConsoleTcpClient -Client $client
 
 .NOTES
 This helper uses `Format-LoggingConsoleObjectProperties` for property extraction.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleTcpClient()
 {

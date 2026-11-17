@@ -34,9 +34,9 @@ PowerShell 5.1.
 | Include | System.Array | Only collect processes matching these names (wildcards). | @()     |
 
 .PARAMETER Exclude
-| Name    | Type         | Description                                         | Default |
-|---------|--------------|-----------------------------------------------------|---------|
-| Exclude | System.Array | Skip processes matching these names (wildcards).    | @()     |
+| Name    | Type         | Description                                      | Default |
+|---------|--------------|--------------------------------------------------|---------|
+| Exclude | System.Array | Skip processes matching these names (wildcards). | @()     |
 
 .OUTPUTS
 System.Collections.Hashtable -- Keys Processes, MemoryTotal, CommitLimit and
@@ -55,6 +55,9 @@ Returns the summed usage of all PowerShell processes.
 Windows-only. Reads the '\Process(*)' performance counters ('Performance Monitor
 Users'), '\Memory\Commit Limit' and the Win32_ComputerSystem CIM class. Without a
 running daemon the first call in a runspace waits for the counter warm-up.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaProcessInformation()
 {

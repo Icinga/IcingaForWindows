@@ -1,32 +1,31 @@
 <#
 .SYNOPSIS
-    Tests background daemons in Icinga for Windows for memory leaks caused by un-nulled local variables inside endless loops,
-    and ensures that objects implementing IDisposable are properly disposed.
+Test background daemons in Icinga for Windows for endless-loop and IDisposable memory leaks
 
 .DESCRIPTION
-    Scans the provided source folder for PowerShell scripts and parses their Abstract Syntax Tree (AST).
-    It identifies 'while' or 'do-while' loops that run indefinitely (typically checking 'Test-ThreadRunning').
-    Inside these loops, it monitors all variable assignments. If a variable is assigned a value but is not
-    explicitly set to $null anywhere within the same loop (or its finally block), it reports a memory leak.
-    Native types like [bool], [switch], [int], etc., are exempt because they cannot be set to $null.
+Scans the provided source folder for PowerShell scripts and parses their Abstract Syntax Tree (AST).
+It identifies 'while' or 'do-while' loops that run indefinitely (typically checking 'Test-ThreadRunning').
+Inside these loops, it monitors all variable assignments. If a variable is assigned a value but is not
+explicitly set to `$null` anywhere within the same loop (or its finally block), it reports a memory leak.
+Native types like `[bool]`, `[switch]`, `[int]`, etc., are exempt because they cannot be set to `$null`.
 
-    Additionally, it tracks assignments of known IDisposable objects (like TcpClient, FileStream, etc.) and
-    verifies if a corresponding `.Dispose()` method is called on the variable within the loop.
-    If an IDisposable is passed to another function intentionally, you can suppress the check by adding
-    `# [IcingaIgnoreDisposeCheck] $VariableName` as a comment inside the loop.
+Additionally, it tracks assignments of known IDisposable objects (like TcpClient, FileStream, etc.) and
+verifies if a corresponding `.Dispose()` method is called on the variable within the loop.
+If an IDisposable is passed to another function intentionally, you can suppress the check by adding
+`# [IcingaIgnoreDisposeCheck] $VariableName` as a comment inside the loop.
 
 .PARAMETER ModuleBasePath
-| Name           | Type          | Description                                                       | Default                       |
-|----------------|---------------|-------------------------------------------------------------------|-------------------------------|
-| ModuleBasePath | System.String | Absolute path to the Icinga module root (the folder above `src`). | Resolved from the script path |
+| Name           | Type          | Description                                                                   | Default                       |
+|----------------|---------------|-------------------------------------------------------------------------------|-------------------------------|
+| ModuleBasePath | System.String | Absolute path to the Icinga for Windows module root (the folder above `src`). | Resolved from the script path |
 
 .PARAMETER SourceFolder
-| Name         | Type          | Description                                                       | Default                       |
-|--------------|---------------|-------------------------------------------------------------------|-------------------------------|
-| SourceFolder | System.String | The source folder containing the PowerShell module files to test. | `<ModuleBasePath>\src`        |
+| Name         | Type          | Description                                                       | Default                |
+|--------------|---------------|-------------------------------------------------------------------|------------------------|
+| SourceFolder | System.String | The source folder containing the PowerShell module files to test. | `<ModuleBasePath>\src` |
 
 .OUTPUTS
-System.Boolean — Returns $true if all checks pass. Throws when a memory leak or un-disposed object is detected.
+System.Boolean -- Returns $true if all checks pass. Throws when a memory leak or un-disposed object is detected.
 
 .EXAMPLE
 PS> .\build\Test-ModuleDaemonMemoryLeak.ps1
@@ -34,7 +33,10 @@ PS> .\build\Test-ModuleDaemonMemoryLeak.ps1
 Scans the src/ directory for daemon memory leaks and undisposed IDisposable objects.
 
 .NOTES
-Designed for PowerShell 7.5+ on Windows.
+Designed for Windows PowerShell 5.1 and PowerShell 7+.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 
 [CmdletBinding()]
@@ -47,7 +49,9 @@ $ErrorActionPreference = 'Stop';
 $ProgressPreference    = 'SilentlyContinue';
 
 if ([string]::IsNullOrEmpty($ModuleBasePath)) {
-    $ModuleBasePath = Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..') | Select-Object -ExpandProperty Path;
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath);
+} elseif (Test-Path -Path $ModuleBasePath) {
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path $ModuleBasePath).ProviderPath);
 }
 
 if ([string]::IsNullOrEmpty($SourceFolder)) {
@@ -61,14 +65,14 @@ if (-not (Test-Path -Path $SourceFolder)) {
 function Test-ModuleDaemonMemoryLeak()
 {
     param (
-        [string]$SourceFolder = (Join-Path $PSScriptRoot '..\src')
-    )
+        [string]$SourceFolder = (Join-Path -Path $PSScriptRoot -ChildPath (Join-Path -Path '..' -ChildPath 'src'))
+    );
 
-    [bool]$Success = $true;
-    $Files = Get-ChildItem -Path $SourceFolder -Recurse -Include *.ps1,*.psm1;
+    [bool]$Success   = $true;
+    $Files           = Get-ChildItem -Path $SourceFolder -Recurse -Include '*.ps1', '*.psm1';
 
     # Native types that do not accept $null or are immediately GCed
-    $ExemptTypes = @(
+    $ExemptTypes     = @(
         'bool', 'System.Boolean', 'switch', 'System.Management.Automation.SwitchParameter',
         'int', 'System.Int32', 'long', 'System.Int64', 'double', 'System.Double',
         'float', 'System.Single', 'decimal', 'System.Decimal', 'datetime', 'System.DateTime',
@@ -89,34 +93,32 @@ function Test-ModuleDaemonMemoryLeak()
     );
 
     foreach ($File in $Files) {
-        $Tokens = $null;
-        $Errors = $null;
-        $Ast = [System.Management.Automation.Language.Parser]::ParseFile($File.FullName, [ref]$Tokens, [ref]$Errors);
+        $Tokens      = $null;
+        $Errors      = $null;
+        $Ast         = [System.Management.Automation.Language.Parser]::ParseFile($File.FullName, [ref]$Tokens, [ref]$Errors);
 
         # Find endless loops used by our daemons
         $DaemonLoops = $Ast.FindAll({
             ($args[0] -is [System.Management.Automation.Language.WhileStatementAst] -or
-             $args[0] -is [System.Management.Automation.Language.DoWhileStatementAst] -or
-             $args[0] -is [System.Management.Automation.Language.DoUntilStatementAst]) -and
+                $args[0] -is [System.Management.Automation.Language.DoWhileStatementAst] -or
+                $args[0] -is [System.Management.Automation.Language.DoUntilStatementAst]) -and
             $args[0].Condition.Extent.Text -match 'Test-ThreadRunning'
         }, $true);
 
         foreach ($Loop in $DaemonLoops) {
-            $AssignedVars = @{};
-            $NulledVars = @{};
-
-            $Assignments = $Loop.FindAll({ $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] }, $true);
+            $AssignedVars = @{ };
+            $NulledVars   = @{ };
+            $Assignments  = $Loop.FindAll({ $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] }, $true);
 
             foreach ($Assign in $Assignments) {
-                $Left = $Assign.Left;
-                $Right = $Assign.Right;
-
-                $VarName = $null;
+                $Left         = $Assign.Left;
+                $Right        = $Assign.Right;
+                $VarName      = $null;
                 $IsExemptType = $false;
 
                 if ($Left -is [System.Management.Automation.Language.ConvertExpressionAst]) {
                     if ($Left.Child -is [System.Management.Automation.Language.VariableExpressionAst]) {
-                        $VarName = $Left.Child.VariablePath.UserPath;
+                        $VarName  = $Left.Child.VariablePath.UserPath;
                         $TypeName = $Left.Type.TypeName.Name;
                         if ($ExemptTypes -contains $TypeName) {
                             $IsExemptType = $true;
@@ -127,8 +129,12 @@ function Test-ModuleDaemonMemoryLeak()
                 }
 
                 if ($null -ne $VarName) {
-                    if ($VarName -match '^(global|script|env|local|private):') { continue; }
-                    if ($VarName -eq '_' -or $VarName -eq 'this' -or $VarName -match '^args$') { continue; }
+                    if ($VarName -match '^(global|script|env|local|private):') {
+                        continue;
+                    }
+                    if ($VarName -eq '_' -or $VarName -eq 'this' -or $VarName -match '^args$') {
+                        continue;
+                    }
 
                     # Null check tracking
                     if (-not $IsExemptType) {
@@ -159,16 +165,15 @@ function Test-ModuleDaemonMemoryLeak()
         # ---------------------------------------------------------
         # IDisposable Tracking (Entire File Scope)
         # ---------------------------------------------------------
-        $DisposableVars = @{};
-        $DisposedVars = @{};
-
+        $DisposableVars = @{ };
+        $DisposedVars   = @{ };
         $AllAssignments = $Ast.FindAll({ $args[0] -is [System.Management.Automation.Language.AssignmentStatementAst] }, $true);
 
         foreach ($Assign in $AllAssignments) {
-            $Left = $Assign.Left;
-            $Right = $Assign.Right;
-
+            $Left    = $Assign.Left;
+            $Right   = $Assign.Right;
             $VarName = $null;
+
             if ($Left -is [System.Management.Automation.Language.ConvertExpressionAst]) {
                 if ($Left.Child -is [System.Management.Automation.Language.VariableExpressionAst]) {
                     $VarName = $Left.Child.VariablePath.UserPath;
@@ -178,12 +183,15 @@ function Test-ModuleDaemonMemoryLeak()
             }
 
             if ($null -ne $VarName) {
-                if ($VarName -match '^(global|script|env|local|private):') { continue; }
-                if ($VarName -eq '_' -or $VarName -eq 'this' -or $VarName -match '^args$') { continue; }
+                if ($VarName -match '^(global|script|env|local|private):') {
+                    continue;
+                }
+                if ($VarName -eq '_' -or $VarName -eq 'this' -or $VarName -match '^args$') {
+                    continue;
+                }
 
                 $IsDisposableAssignment = $false;
-
-                $NewObjCmd = $Right.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] -and $args[0].GetCommandName() -eq 'New-Object' }, $true);
+                $NewObjCmd              = $Right.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] -and $args[0].GetCommandName() -eq 'New-Object' }, $true);
                 if ($null -ne $NewObjCmd) {
                     foreach ($elem in $NewObjCmd.CommandElements) {
                         if ($elem -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
@@ -197,7 +205,7 @@ function Test-ModuleDaemonMemoryLeak()
 
                 $InvokeMemberCmd = $Right.Find({ $args[0] -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and $args[0].Member.Extent.Text -match '^new$|^Create$' }, $true);
                 if ($null -ne $InvokeMemberCmd) {
-                    $TypeName = $InvokeMemberCmd.Expression.Extent.Text -replace '\[|\]','';
+                    $TypeName = $InvokeMemberCmd.Expression.Extent.Text -replace '\[|\]', '';
                     if ($DisposableTypes -contains $TypeName) {
                         $IsDisposableAssignment = $true;
                     }
@@ -223,7 +231,7 @@ function Test-ModuleDaemonMemoryLeak()
 
         foreach ($VarName in $DisposableVars.Keys) {
             if (-not $DisposedVars.ContainsKey($VarName)) {
-                $StartLine = $DisposableVars[$VarName];
+                $StartLine  = $DisposableVars[$VarName];
                 $IsOptedOut = $false;
 
                 # Check line exactly before the assignment
@@ -251,6 +259,7 @@ function Test-ModuleDaemonMemoryLeak()
             }
         }
     }
+
     return $Success;
 }
 

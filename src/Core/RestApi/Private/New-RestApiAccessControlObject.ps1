@@ -10,45 +10,48 @@ It is intended to be embedded in system access roles or used directly by
 the RestApi access control evaluation routines.
 
 .PARAMETER AllowedMethods
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name           | Type            | Description                                                            | Default  |
+|----------------|-----------------|------------------------------------------------------------------------|----------|
 | AllowedMethods | System.String[] | List of allowed HTTP methods (case-insensitive). Use `*` to allow all. | @('GET') |
 
 .PARAMETER AllowedResources
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AllowedResources | System.String[] | Glob-style patterns of resources that are explicitly allowed. Use `*` to allow all. | @() |
+| Name             | Type            | Description                                                                         | Default |
+|------------------|-----------------|-------------------------------------------------------------------------------------|---------|
+| AllowedResources | System.String[] | Glob-style patterns of resources that are explicitly allowed. Use `*` to allow all. | @()     |
 
 .PARAMETER BlockedResources
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| BlockedResources | System.String[] | Glob-style patterns of resources that are explicitly blocked. Use `*` to block all. | @('*') |
+| Name             | Type            | Description                                                                         | Default |
+|------------------|-----------------|-------------------------------------------------------------------------------------|---------|
+| BlockedResources | System.String[] | Glob-style patterns of resources that are explicitly blocked. Use `*` to block all. | @('*')  |
 
 .PARAMETER AllowedOrigins
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AllowedOrigins | System.String[] | Client IP/hostname patterns that are allowed to access the API. Use `*` to allow all origins. | @('*') |
+| Name           | Type            | Description                                                                                   | Default |
+|----------------|-----------------|-----------------------------------------------------------------------------------------------|---------|
+| AllowedOrigins | System.String[] | Client IP/hostname patterns that are allowed to access the API. Use `*` to allow all origins. | @('*')  |
 
 .PARAMETER RequireCredentials
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RequireCredentials | System.Boolean | When true, the ACL requires credentials (not implemented in this helper). | $false |
+| Name               | Type           | Description                                                               | Default |
+|--------------------|----------------|---------------------------------------------------------------------------|---------|
+| RequireCredentials | System.Boolean | When true, the ACL requires credentials (not implemented in this helper). | $false  |
 
 .PARAMETER RequestBodySizeLimitKB
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RequestBodySizeLimitKB | System.Int32 | Maximum allowed request body size in kilobytes. Negative values are normalized to 0. | 1024 |
+| Name                   | Type         | Description                                                                          | Default |
+|------------------------|--------------|--------------------------------------------------------------------------------------|---------|
+| RequestBodySizeLimitKB | System.Int32 | Maximum allowed request body size in kilobytes. Negative values are normalized to 0. | 1024    |
 
 .OUTPUTS
-PSCustomObject — access control object ready for inclusion in role definitions.
+PSCustomObject -- access control object ready for inclusion in role definitions.
 
 .EXAMPLE
 PS> New-RestApiAccessControlObject -AllowedMethods @('GET','POST') -AllowedResources @('/v1/*') -RequestBodySizeLimitKB 512
 
 .NOTES
 The returned object converts KB limit to bytes and normalizes string
-arrays. The `RequireCredentials` flag is informational — credential
+arrays. The `RequireCredentials` flag is informational -- credential
 enforcement must be implemented in the request handling logic.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-RestApiAccessControlObject()
 {

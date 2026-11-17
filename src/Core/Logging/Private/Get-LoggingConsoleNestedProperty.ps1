@@ -8,23 +8,26 @@ Resolve a nested property path on an object safely.
 any segment cannot be resolved.
 
 .PARAMETER InputObject
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InputObject | System.Object | The object to query | |
+| Name        | Type          | Description         | Default |
+|-------------|---------------|---------------------|---------|
+| InputObject | System.Object | The object to query |         |
 
 .PARAMETER PropertyPath
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| PropertyPath | System.String | Dot-separated property path to resolve | |
+| Name         | Type          | Description                            | Default |
+|--------------|---------------|----------------------------------------|---------|
+| PropertyPath | System.String | Dot-separated property path to resolve |         |
 
 .OUTPUTS
-System.Object — The resolved property value or `$null` when not found.
+System.Object -- The resolved property value or `$null` when not found.
 
 .EXAMPLE
 PS> Get-LoggingConsoleNestedProperty -InputObject $resp -PropertyPath 'Client.Address'
 
 .NOTES
 This helper intentionally swallows property access errors and returns `$null` on failure.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-LoggingConsoleNestedProperty()
 {

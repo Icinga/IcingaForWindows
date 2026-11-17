@@ -10,12 +10,12 @@ back to System.Web.Script.Serialization.JavaScriptSerializer. In PowerShell 6
 and higher, it uses the native ConvertTo-Json cmdlet.
 
 .PARAMETER InputObject
-| Name        | Type          | Description                                | Default |
-|-------------|---------------|--------------------------------------------|---------|
-| InputObject | System.Object | The object to serialize.                   | $null   |
+| Name        | Type          | Description              | Default |
+|-------------|---------------|--------------------------|---------|
+| InputObject | System.Object | The object to serialize. | $null   |
 
 .OUTPUTS
-System.String — Returns a JSON string representation of the object.
+System.String -- Returns a JSON string representation of the object.
 Returns an empty string if the input is null or serialization fails.
 
 .EXAMPLE
@@ -24,6 +24,9 @@ PS> $json = ConvertTo-ModuleJson -InputObject @{ key = "value" }
 .NOTES
 In Windows PowerShell 5.1, this function dynamically loads the System.Web.Extensions
 assembly if it is not already loaded.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-ModuleJson()
 {
@@ -46,7 +49,7 @@ function ConvertTo-ModuleJson()
                 Add-Type -AssemblyName System.Web.Extensions;
             }
 
-            $Serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer;
+            $Serializer               = New-Object System.Web.Script.Serialization.JavaScriptSerializer;
             $Serializer.MaxJsonLength = 2147483647;
 
             return $Serializer.Serialize($InputObject);

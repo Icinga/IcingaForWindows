@@ -7,22 +7,22 @@ Creates a hashtable representing an Icinga Protocol endpoint with the specified 
 This object is typically passed into New-IcingaProtocolEnvironment.
 
 .PARAMETER Name
-| Name | Type          | Description                                | Default |
-|------|---------------|--------------------------------------------|---------|
-| Name | System.String | The human-readable name of the endpoint.   |         |
+| Name | Type          | Description                              | Default |
+|------|---------------|------------------------------------------|---------|
+| Name | System.String | The human-readable name of the endpoint. |         |
 
 .PARAMETER Address
-| Name    | Type          | Description                                | Default |
-|---------|---------------|--------------------------------------------|---------|
-| Address | System.String | The IP address or FQDN of the endpoint.    |         |
+| Name    | Type          | Description                             | Default |
+|---------|---------------|-----------------------------------------|---------|
+| Address | System.String | The IP address or FQDN of the endpoint. |         |
 
 .PARAMETER Port
-| Name | Type         | Description                                | Default |
-|------|--------------|--------------------------------------------|---------|
-| Port | System.Int32 | The TCP port to connect to.                |         |
+| Name | Type         | Description                 | Default |
+|------|--------------|-----------------------------|---------|
+| Port | System.Int32 | The TCP port to connect to. |         |
 
 .OUTPUTS
-System.Collections.Hashtable — Returns a hashtable with the endpoint configuration.
+System.Collections.Hashtable -- Returns a hashtable with the endpoint configuration.
 
 .EXAMPLE
 PS> New-IcingaProtocolEndpoint -Name 'Master1' -Address '192.168.1.10' -Port 5665
@@ -31,6 +31,9 @@ Creates a new endpoint object for Master1.
 
 .NOTES
 This object is required for configuring the Icinga environment structure.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaProtocolEndpoint()
 {

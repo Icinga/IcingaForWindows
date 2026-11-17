@@ -9,29 +9,29 @@ registers the thread id, validates the requested command and finally invokes it
 with the supplied parameters.
 
 .PARAMETER PublicSpace
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| PublicSpace | System.Object | Shared public runtime object to attach to the thread | $null |
+| Name        | Type          | Description                                          | Default |
+|-------------|---------------|------------------------------------------------------|---------|
+| PublicSpace | System.Object | Shared public runtime object to attach to the thread | $null   |
 
 .PARAMETER AccessControl
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AccessControl | System.Object | Access control descriptor to attach to protected runtime area | $null |
+| Name          | Type          | Description                                                   | Default |
+|---------------|---------------|---------------------------------------------------------------|---------|
+| AccessControl | System.Object | Access control descriptor to attach to protected runtime area | $null   |
 
 .PARAMETER ThreadId
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ThreadId | System.String | The thread id assigned by the creator | $null |
+| Name     | Type          | Description                           | Default |
+|----------|---------------|---------------------------------------|---------|
+| ThreadId | System.String | The thread id assigned by the creator | $null   |
 
 .PARAMETER Command
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Command | System.String | The command/function name to execute in the thread | $null |
+| Name    | Type          | Description                                        | Default |
+|---------|---------------|----------------------------------------------------|---------|
+| Command | System.String | The command/function name to execute in the thread | $null   |
 
 .PARAMETER Parameters
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Parameters | System.Hashtable | Named parameters to pass to `Command` | @{} |
+| Name       | Type             | Description                           | Default |
+|------------|------------------|---------------------------------------|---------|
+| Parameters | System.Hashtable | Named parameters to pass to `Command` | @{}     |
 
 .OUTPUTS
 Varies. The invoked `Command` determines output; error conditions return structured cmdlet returns.
@@ -44,6 +44,9 @@ Called exclusively by New-Thread; do not invoke directly. Calls New-ModuleBaseEn
 up the runspace and sets (Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemon to $true so
 that downstream functions know they are executing in a background context. Thread identity is
 tracked via Update-LoggingThreadLoggingId for log correlation.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Set-ThreadData()
 {
@@ -56,12 +59,12 @@ function Set-ThreadData()
     );
 
     # Always ensure no progress is shown in sessions
-    $ProgressPreference = 'SilentlyContinue';
+    $ProgressPreference                          = 'SilentlyContinue';
 
     # As this is a new thread instance, we will run this function to load our base environment
     New-ModuleBaseEnvironment;
 
-    $GlobalVariable = Get-GlobalRuntimeVariable;
+    $GlobalVariable                              = Get-GlobalRuntimeVariable;
 
     # Update the logging ID for this thread to ensure logs are properly tagged an traceable
     # Set it to the provided ThreadId to ensure we can track all logs from the start of the thread
@@ -88,8 +91,8 @@ function Set-ThreadData()
     # TODO: We need to properly set colorized output setting here
 
     # Check if the command is directly available in the session or in the script module
-    $CommandExists = ($null -ne (Get-Command -Name $Command -ErrorAction SilentlyContinue));
-    $ScriptModule  = $null;
+    $CommandExists                             = ($null -ne (Get-Command -Name $Command -ErrorAction SilentlyContinue));
+    $ScriptModule                              = $null;
 
     if (-not $CommandExists) {
         $ScriptModule = Get-Module -Name 'IcingaForWindows' -All | Where-Object { $_.ModuleType -eq 'Script' } | Select-Object -First 1;

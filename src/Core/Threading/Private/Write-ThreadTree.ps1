@@ -9,19 +9,19 @@ renders child nodes from the pre-built tree to produce the full hierarchical
 view. The node is a PSObject as returned by `Get-ThreadTree`.
 
 .PARAMETER Node
-| Name | Type          | Description                              | Default |
-|------|---------------|------------------------------------------|---------|
-| Node | PSObject      | Tree node as returned by `Get-ThreadTree` | $null   |
+| Name | Type     | Description                               | Default |
+|------|----------|-------------------------------------------|---------|
+| Node | PSObject | Tree node as returned by `Get-ThreadTree` | $null   |
 
 .PARAMETER StringBuilder
-| Name          | Type                        | Description                     | Default |
-|---------------|-----------------------------|---------------------------------|---------|
-| StringBuilder | System.Text.StringBuilder   | The builder to append lines to  | $null   |
+| Name          | Type                      | Description                    | Default |
+|---------------|---------------------------|--------------------------------|---------|
+| StringBuilder | System.Text.StringBuilder | The builder to append lines to | $null   |
 
 .PARAMETER Level
-| Name  | Type          | Description                         | Default |
-|-------|---------------|-------------------------------------|---------|
-| Level | System.Int32  | Nesting level for indentation       | 0       |
+| Name  | Type         | Description                   | Default |
+|-------|--------------|-------------------------------|---------|
+| Level | System.Int32 | Nesting level for indentation | 0       |
 
 .OUTPUTS
 None. Appends formatted lines to the provided `StringBuilder` instance.
@@ -32,8 +32,11 @@ Get-ThreadTree | ForEach-Object { Write-ThreadTree -Node $_ -StringBuilder $sb }
 
 .NOTES
 This function does not return a value; it operates by side-effects on the
-supplied builder. Child nodes are read directly from `$Node.Children` — no
+supplied builder. Child nodes are read directly from `$Node.Children` -- no
 additional registry lookups are performed.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Write-ThreadTree()
 {
@@ -44,7 +47,10 @@ function Write-ThreadTree()
     );
 
     $indent = ' ' * ($Level * 4);
-    $prefix = if ($Level -eq 0) { '' } else { '└── ' };
+    $prefix = '';
+    if ($Level -ne 0) {
+        $prefix = [string]::Concat([char]0x2514, [char]0x2500, [char]0x2500, ' ');
+    }
 
     # Show thread parameters if any present
     $params = '';

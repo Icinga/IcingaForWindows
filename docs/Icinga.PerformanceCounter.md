@@ -108,7 +108,7 @@ A counter without an instance is keyed category-first.
 The request/response transport lives under `(Get-GlobalRuntimeVariable).Public.PerformanceCounter`.
 Timeouts are logged through `Write-LoggingEntry` at Warning level. No external services are used.
 
-*Source: [src/PerformanceCounter/Public/Get-IcingaPerformanceCounter.ps1](../../src/PerformanceCounter/Public/Get-IcingaPerformanceCounter.ps1)*
+*Source: [src/PerformanceCounter/Public/Get-IcingaPerformanceCounter.ps1](../src/PerformanceCounter/Public/Get-IcingaPerformanceCounter.ps1)*
 
 ---
 
@@ -181,7 +181,7 @@ Lists the concrete per-instance paths that currently exist for the wildcard coun
 Uses `System.Diagnostics.PerformanceCounterCategory` directly. No global state is read or
 written, and no external services are used.
 
-*Source: [src/PerformanceCounter/Public/Show-IcingaPerformanceCounter.ps1](../../src/PerformanceCounter/Public/Show-IcingaPerformanceCounter.ps1)*
+*Source: [src/PerformanceCounter/Public/Show-IcingaPerformanceCounter.ps1](../src/PerformanceCounter/Public/Show-IcingaPerformanceCounter.ps1)*
 
 ---
 
@@ -238,7 +238,7 @@ Shows the live value for a single specified counter.
 This is a thin convenience layer over `Get-IcingaPerformanceCounter`; the same daemon/inline
 behavior and return shape apply. No external services are used.
 
-*Source: [src/PerformanceCounter/Public/Show-IcingaPerformanceCounterDetails.ps1](../../src/PerformanceCounter/Public/Show-IcingaPerformanceCounterDetails.ps1)*
+*Source: [src/PerformanceCounter/Public/Show-IcingaPerformanceCounterDetails.ps1](../src/PerformanceCounter/Public/Show-IcingaPerformanceCounterDetails.ps1)*
 
 ---
 
@@ -288,7 +288,7 @@ Extracts the category name from the counter path and returns $true when the cate
 
 Delegates to `IcingaPerformanceCounter::CategoryExists`. Never throws and reads no global state.
 
-*Source: [src/PerformanceCounter/Public/Test-IcingaPerformanceCounterCategory.ps1](../../src/PerformanceCounter/Public/Test-IcingaPerformanceCounterCategory.ps1)*
+*Source: [src/PerformanceCounter/Public/Test-IcingaPerformanceCounterCategory.ps1](../src/PerformanceCounter/Public/Test-IcingaPerformanceCounterCategory.ps1)*
 
 ---
 
@@ -344,7 +344,7 @@ PS> ConvertTo-IcingaPerformanceCounterInstanceStructure -Result $raw -Counter '\
 Called by `Get-IcingaPerformanceCounter` when `-StructureByInstance` is set. Pure transform; touches
 no global state and reads no counters.
 
-*Source: [src/PerformanceCounter/Private/ConvertTo-IcingaPerformanceCounterInstanceStructure.ps1](../../src/PerformanceCounter/Private/ConvertTo-IcingaPerformanceCounterInstanceStructure.ps1)*
+*Source: [src/PerformanceCounter/Private/ConvertTo-IcingaPerformanceCounterInstanceStructure.ps1](../src/PerformanceCounter/Private/ConvertTo-IcingaPerformanceCounterInstanceStructure.ps1)*
 
 ---
 
@@ -386,7 +386,7 @@ PS> Get-IcingaPerformanceCounterLiteral -Argument $argumentAst
 Called by `Register-IcingaPerformanceCounterFromComponents`. Returns an empty array when
 the argument is null or contains no string literals.
 
-*Source: [src/PerformanceCounter/Private/Get-IcingaPerformanceCounterLiteral.ps1](../../src/PerformanceCounter/Private/Get-IcingaPerformanceCounterLiteral.ps1)*
+*Source: [src/PerformanceCounter/Private/Get-IcingaPerformanceCounterLiteral.ps1](../src/PerformanceCounter/Private/Get-IcingaPerformanceCounterLiteral.ps1)*
 
 ---
 
@@ -434,7 +434,7 @@ Returns the processor load of core 0, or the error text if that counter could no
 Pure helper; reads no global state and touches no counters. Intended for use by plugins after they
 have selected a single counter from a `Get-IcingaPerformanceCounter` result.
 
-*Source: [src/PerformanceCounter/Private/Get-IcingaPerformanceCounterValue.ps1](../../src/PerformanceCounter/Private/Get-IcingaPerformanceCounterValue.ps1)*
+*Source: [src/PerformanceCounter/Private/Get-IcingaPerformanceCounterValue.ps1](../src/PerformanceCounter/Private/Get-IcingaPerformanceCounterValue.ps1)*
 
 ---
 
@@ -482,7 +482,7 @@ Declares two counters so the daemon keeps them warm and the discovery step can f
 The counters are stored under `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Registered`.
 This function does not return counter values -- use `Get-IcingaPerformanceCounter` to read them.
 
-*Source: [src/PerformanceCounter/Private/New-IcingaPerformanceCounter.ps1](../../src/PerformanceCounter/Private/New-IcingaPerformanceCounter.ps1)*
+*Source: [src/PerformanceCounter/Private/New-IcingaPerformanceCounter.ps1](../src/PerformanceCounter/Private/New-IcingaPerformanceCounter.ps1)*
 
 ---
 
@@ -519,7 +519,7 @@ PS> New-IcingaPerformanceCounterEnvironment
 All shared state is read through `Get-GlobalRuntimeVariable`. The manager is stored on the
 `Manager` slot of the global store and is only ever touched by the daemon thread.
 
-*Source: [src/PerformanceCounter/Private/New-IcingaPerformanceCounterEnvironment.ps1](../../src/PerformanceCounter/Private/New-IcingaPerformanceCounterEnvironment.ps1)*
+*Source: [src/PerformanceCounter/Private/New-IcingaPerformanceCounterEnvironment.ps1](../src/PerformanceCounter/Private/New-IcingaPerformanceCounterEnvironment.ps1)*
 
 ---
 
@@ -553,7 +553,7 @@ PS> Read-IcingaPerformanceCounterCache
 PowerShell 7 (the `-AsHashtable` switch is deliberately not used because it is PowerShell
 6+ only). Entries are read through the object's properties for cross-version compatibility.
 
-*Source: [src/PerformanceCounter/Private/Read-IcingaPerformanceCounterCache.ps1](../../src/PerformanceCounter/Private/Read-IcingaPerformanceCounterCache.ps1)*
+*Source: [src/PerformanceCounter/Private/Read-IcingaPerformanceCounterCache.ps1](../src/PerformanceCounter/Private/Read-IcingaPerformanceCounterCache.ps1)*
 
 ---
 
@@ -586,7 +586,7 @@ PS> Register-IcingaDefaultPerformanceCounter
 The literal counter list here is what the discovery step reads from the compiled kernel. The
 set is intentionally minimal and generic; it is an example, not a fixed contract.
 
-*Source: [src/PerformanceCounter/Private/Register-IcingaDefaultPerformanceCounter.ps1](../../src/PerformanceCounter/Private/Register-IcingaDefaultPerformanceCounter.ps1)*
+*Source: [src/PerformanceCounter/Private/Register-IcingaDefaultPerformanceCounter.ps1](../src/PerformanceCounter/Private/Register-IcingaDefaultPerformanceCounter.ps1)*
 
 ---
 
@@ -622,7 +622,7 @@ PS> Register-IcingaPerformanceCounterFromComponents
 Only literal array/string arguments are discoverable. The kernel file is produced by
 `Build-ModuleProject`; if it is missing the discovery step is skipped.
 
-*Source: [src/PerformanceCounter/Private/Register-IcingaPerformanceCounterFromComponents.ps1](../../src/PerformanceCounter/Private/Register-IcingaPerformanceCounterFromComponents.ps1)*
+*Source: [src/PerformanceCounter/Private/Register-IcingaPerformanceCounterFromComponents.ps1](../src/PerformanceCounter/Private/Register-IcingaPerformanceCounterFromComponents.ps1)*
 
 ---
 
@@ -662,7 +662,7 @@ Must run inside a dedicated background runspace created by `New-Thread`. All sha
 accessed through `Get-GlobalRuntimeVariable` because the runspace receives only a snapshot of
 the runtime at startup. The daemon exits cleanly when `Test-ThreadRunning` returns $false.
 
-*Source: [src/PerformanceCounter/Private/Start-IcingaPerformanceCounterDaemon.ps1](../../src/PerformanceCounter/Private/Start-IcingaPerformanceCounterDaemon.ps1)*
+*Source: [src/PerformanceCounter/Private/Start-IcingaPerformanceCounterDaemon.ps1](../src/PerformanceCounter/Private/Start-IcingaPerformanceCounterDaemon.ps1)*
 
 ---
 
@@ -695,7 +695,7 @@ PS> if (Test-IcingaPerformanceCounterDaemon) { 'daemon is serving requests' }
 The heartbeat lives at `(Get-GlobalRuntimeVariable).Public.PerformanceCounter.Heartbeat`.
 A heartbeat older than five seconds is treated as not alive.
 
-*Source: [src/PerformanceCounter/Private/Test-IcingaPerformanceCounterDaemon.ps1](../../src/PerformanceCounter/Private/Test-IcingaPerformanceCounterDaemon.ps1)*
+*Source: [src/PerformanceCounter/Private/Test-IcingaPerformanceCounterDaemon.ps1](../src/PerformanceCounter/Private/Test-IcingaPerformanceCounterDaemon.ps1)*
 
 ---
 
@@ -742,7 +742,7 @@ Reads configuration (`RefreshIntervalMs`, `EvictionMinutes`) from the store's Co
 Heartbeat is always refreshed so liveness detection stays responsive even under load. The daemon
 passes its cached store reference to avoid re-resolving it through Get-GlobalRuntimeVariable each cycle.
 
-*Source: [src/PerformanceCounter/Private/Update-IcingaPerformanceCounterState.ps1](../../src/PerformanceCounter/Private/Update-IcingaPerformanceCounterState.ps1)*
+*Source: [src/PerformanceCounter/Private/Update-IcingaPerformanceCounterState.ps1](../src/PerformanceCounter/Private/Update-IcingaPerformanceCounterState.ps1)*
 
 ---
 
@@ -777,5 +777,5 @@ The cache file is `PerformanceCounter.json` under `Get-ModuleCacheDirectory`. Ti
 are stored in ISO 8601 round-trip format so they parse identically on Windows PowerShell
 5.1 and PowerShell 7.
 
-*Source: [src/PerformanceCounter/Private/Write-IcingaPerformanceCounterCache.ps1](../../src/PerformanceCounter/Private/Write-IcingaPerformanceCounterCache.ps1)*
+*Source: [src/PerformanceCounter/Private/Write-IcingaPerformanceCounterCache.ps1](../src/PerformanceCounter/Private/Write-IcingaPerformanceCounterCache.ps1)*
 

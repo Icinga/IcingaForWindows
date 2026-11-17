@@ -8,22 +8,22 @@ directories. Logs unauthorized attempts and returns structured return values
 using `Write-FunctionReturnValue`.
 
 .PARAMETER Path
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to remove. | '' |
+| Name | Type          | Description     | Default |
+|------|---------------|-----------------|---------|
+| Path | System.String | Path to remove. | ''      |
 
 .PARAMETER Recurse
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Recurse | System.Management.Automation.SwitchParameter | Remove child items recursively. | $false |
+| Name    | Type                                         | Description                     | Default |
+|---------|----------------------------------------------|---------------------------------|---------|
+| Recurse | System.Management.Automation.SwitchParameter | Remove child items recursively. | $false  |
 
 .PARAMETER Force
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Force deletion (pass `-Force` to `Remove-Item`). | $false |
+| Name  | Type                                         | Description                                      | Default |
+|-------|----------------------------------------------|--------------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Force deletion (pass `-Force` to `Remove-Item`). | $false  |
 
 .OUTPUTS
-PSCustomObject — Function return value via Write-FunctionReturnValue.
+PSCustomObject -- Function return value via Write-FunctionReturnValue.
 RemoveItemSuccess on success (Data contains Path).
 RemoveItemFailed, AccessViolation, RemoveItemNoPathProvided or RemoveItemPathNotFound on errors.
 
@@ -32,6 +32,9 @@ PS> Remove-SecureItem -Path (Join-Path (Get-ModuleCacheDirectory) 'temp.log') -F
 
 .NOTES
 Intended to limit deletion operations to module-managed directories only.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Remove-SecureItem()
 {

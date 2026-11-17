@@ -5,20 +5,20 @@ Starts a recurring heartbeat sender over an established TCP/TLS connection to ke
 .DESCRIPTION
 Start-IcingaProtocolHeartbeat validates and registers a provided System.Net.Sockets.TcpClient and System.Net.Security.SslStream for use by the Icinga protocol heartbeat subsystem, then enters a loop that periodically sends heartbeat messages until the TCP connection is lost. The function logs connection loss and other exceptions, closes the TCP connection when the client disconnects, and stops the current Icinga thread.
 
-This function relies on helper functions from the IcingaForWindows module (for example: Set-TCPClientAndStream, Test-TCPConnection, Send-IcingaProtocolHeartbeat, Close-TCPConnection, Stop-Thread, Get-ThreadId and Write-LoggingEntry) to perform its work. It is intended to be used after a successful connection handshake and when you have an active SslStream wrapped around a TcpClient.
+This function relies on helper functions from the Icinga for Windows module (for example: Set-TCPClientAndStream, Test-TCPConnection, Send-IcingaProtocolHeartbeat, Close-TCPConnection, Stop-Thread, Get-ThreadId and Write-LoggingEntry) to perform its work. It is intended to be used after a successful connection handshake and when you have an active SslStream wrapped around a TcpClient.
 
 .PARAMETER TcpClient
-| Name      | Type                         | Description                                                               | Default |
-|-----------|------------------------------|---------------------------------------------------------------------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client representing the remote endpoint. Required.          | $null   |
+| Name      | Type                         | Description                                                      | Default |
+|-----------|------------------------------|------------------------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client representing the remote endpoint. Required. | $null   |
 
 .PARAMETER SslStream
-| Name      | Type                            | Description                                                              | Default |
-|-----------|---------------------------------|--------------------------------------------------------------------------|---------|
-| SslStream | System.Net.Security.SslStream   | SSL/TLS stream wrapping the network stream for secure communication. Required. | $null   |
+| Name      | Type                          | Description                                                                    | Default |
+|-----------|-------------------------------|--------------------------------------------------------------------------------|---------|
+| SslStream | System.Net.Security.SslStream | SSL/TLS stream wrapping the network stream for secure communication. Required. | $null   |
 
 .OUTPUTS
-None — Sends heartbeat messages, writes log entries, closes the connection and stops
+None -- Sends heartbeat messages, writes log entries, closes the connection and stops
 the current thread when the connection terminates.
 
 .EXAMPLE
@@ -37,6 +37,9 @@ Heartbeats are sent once per second while Test-ThreadRunning -CheckTcpConnection
 true. MethodInvocationException during send is logged at Info level as a connection loss
 event. After the loop exits, the TCP connection is closed and the current thread is stopped
 via Stop-Thread.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaProtocolHeartbeat()
 {

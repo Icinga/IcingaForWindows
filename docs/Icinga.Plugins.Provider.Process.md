@@ -51,9 +51,9 @@ PowerShell 5.1.
 
 **`$Exclude`**
 
-| Name    | Type         | Description                                         | Default |
-|---------|--------------|-----------------------------------------------------|---------|
-| Exclude | System.Array | Skip processes matching these names (wildcards).    | @()     |
+| Name    | Type         | Description                                      | Default |
+|---------|--------------|--------------------------------------------------|---------|
+| Exclude | System.Array | Skip processes matching these names (wildcards). | @()     |
 
 #### Outputs
 
@@ -78,5 +78,5 @@ Windows-only. Reads the '\Process(*)' performance counters ('Performance Monitor
 Users'), '\Memory\Commit Limit' and the Win32_ComputerSystem CIM class. Without a
 running daemon the first call in a runspace waits for the counter warm-up.
 
-*Source: [src/Plugins/Provider/Process/Private/Get-IcingaProcessInformation.ps1](../../src/Plugins/Provider/Process/Private/Get-IcingaProcessInformation.ps1)*
+*Source: [src/Plugins/Provider/Process/Private/Get-IcingaProcessInformation.ps1](../src/Plugins/Provider/Process/Private/Get-IcingaProcessInformation.ps1)*
 

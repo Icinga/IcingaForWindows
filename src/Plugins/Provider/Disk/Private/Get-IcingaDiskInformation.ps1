@@ -32,9 +32,9 @@ DiskInformationDiskQueryFailed), so the log shows where the collection stopped.
 | Entrypoint | System.String | View to return: 'PhysicalDisk', 'Partition' or 'Volume'. | PhysicalDisk |
 
 .PARAMETER SkipPartitionMapping
-| Name                 | Type                                         | Description                                                           | Default |
-|----------------------|----------------------------------------------|-----------------------------------------------------------------------|---------|
-| SkipPartitionMapping | System.Management.Automation.SwitchParameter | Skip querying MSFT_Partition when Entrypoint is set to 'Volume'.      | $false  |
+| Name                 | Type                                         | Description                                                      | Default |
+|----------------------|----------------------------------------------|------------------------------------------------------------------|---------|
+| SkipPartitionMapping | System.Management.Automation.SwitchParameter | Skip querying MSFT_Partition when Entrypoint is set to 'Volume'. | $false  |
 
 .OUTPUTS
 System.Collections.Hashtable -- The entries of the requested view, or an
@@ -72,6 +72,9 @@ Windows-only. Reads root/cimv2 (Win32_Volume), root/Microsoft/Windows/Storage
 (MSFT_Disk, MSFT_PhysicalDisk, MSFT_Partition) and root/wmi (MPIO_DISK_INFO).
 Standard users can read all of them. Spanned volumes are linked to the first
 partition reporting them.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaDiskInformation()
 {

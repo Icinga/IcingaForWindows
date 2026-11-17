@@ -44,7 +44,7 @@ creating them if necessary, and returns the mapped numeric return code.
 Uses Get-ModuleConfigDirectory and Get-ModuleBinaryDirectory to resolve target
 paths. Missing directories are created with -Force.
 
-*Source: [src/Config/Private/New-ModuleConfigEnvironment.ps1](../../src/Config/Private/New-ModuleConfigEnvironment.ps1)*
+*Source: [src/Config/Private/New-ModuleConfigEnvironment.ps1](../src/Config/Private/New-ModuleConfigEnvironment.ps1)*
 
 ---
 
@@ -68,19 +68,19 @@ callers receive $null on failure.
 
 **`$Config`**
 
-| Name   | Type          | Description                       | Default |
-|--------|---------------|-----------------------------------|---------|
-| Config | System.String | Filename of the config to read.   | $null   |
+| Name   | Type          | Description                     | Default |
+|--------|---------------|---------------------------------|---------|
+| Config | System.String | Filename of the config to read. | $null   |
 
 **`$IncludeSubConfig`**
 
-| Name             | Type                                        | Description                                               | Default |
-|------------------|---------------------------------------------|-----------------------------------------------------------|---------|
+| Name             | Type                                         | Description                                                   | Default |
+|------------------|----------------------------------------------|---------------------------------------------------------------|---------|
 | IncludeSubConfig | System.Management.Automation.SwitchParameter | When set, recursively reads sub-configs referenced by Config. | $false  |
 
 #### Outputs
 
-System.Object — Parsed JSON object on success, or $null on error.
+System.Object -- Parsed JSON object on success, or $null on error.
 
 #### Examples
 
@@ -97,5 +97,5 @@ Relies on Get-ModuleConfigDirectory and Read-SecureFile for file I/O.
 Returns $null via -OverrideReturn $null on error to match calling conventions
 elsewhere in the module.
 
-*Source: [src/Config/Private/Read-ModuleConfigFile.ps1](../../src/Config/Private/Read-ModuleConfigFile.ps1)*
+*Source: [src/Config/Private/Read-ModuleConfigFile.ps1](../src/Config/Private/Read-ModuleConfigFile.ps1)*
 

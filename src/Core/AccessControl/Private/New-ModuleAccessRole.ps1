@@ -9,32 +9,32 @@ file under the module config `AccessRoles` directory using secure file helpers
 and reloads the module access control definitions.
 
 .PARAMETER RoleName
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| RoleName | System.String | Friendly name for the access role. | '' |
+| Name     | Type          | Description                        | Default |
+|----------|---------------|------------------------------------|---------|
+| RoleName | System.String | Friendly name for the access role. | ''      |
 
 .PARAMETER Users
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @() |
+| Name  | Type            | Description                                              | Default |
+|-------|-----------------|----------------------------------------------------------|---------|
+| Users | System.String[] | List of usernames (or identifiers) assigned to the role. | @()     |
 
 .PARAMETER AccessControlObject
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @() |
+| Name                | Type                    | Description                                                   | Default |
+|---------------------|-------------------------|---------------------------------------------------------------|---------|
+| AccessControlObject | System.PSCustomObject[] | Array of access control objects (ACLs) to attach to the role. | @()     |
 
 .PARAMETER InheritedRoles
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @() |
+| Name           | Type            | Description                                         | Default |
+|----------------|-----------------|-----------------------------------------------------|---------|
+| InheritedRoles | System.String[] | Roles whose permissions are inherited by this role. | @()     |
 
 .PARAMETER Force
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false |
+| Name  | Type                                         | Description                              | Default |
+|-------|----------------------------------------------|------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Overwrite existing role file if present. | $false  |
 
 .OUTPUTS
-System.Object — Structured return object from Write-FunctionReturnValue. Returns
+System.Object -- Structured return object from Write-FunctionReturnValue. Returns
 AccessRoleCreated on success (Data contains RoleName and AccessRole) or one of
 several error return codes for validation or file errors.
 
@@ -49,6 +49,9 @@ Role files are saved under the AccessRoles subfolder of Get-ModuleConfigDirector
 Write-SecureFile and New-SecureItem are used to persist files securely.
 Read-ModuleAccessControl is called after writing to reload the in-memory
 access control definitions for the current session.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-ModuleAccessRole()
 {
@@ -84,8 +87,8 @@ function New-ModuleAccessRole()
     };
 
     # Remove invalid filename characters from the role name for file saving
-    [string]$SafeRoleName     = Remove-ModuleAmbitiousCharacters -InputString $RoleName -RemoveSpaces;
-    [string]$AccessRoleFile   = Join-Path -Path (Get-ModuleConfigDirectory) -ChildPath ([string]::Format('AccessRoles\{0}.json', $SafeRoleName.ToLower()));
+    [string]$SafeRoleName       = Remove-ModuleAmbitiousCharacters -InputString $RoleName -RemoveSpaces;
+    [string]$AccessRoleFile     = Join-Path -Path (Get-ModuleConfigDirectory) -ChildPath ([string]::Format('AccessRoles\{0}.json', $SafeRoleName.ToLower()));
 
     # Test if the access role file already exists; return error if it does and Force is not specified
     if ((Test-Path $AccessRoleFile) -and -not $Force) {

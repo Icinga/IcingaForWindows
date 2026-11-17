@@ -7,23 +7,26 @@ Format a scalar value with color for console logging.
 using `Get-LoggingConsoleColorForValue` to determine an appropriate color.
 
 .PARAMETER Object
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Object | System.Object | The value to format | |
+| Name   | Type          | Description         | Default |
+|--------|---------------|---------------------|---------|
+| Object | System.Object | The value to format |         |
 
 .PARAMETER Indent
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | '' |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | ''      |
 
 .OUTPUTS
-System.String — A formatted single-line representation of the scalar value.
+System.String -- A formatted single-line representation of the scalar value.
 
 .EXAMPLE
 PS> Format-LoggingConsoleScalar -Object 123 -Indent '  '
 
 .NOTES
 Used internally by `Format-LoggingConsoleObjects` for fallback scalar formatting.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleScalar()
 {

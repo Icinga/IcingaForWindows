@@ -30,13 +30,13 @@ is present. Returns a short encoding identifier string.
 
 **`$Path`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to the file to inspect | '' |
+| Name | Type          | Description                 | Default |
+|------|---------------|-----------------------------|---------|
+| Path | System.String | Path to the file to inspect | ''      |
 
 #### Outputs
 
-System.String — One of: UTF8-BOM, UTF8, Unicode, BigEndianUnicode, UTF7, UTF32, ASCII.
+System.String -- One of: UTF8-BOM, UTF8, Unicode, BigEndianUnicode, UTF7, UTF32, ASCII.
 
 #### Examples
 
@@ -48,7 +48,7 @@ Get-FileEncoding -Path (Join-Path (Get-ModuleConfigDirectory) 'settings.json')
 
 - Returns a cmdlet-style error via `Write-FunctionReturnValue` when the file is not found.
 
-*Source: [src/Security/Private/Get-FileEncoding.ps1](../../src/Security/Private/Get-FileEncoding.ps1)*
+*Source: [src/Security/Private/Get-FileEncoding.ps1](../src/Security/Private/Get-FileEncoding.ps1)*
 
 ---
 
@@ -82,21 +82,21 @@ enumerated child items via -OverrideReturn on success or $null on error.
 
 **`$Include`**
 
-| Name    | Type         | Description                                     | Default |
-|---------|--------------|-------------------------------------------------|---------|
-| Include | System.Array | Additional include patterns for Get-ChildItem.  | @()     |
+| Name    | Type         | Description                                    | Default |
+|---------|--------------|------------------------------------------------|---------|
+| Include | System.Array | Additional include patterns for Get-ChildItem. | @()     |
 
 **`$File`**
 
-| Name | Type                                         | Description               | Default |
-|------|----------------------------------------------|---------------------------|---------|
-| File | System.Management.Automation.SwitchParameter | If set, only return files.| $false  |
+| Name | Type                                         | Description                | Default |
+|------|----------------------------------------------|----------------------------|---------|
+| File | System.Management.Automation.SwitchParameter | If set, only return files. | $false  |
 
 **`$Directory`**
 
-| Name      | Type                                         | Description                     | Default |
-|-----------|----------------------------------------------|---------------------------------|---------|
-| Directory | System.Management.Automation.SwitchParameter | If set, only return directories.| $false  |
+| Name      | Type                                         | Description                      | Default |
+|-----------|----------------------------------------------|----------------------------------|---------|
+| Directory | System.Management.Automation.SwitchParameter | If set, only return directories. | $false  |
 
 **`$Recurse`**
 
@@ -120,7 +120,7 @@ PS> Get-SecureChildItem -Path (Get-ModuleConfigDirectory) -File
 
 This helper logs attempted access to unapproved paths and returns AccessViolation.
 
-*Source: [src/Security/Private/Get-SecureChildItem.ps1](../../src/Security/Private/Get-SecureChildItem.ps1)*
+*Source: [src/Security/Private/Get-SecureChildItem.ps1](../src/Security/Private/Get-SecureChildItem.ps1)*
 
 ---
 
@@ -141,25 +141,25 @@ unauthorized attempts.
 
 **`$Path`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to create (file or directory). | $null |
+| Name | Type          | Description                         | Default |
+|------|---------------|-------------------------------------|---------|
+| Path | System.String | Path to create (file or directory). | $null   |
 
 **`$ItemType`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ItemType | System.String | 'File' or 'Directory'. | 'File' |
+| Name     | Type          | Description            | Default |
+|----------|---------------|------------------------|---------|
+| ItemType | System.String | 'File' or 'Directory'. | 'File'  |
 
 **`$Force`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Pass `-Force` to `New-Item` to overwrite existing items. | $false |
+| Name  | Type                                         | Description                                              | Default |
+|-------|----------------------------------------------|----------------------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Pass `-Force` to `New-Item` to overwrite existing items. | $false  |
 
 #### Outputs
 
-PSCustomObject — Function return value via Write-FunctionReturnValue.
+PSCustomObject -- Function return value via Write-FunctionReturnValue.
 ObjectCreationSucceeded on success (Data contains Path, ItemType and Item).
 ObjectCreationFailed, AccessViolation or DirectoryArgumentEmpty on errors.
 
@@ -174,7 +174,7 @@ PS> New-SecureItem -Path (Join-Path (Get-ModuleConfigDirectory) 'my.conf') -Item
 Intended for use when module code must create config files; restricts creation
 to module config directories only.
 
-*Source: [src/Security/Private/New-SecureItem.ps1](../../src/Security/Private/New-SecureItem.ps1)*
+*Source: [src/Security/Private/New-SecureItem.ps1](../src/Security/Private/New-SecureItem.ps1)*
 
 ---
 
@@ -195,13 +195,13 @@ assembling the file content. Returns standardized return values via
 
 **`$File`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| File | System.String | Path to the file to read. | $null |
+| Name | Type          | Description               | Default |
+|------|---------------|---------------------------|---------|
+| File | System.String | Path to the file to read. | $null   |
 
 #### Outputs
 
-System.String — File content on success (returned as raw override via Write-FunctionReturnValue).
+System.String -- File content on success (returned as raw override via Write-FunctionReturnValue).
 ObjectReadSucceeded on success (Data contains Path and Content).
 FileNotFound, AccessViolation or FileLockException on errors.
 
@@ -216,7 +216,7 @@ PS> Read-SecureFile -File (Join-Path (Get-ModuleConfigDirectory) 'settings.json'
 This helper attempts to open the file for up to ~5 seconds before failing with
 `FileLockException`. Use for reading module configuration files safely.
 
-*Source: [src/Security/Private/Read-SecureFile.ps1](../../src/Security/Private/Read-SecureFile.ps1)*
+*Source: [src/Security/Private/Read-SecureFile.ps1](../src/Security/Private/Read-SecureFile.ps1)*
 
 ---
 
@@ -236,25 +236,25 @@ using `Write-FunctionReturnValue`.
 
 **`$Path`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to remove. | '' |
+| Name | Type          | Description     | Default |
+|------|---------------|-----------------|---------|
+| Path | System.String | Path to remove. | ''      |
 
 **`$Recurse`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Recurse | System.Management.Automation.SwitchParameter | Remove child items recursively. | $false |
+| Name    | Type                                         | Description                     | Default |
+|---------|----------------------------------------------|---------------------------------|---------|
+| Recurse | System.Management.Automation.SwitchParameter | Remove child items recursively. | $false  |
 
 **`$Force`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Force deletion (pass `-Force` to `Remove-Item`). | $false |
+| Name  | Type                                         | Description                                      | Default |
+|-------|----------------------------------------------|--------------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Force deletion (pass `-Force` to `Remove-Item`). | $false  |
 
 #### Outputs
 
-PSCustomObject — Function return value via Write-FunctionReturnValue.
+PSCustomObject -- Function return value via Write-FunctionReturnValue.
 RemoveItemSuccess on success (Data contains Path).
 RemoveItemFailed, AccessViolation, RemoveItemNoPathProvided or RemoveItemPathNotFound on errors.
 
@@ -268,7 +268,7 @@ PS> Remove-SecureItem -Path (Join-Path (Get-ModuleCacheDirectory) 'temp.log') -F
 
 Intended to limit deletion operations to module-managed directories only.
 
-*Source: [src/Security/Private/Remove-SecureItem.ps1](../../src/Security/Private/Remove-SecureItem.ps1)*
+*Source: [src/Security/Private/Remove-SecureItem.ps1](../src/Security/Private/Remove-SecureItem.ps1)*
 
 ---
 
@@ -288,19 +288,19 @@ entry for each check and returns standardized return values.
 
 **`$Path`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Path | System.String | Path to validate. | $null |
+| Name | Type          | Description       | Default |
+|------|---------------|-------------------|---------|
+| Path | System.String | Path to validate. | $null   |
 
 **`$ApprovedPath`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ApprovedPath | System.Array | Array of allowed directory paths (strings). | @() |
+| Name         | Type         | Description                                 | Default |
+|--------------|--------------|---------------------------------------------|---------|
+| ApprovedPath | System.Array | Array of allowed directory paths (strings). | @()     |
 
 #### Outputs
 
-PSCustomObject — Function return value via Write-FunctionReturnValue.
+PSCustomObject -- Function return value via Write-FunctionReturnValue.
 AccessGranted when the path is within an approved directory.
 AccessViolation or DirectoryArgumentEmpty otherwise.
 
@@ -314,7 +314,7 @@ PS> Test-SecureApprovedPath -Path (Join-Path (Get-ModuleConfigDirectory) 'x') -A
 
 Uses `Resolve-Path` to normalize paths; callers should ensure ApprovedPath entries exist.
 
-*Source: [src/Security/Private/Test-SecureApprovedPath.ps1](../../src/Security/Private/Test-SecureApprovedPath.ps1)*
+*Source: [src/Security/Private/Test-SecureApprovedPath.ps1](../src/Security/Private/Test-SecureApprovedPath.ps1)*
 
 ---
 
@@ -336,19 +336,19 @@ and retries on lock for a short period. Returns structured return values via
 
 **`$File`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| File | System.String | Target file path to write. | $null |
+| Name | Type          | Description                | Default |
+|------|---------------|----------------------------|---------|
+| File | System.String | Target file path to write. | $null   |
 
 **`$Value`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Value | System.Object | Content to write. Can be hashtable, PSCustomObject, array or string. | (none) |
+| Name  | Type          | Description                                                          | Default |
+|-------|---------------|----------------------------------------------------------------------|---------|
+| Value | System.Object | Content to write. Can be hashtable, PSCustomObject, array or string. | (none)  |
 
 #### Outputs
 
-PSCustomObject — Function return value via Write-FunctionReturnValue.
+PSCustomObject -- Function return value via Write-FunctionReturnValue.
 WriteFileSuccess on success (Data contains Path and Content), WriteFileLockException
 when the file cannot be opened within the retry window.
 
@@ -363,5 +363,5 @@ PS> Write-SecureFile -File (Join-Path (Get-ModuleConfigDirectory) 'settings.json
 Creates the file if it does not exist by delegating to `New-SecureItem`. Uses UTF8
 without BOM when writing bytes. Caller receives the content in the return data.
 
-*Source: [src/Security/Private/Write-SecureFile.ps1](../../src/Security/Private/Write-SecureFile.ps1)*
+*Source: [src/Security/Private/Write-SecureFile.ps1](../src/Security/Private/Write-SecureFile.ps1)*
 

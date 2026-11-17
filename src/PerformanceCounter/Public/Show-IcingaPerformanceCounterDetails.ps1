@@ -37,6 +37,9 @@ Shows the live value for a single specified counter.
 .NOTES
 This is a thin convenience layer over `Get-IcingaPerformanceCounter`; the same daemon/inline
 behavior and return shape apply. No external services are used.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Show-IcingaPerformanceCounterDetails()
 {

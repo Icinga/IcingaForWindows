@@ -9,17 +9,17 @@ handshake, access control checks, reads the request and dispatches it to
 the appropriate handler.
 
 .PARAMETER WorkerId
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WorkerId | System.Int32 | Numeric identifier for this worker. | -1 |
+| Name     | Type         | Description                         | Default |
+|----------|--------------|-------------------------------------|---------|
+| WorkerId | System.Int32 | Numeric identifier for this worker. | -1      |
 
 .PARAMETER Spaces
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Spaces | System.Collections.Hashtable | Hashtable of RestApi space configurations. | @{ } |
+| Name   | Type                         | Description                                | Default |
+|--------|------------------------------|--------------------------------------------|---------|
+| Spaces | System.Collections.Hashtable | Hashtable of RestApi space configurations. | @{ }    |
 
 .OUTPUTS
-None — sends responses over the TCP connection and logs results.
+None -- sends responses over the TCP connection and logs results.
 
 .EXAMPLE
 PS> Start-RestApiWorker -WorkerId 0 -Spaces $spaces
@@ -27,6 +27,9 @@ PS> Start-RestApiWorker -WorkerId 0 -Spaces $spaces
 .NOTES
 This function is designed to run as a long-lived thread and relies on
 global runtime variables for TCP streams and timeouts.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-RestApiWorker()
 {
@@ -140,10 +143,10 @@ function Start-RestApiWorker()
             $GlobalVariable.Private.RestApi.Header        = $null;
             $GlobalVariable.Private.RestApi.ContentLength = 0;
 
-            $RawHttpHeader    = $null;
-            $ParsedHttpHeader = $null;
-            $AclTest          = $null;
-            $TcpClient        = $null;
+            $RawHttpHeader                                = $null;
+            $ParsedHttpHeader                             = $null;
+            $AclTest                                      = $null;
+            $TcpClient                                    = $null;
 
             # Close the connection once we are done
             Close-TCPConnection;

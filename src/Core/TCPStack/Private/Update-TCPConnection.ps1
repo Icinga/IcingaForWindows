@@ -8,28 +8,31 @@ TCP container and calls `Open-SSLStream` to wrap and authenticate the connection
 as client or server depending on the `IsClient` flag.
 
 .PARAMETER Client
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Client | System.Net.Sockets.TcpClient | Connected TCP client instance to register | $null |
+| Name   | Type                         | Description                               | Default |
+|--------|------------------------------|-------------------------------------------|---------|
+| Client | System.Net.Sockets.TcpClient | Connected TCP client instance to register | $null   |
 
 .PARAMETER Endpoint
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Endpoint | System.String | Remote endpoint name (used for client SSL auth) | $null |
+| Name     | Type          | Description                                     | Default |
+|----------|---------------|-------------------------------------------------|---------|
+| Endpoint | System.String | Remote endpoint name (used for client SSL auth) | $null   |
 
 .PARAMETER IsClient
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsClient | System.SwitchParameter | When set perform client-side SSL authentication | $false |
+| Name     | Type                   | Description                                     | Default |
+|----------|------------------------|-------------------------------------------------|---------|
+| IsClient | System.SwitchParameter | When set perform client-side SSL authentication | $false  |
 
 .OUTPUTS
-None — Result codes from `Open-SSLStream` are forwarded via `Write-FunctionReturnValue`.
+None -- Result codes from `Open-SSLStream` are forwarded via `Write-FunctionReturnValue`.
 
 .EXAMPLE
 PS> Update-TCPConnection -Client $c -Endpoint 'example.com' -IsClient
 
 .NOTES
 Validates `$Client` and returns `UpdateTcpClientInvalid` when missing.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Update-TCPConnection()
 {

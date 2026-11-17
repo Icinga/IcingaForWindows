@@ -5,29 +5,36 @@ Update the global WebSocket thread state for the current runtime.
 .DESCRIPTION
 `Update-ModuleWebSocketThread` stores the active WebSocket thread values
 (`Name`, `ClientWebSocket`, `CancellationTokenSource`) in
-`$Global:ModuleName.Private.WebSocket` so other WebSocket helper threads can
-access the current connection reference.
+`$Global:IcingaForWindows.Private.WebSocket` via `Get-GlobalRuntimeVariable` so
+other WebSocket helper functions in the same worker runspace can access the
+current connection reference.
 
 .PARAMETER Name
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection | |
+| Name | Type          | Description                              | Default |
+|------|---------------|------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection |         |
 
 .PARAMETER ClientWebSocket
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance | |
+| Name            | Type                                  | Description                      | Default |
+|-----------------|---------------------------------------|----------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance |         |
 
 .PARAMETER CancellationTokenSource
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel reads/writes | |
+| Name                    | Type                                     | Description                                           | Default |
+|-------------------------|------------------------------------------|-------------------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel reads/writes |         |
 
 .OUTPUTS
-System.Object — Returns structured `Write-FunctionReturnValue` status codes indicating success or validation failures.
+System.Object -- Returns structured `Write-FunctionReturnValue` status codes indicating success or validation failures.
 
 .EXAMPLE
 PS> Update-ModuleWebSocketThread -Name 'MyWebSocket' -ClientWebSocket $ws -CancellationTokenSource $cts
+
+.NOTES
+Populates thread-local `Private.WebSocket` state before reader or writer loops start.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Update-ModuleWebSocketThread()
 {

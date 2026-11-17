@@ -10,32 +10,32 @@ reads the referenced type-specific config via `Read-ModuleConfigFile` and
 only writes a path pointer to disk.
 
 .PARAMETER Name
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name for the WebSocket config | |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Name | System.String | Logical name for the WebSocket config |         |
 
 .PARAMETER Address
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Address | System.String | Remote WebSocket URI (wss://...) | |
+| Name    | Type          | Description                      | Default |
+|---------|---------------|----------------------------------|---------|
+| Address | System.String | Remote WebSocket URI (wss://...) |         |
 
 .PARAMETER Config
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Config | System.String | Path or pointer to the type-specific config | |
+| Name   | Type          | Description                                 | Default |
+|--------|---------------|---------------------------------------------|---------|
+| Config | System.String | Path or pointer to the type-specific config |         |
 
 .PARAMETER Type
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Type | System.String | Logical type for the WebSocket config | |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Type | System.String | Logical type for the WebSocket config |         |
 
 .PARAMETER Force
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.SwitchParameter | Overwrite an existing config with the same name | false |
+| Name  | Type                   | Description                                     | Default |
+|-------|------------------------|-------------------------------------------------|---------|
+| Force | System.SwitchParameter | Overwrite an existing config with the same name | false   |
 
 .OUTPUTS
-System.Object — Returns a structured module return indicating success or the validation failure.
+System.Object -- Returns a structured module return indicating success or the validation failure.
 
 .EXAMPLE
 PS> Add-ModuleWebSocketConfig -Name 'MyWebSocket' -Address 'wss://example.com' -Config 'configs\mywebsocket.json' -Type MyWebSocket
@@ -45,6 +45,9 @@ The persisted file under the config directory contains only the path pointer to
 the type-specific config (not the full in-memory object). The configuration is
 stored in `$Global:ModuleName.Public.WebSocket.Config` and accessed via
 `Get-GlobalRuntimeVariable`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Add-ModuleWebSocketConfig()
 {
@@ -84,7 +87,7 @@ function Add-ModuleWebSocketConfig()
         return (Write-FunctionReturnValue -ReturnValue 'WebSocketConfigNameAlreadyExists' -Data @{ 'Name' = $SafeName; } );
     }
 
-    $WebSocketConfig = [PSCustomObject]@{
+    $WebSocketConfig        = [PSCustomObject]@{
         'Name'    = $SafeName;
         'Address' = $Address;
         'Type'    = $Type;

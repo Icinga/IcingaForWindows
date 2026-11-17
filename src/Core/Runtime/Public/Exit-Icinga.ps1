@@ -8,18 +8,21 @@ shell freezing due to background threads that do not terminate on a normal
 exit.
 
 .PARAMETER ExitCode
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ExitCode | System.Int32 | Process exit code to return | 0 |
+| Name     | Type         | Description                 | Default |
+|----------|--------------|-----------------------------|---------|
+| ExitCode | System.Int32 | Process exit code to return | 0       |
 
 .OUTPUTS
-None — The process is terminated immediately; no value is returned.
+None -- The process is terminated immediately; no value is returned.
 
 .EXAMPLE
 PS> Exit-Icinga
 
 .NOTES
 Uses `[System.Environment]::Exit($ExitCode)` to ensure the process exits cleanly with the desired exit code.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Exit-Icinga()
 {

@@ -9,18 +9,21 @@ unmodified. It uses the thread's `LastSeen` timestamp and `KeepAlive` flag to
 differentiate between active and idle conditions.
 
 .PARAMETER ThreadId
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name     | Type          | Description                                            | Default        |
+|----------|---------------|--------------------------------------------------------|----------------|
 | ThreadId | System.String | The thread id to evaluate. Defaults to current thread. | (Get-ThreadId) |
 
 .OUTPUTS
-System.String — Normalisierter Thread-State (z.B. RUNNING, IDLE, BLOCKED).
+System.String -- Normalisierter Thread-State (z.B. RUNNING, IDLE, BLOCKED).
 
 .EXAMPLE
 PS> Get-ThreadState -ThreadId $tid
 
 .NOTES
 Relies on configuration values such as `(Get-GlobalRuntimeVariable).Public.Threading.IdleTime`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ThreadState()
 {

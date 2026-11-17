@@ -7,13 +7,16 @@ Close and dispose the active TCP client and SSL stream
 associated SSL stream stored in the global runtime variable, if present.
 
 .OUTPUTS
-None — Clears the SSL stream, TCP client and their references in the global state.
+None -- Clears the SSL stream, TCP client and their references in the global state.
 
 .EXAMPLE
 PS> Close-TCPConnection
 
 .NOTES
 This is idempotent and swallows disposal exceptions.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Close-TCPConnection()
 {

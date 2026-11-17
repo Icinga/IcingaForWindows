@@ -8,24 +8,24 @@ into a single byte array suitable for sending over a TCP socket. When the
 `Content-Type` is JSON the body is serialized with `ConvertTo-Json`.
 
 .PARAMETER StatusCode
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| StatusCode | System.Int32 | HTTP status code to send (e.g. 200). | 200 |
+| Name       | Type         | Description                          | Default |
+|------------|--------------|--------------------------------------|---------|
+| StatusCode | System.Int32 | HTTP status code to send (e.g. 200). | 200     |
 
 .PARAMETER StatusMessage
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| StatusMessage | System.String | Short HTTP status message (e.g. 'OK'). | 'OK' |
+| Name          | Type          | Description                            | Default |
+|---------------|---------------|----------------------------------------|---------|
+| StatusMessage | System.String | Short HTTP status message (e.g. 'OK'). | 'OK'    |
 
 .PARAMETER ContentType
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name        | Type          | Description                      | Default                           |
+|-------------|---------------|----------------------------------|-----------------------------------|
 | ContentType | System.String | MIME type for the response body. | 'application/json; charset=utf-8' |
 
 .PARAMETER ResponseBody
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ResponseBody | Object | Body payload; may be byte[], string or object (serialized to JSON). | |
+| Name         | Type   | Description                                                         | Default |
+|--------------|--------|---------------------------------------------------------------------|---------|
+| ResponseBody | Object | Body payload; may be byte[], string or object (serialized to JSON). |         |
 
 .OUTPUTS
 Hashtable with `Message` (byte[]) and `Length` (int) keys.
@@ -35,6 +35,9 @@ PS> New-RestApiResponse -StatusCode 200 -ResponseBody @{ success = $true }
 
 .NOTES
 The returned `Message` is ready to be written to a TCP stream.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-RestApiResponse()
 {
@@ -56,18 +59,18 @@ function New-RestApiResponse()
         if ($null -eq $ResponseBody) {
             $BodyBytes = @();
         } elseif ($ContentType -like 'application/json*') {
-            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
+            $json      = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
             $BodyBytes = $Encoding.GetBytes($json);
         } elseif ($ResponseBody -is [string]) {
             $BodyBytes = $Encoding.GetBytes($ResponseBody);
         } elseif ($ResponseBody -is [System.Array]) {
-            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
+            $json      = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
             $BodyBytes = $Encoding.GetBytes($json);
         } elseif ($ResponseBody -is [System.Collections.ArrayList]) {
-            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
+            $json      = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
             $BodyBytes = $Encoding.GetBytes($json);
         } elseif ($ResponseBody -is [System.Object[]] -or $ResponseBody -is [System.Collections.IDictionary]) {
-            $json = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
+            $json      = ConvertTo-Json -InputObject $ResponseBody -Depth 10 -Compress;
             $BodyBytes = $Encoding.GetBytes($json);
         } elseif ($ResponseBody -is [byte[]]) {
             $BodyBytes = $ResponseBody;
@@ -75,18 +78,18 @@ function New-RestApiResponse()
             $BodyBytes = $Encoding.GetBytes(([string]$ResponseBody));
         }
 
-        $ContentLength = $BodyBytes.Length;
+        $ContentLength        = $BodyBytes.Length;
 
         # Build response string
-        $HeaderString  = "HTTP/1.1 $StatusCode $StatusMessage`r`n";
-        $HeaderString += "Date: $CurrentDateTime`r`n";
-        $HeaderString += "Server: $(Get-ModuleProjectName)/2.0`r`n";
-        $HeaderString += "Content-Type: $ContentType`r`n";
-        $HeaderString += "Content-Length: $ContentLength`r`n";
-        $HeaderString += "Connection: close`r`n";
-        $HeaderString += "`r`n";
+        $HeaderString         = "HTTP/1.1 $StatusCode $StatusMessage`r`n";
+        $HeaderString        += "Date: $CurrentDateTime`r`n";
+        $HeaderString        += "Server: $(Get-ModuleProjectName)/2.0`r`n";
+        $HeaderString        += "Content-Type: $ContentType`r`n";
+        $HeaderString        += "Content-Length: $ContentLength`r`n";
+        $HeaderString        += "Connection: close`r`n";
+        $HeaderString        += "`r`n";
 
-        $HeaderBytes = $Encoding.GetBytes($HeaderString);
+        $HeaderBytes          = $Encoding.GetBytes($HeaderString);
 
         [byte[]]$FullResponse = New-Object byte[] ($HeaderBytes.Length + $BodyBytes.Length);
         [System.Buffer]::BlockCopy($HeaderBytes, 0, $FullResponse, 0, $HeaderBytes.Length);

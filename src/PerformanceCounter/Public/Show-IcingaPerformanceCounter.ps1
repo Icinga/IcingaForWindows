@@ -51,6 +51,9 @@ Lists the concrete per-instance paths that currently exist for the wildcard coun
 .NOTES
 Uses `System.Diagnostics.PerformanceCounterCategory` directly. No global state is read or
 written, and no external services are used.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Show-IcingaPerformanceCounter()
 {

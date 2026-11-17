@@ -8,17 +8,17 @@ determines whether the current request is permitted. Supports checking
 origins (client IP) and request body size limits.
 
 .PARAMETER TestOrigins
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TestOrigins | SwitchParameter | If set, evaluates allowed client origins for the request. | $false |
+| Name        | Type            | Description                                               | Default |
+|-------------|-----------------|-----------------------------------------------------------|---------|
+| TestOrigins | SwitchParameter | If set, evaluates allowed client origins for the request. | $false  |
 
 .PARAMETER TestContentLength
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TestContentLength | SwitchParameter | If set, enforces configured request body size limits. | $false |
+| Name              | Type            | Description                                           | Default |
+|-------------------|-----------------|-------------------------------------------------------|---------|
+| TestContentLength | SwitchParameter | If set, enforces configured request body size limits. | $false  |
 
 .OUTPUTS
-System.Int32 — structured return code from `Write-FunctionReturnValue` indicating
+System.Int32 -- structured return code from `Write-FunctionReturnValue` indicating
 permission granted, denied, origin blocked or content length exceeded.
 
 .EXAMPLE
@@ -27,6 +27,9 @@ PS> Test-RestApiAccessControl -TestOrigins
 .NOTES
 This function uses the protected `AccessControl` configuration stored in
 the global runtime variable and the current RestApi context.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-RestApiAccessControl()
 {

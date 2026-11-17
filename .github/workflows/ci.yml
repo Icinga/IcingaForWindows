@@ -23,6 +23,11 @@ jobs:
           $env:PSModulePath = "$(Split-Path $env:GITHUB_WORKSPACE -Parent)$([System.IO.Path]::PathSeparator)$env:PSModulePath";
           & .\build\Build-ModuleProject.ps1 -SkipTests;
 
+      - name: Validate compiled lib SPDX headers and UTF-8 encoding
+        shell: pwsh
+        run: |
+          & .\build\Test-ModuleCodeStyling.ps1 -Path .\lib\IcingaForWindows.Classes.ps1, .\lib\IcingaForWindows.Kernel.ps1;
+
       - name: Upload compiled module
         uses: actions/upload-artifact@v4
         with:
@@ -92,18 +97,30 @@ jobs:
           if-no-files-found: ignore
 
   analyze:
-    name: PSScriptAnalyzer
+    name: Code Style, License, Changelog & PSScriptAnalyzer
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install PSScriptAnalyzer
         shell: pwsh
         run: |
           Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -SkipPublisherCheck;
 
-      - name: Analyze code style
+      - name: Run PSScriptAnalyzer
         shell: pwsh
         run: |
           & .\build\Invoke-ScriptAnalysis.ps1;
+
+      - name: Validate Code Styling & SPDX License Headers
+        shell: pwsh
+        run: |
+          & .\build\Test-ModuleCodeStyling.ps1;
+
+      - name: Validate Changelog Entry on Pull Requests / Feature Branches
+        shell: pwsh
+        run: |
+          & .\build\Test-ModuleChangelog.ps1;

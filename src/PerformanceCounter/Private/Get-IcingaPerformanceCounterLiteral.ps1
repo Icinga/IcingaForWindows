@@ -24,6 +24,9 @@ PS> Get-IcingaPerformanceCounterLiteral -Argument $argumentAst
 .NOTES
 Called by `Register-IcingaPerformanceCounterFromComponents`. Returns an empty array when
 the argument is null or contains no string literals.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaPerformanceCounterLiteral()
 {

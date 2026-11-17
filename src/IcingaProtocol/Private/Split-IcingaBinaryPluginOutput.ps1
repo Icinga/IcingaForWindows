@@ -12,9 +12,9 @@ scoped and doubled-quote metric labels containing spaces (for example
 individual elements in the returned PerformanceData array.
 
 .PARAMETER RawOutput
-| Name      | Type          | Description                                               | Default |
-|-----------|---------------|-----------------------------------------------------------|---------|
-| RawOutput | System.String | Raw stdout captured from an external binary or script.    | ''      |
+| Name      | Type          | Description                                            | Default |
+|-----------|---------------|--------------------------------------------------------|---------|
+| RawOutput | System.String | Raw stdout captured from an external binary or script. | ''      |
 
 .OUTPUTS
 System.Collections.Hashtable -- Hashtable with keys Output (System.String) and
@@ -28,6 +28,9 @@ individual performance-data metric strings.
 
 .NOTES
 Pure string parser with no external dependencies or side effects.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Split-IcingaBinaryPluginOutput()
 {

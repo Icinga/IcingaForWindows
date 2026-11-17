@@ -31,24 +31,24 @@ Performance data uses the labels '<path_taskname>::ifw_scheduledtask::state',
 '::missedruns', '::lasttaskresult', '::lastruntime' and '::nextruntime'.
 
 .PARAMETER TaskName
-| Name     | Type         | Description                                                                   | Default |
-|----------|--------------|-------------------------------------------------------------------------------|---------|
-| TaskName | System.Array | Task names to check (wildcards allowed; plain names must exist).              | @()     |
+| Name     | Type         | Description                                                      | Default |
+|----------|--------------|------------------------------------------------------------------|---------|
+| TaskName | System.Array | Task names to check (wildcards allowed; plain names must exist). | @()     |
 
 .PARAMETER ExcludeTaskName
-| Name            | Type         | Description                                                            | Default |
-|-----------------|--------------|------------------------------------------------------------------------|---------|
-| ExcludeTaskName | System.Array | Task names to exclude from the check (wildcards allowed).              | @()     |
+| Name            | Type         | Description                                               | Default |
+|-----------------|--------------|-----------------------------------------------------------|---------|
+| ExcludeTaskName | System.Array | Task names to exclude from the check (wildcards allowed). | @()     |
 
 .PARAMETER TaskPath
-| Name     | Type         | Description                                                                   | Default |
-|----------|--------------|-------------------------------------------------------------------------------|---------|
-| TaskPath | System.Array | Task folder paths to include (wildcards allowed, e.g. '\Icinga\*').           | @()     |
+| Name     | Type         | Description                                                         | Default |
+|----------|--------------|---------------------------------------------------------------------|---------|
+| TaskPath | System.Array | Task folder paths to include (wildcards allowed, e.g. '\Icinga\*'). | @()     |
 
 .PARAMETER ExcludeTaskPath
-| Name            | Type         | Description                                                            | Default |
-|-----------------|--------------|------------------------------------------------------------------------|---------|
-| ExcludeTaskPath | System.Array | Task folder paths to exclude (wildcards allowed).                      | @()     |
+| Name            | Type         | Description                                       | Default |
+|-----------------|--------------|---------------------------------------------------|---------|
+| ExcludeTaskPath | System.Array | Task folder paths to exclude (wildcards allowed). | @()     |
 
 .PARAMETER State
 | Name  | Type                        | Description                                                                | Default |
@@ -61,49 +61,49 @@ Performance data uses the labels '<path_taskname>::ifw_scheduledtask::state',
 | IgnoreExitCodes | System.Array | Non-zero task exit codes to treat as OK (decimal or hex, e.g. 267009). | @()     |
 
 .PARAMETER WarningMissedRuns
-| Name              | Type          | Description                                                         | Default |
-|-------------------|---------------|---------------------------------------------------------------------|---------|
-| WarningMissedRuns | System.String | Warning threshold for the number of missed runs.                    |         |
+| Name              | Type          | Description                                      | Default |
+|-------------------|---------------|--------------------------------------------------|---------|
+| WarningMissedRuns | System.String | Warning threshold for the number of missed runs. |         |
 
 .PARAMETER CriticalMissedRuns
-| Name               | Type          | Description                                                        | Default |
-|--------------------|---------------|--------------------------------------------------------------------|---------|
-| CriticalMissedRuns | System.String | Critical threshold for the number of missed runs.                  |         |
+| Name               | Type          | Description                                       | Default |
+|--------------------|---------------|---------------------------------------------------|---------|
+| CriticalMissedRuns | System.String | Critical threshold for the number of missed runs. |         |
 
 .PARAMETER WarningLastRunTime
-| Name               | Type          | Description                                                        | Default |
-|--------------------|---------------|--------------------------------------------------------------------|---------|
-| WarningLastRunTime | System.String | Warning threshold for the age of the last run (e.g. '1d', '12h').  |         |
+| Name               | Type          | Description                                                       | Default |
+|--------------------|---------------|-------------------------------------------------------------------|---------|
+| WarningLastRunTime | System.String | Warning threshold for the age of the last run (e.g. '1d', '12h'). |         |
 
 .PARAMETER CriticalLastRunTime
-| Name                | Type          | Description                                                       | Default |
-|---------------------|---------------|-------------------------------------------------------------------|---------|
-| CriticalLastRunTime | System.String | Critical threshold for the age of the last run (e.g. '2d', '24h').|         |
+| Name                | Type          | Description                                                        | Default |
+|---------------------|---------------|--------------------------------------------------------------------|---------|
+| CriticalLastRunTime | System.String | Critical threshold for the age of the last run (e.g. '2d', '24h'). |         |
 
 .PARAMETER WarningNextRunTime
-| Name               | Type          | Description                                                        | Default |
-|--------------------|---------------|--------------------------------------------------------------------|---------|
-| WarningNextRunTime | System.String | Warning threshold for the next run offset (e.g. '10m', '-1h:').    |         |
+| Name               | Type          | Description                                                     | Default |
+|--------------------|---------------|-----------------------------------------------------------------|---------|
+| WarningNextRunTime | System.String | Warning threshold for the next run offset (e.g. '10m', '-1h:'). |         |
 
 .PARAMETER CriticalNextRunTime
-| Name                | Type          | Description                                                       | Default |
-|---------------------|---------------|-------------------------------------------------------------------|---------|
-| CriticalNextRunTime | System.String | Critical threshold for the next run offset (e.g. '30m', '-2h:').  |         |
+| Name                | Type          | Description                                                      | Default |
+|---------------------|---------------|------------------------------------------------------------------|---------|
+| CriticalNextRunTime | System.String | Critical threshold for the next run offset (e.g. '30m', '-2h:'). |         |
 
 .PARAMETER IgnoreLastRunTime
-| Name              | Type                                         | Description                                        | Default |
-|-------------------|----------------------------------------------|----------------------------------------------------|---------|
-| IgnoreLastRunTime | System.Management.Automation.SwitchParameter | Do not alert on non-zero Last Task Result codes.   | False   |
+| Name              | Type                                         | Description                                      | Default |
+|-------------------|----------------------------------------------|--------------------------------------------------|---------|
+| IgnoreLastRunTime | System.Management.Automation.SwitchParameter | Do not alert on non-zero Last Task Result codes. | False   |
 
 .PARAMETER MitigateUnknown
-| Name            | Type                                         | Description                                                  | Default |
-|-----------------|----------------------------------------------|--------------------------------------------------------------|---------|
-| MitigateUnknown | System.Management.Automation.SwitchParameter | Return OK instead of UNKNOWN when no task matches the filter.| False   |
+| Name            | Type                                         | Description                                                   | Default |
+|-----------------|----------------------------------------------|---------------------------------------------------------------|---------|
+| MitigateUnknown | System.Management.Automation.SwitchParameter | Return OK instead of UNKNOWN when no task matches the filter. | False   |
 
 .PARAMETER OverrideNotFound
-| Name             | Type          | Description                                                               | Default |
-|------------------|---------------|---------------------------------------------------------------------------|---------|
-| OverrideNotFound | System.String | State for missing required tasks ('Ok', 'Warning', 'Critical', 'Unknown').| Unknown |
+| Name             | Type          | Description                                                                | Default |
+|------------------|---------------|----------------------------------------------------------------------------|---------|
+| OverrideNotFound | System.String | State for missing required tasks ('Ok', 'Warning', 'Critical', 'Unknown'). | Unknown |
 
 .PARAMETER Verbosity
 | Name      | Type         | Description                                                                         | Default |
@@ -131,6 +131,9 @@ Checks all tasks under \Icinga\ for Ready or Running state and warns if a task h
 .NOTES
 Windows-only. Queries tasks through Get-IcingaScheduledTask. The integer exit code
 is the return value; an Icinga command wrapper is expected to exit with it.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaCheckScheduledTask()
 {

@@ -10,27 +10,27 @@ methods. The function returns standardized return values using
 `Write-FunctionReturnValue`.
 
 .PARAMETER WebPath
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WebPath | System.String | Relative web path or endpoint (for example '/v1/status'). Leading slash optional. | '' |
+| Name    | Type          | Description                                                                       | Default |
+|---------|---------------|-----------------------------------------------------------------------------------|---------|
+| WebPath | System.String | Relative web path or endpoint (for example '/v1/status'). Leading slash optional. | ''      |
 
 .PARAMETER Method
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Method | System.String | HTTP method to use (GET, POST, PUT, DELETE, etc.). | 'GET' |
+| Name   | Type          | Description                                        | Default |
+|--------|---------------|----------------------------------------------------|---------|
+| Method | System.String | HTTP method to use (GET, POST, PUT, DELETE, etc.). | 'GET'   |
 
 .PARAMETER Headers
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name    | Type                         | Description                         | Default                                   |
+|---------|------------------------------|-------------------------------------|-------------------------------------------|
 | Headers | System.Collections.Hashtable | Additional HTTP headers to include. | @{ 'Content-Type' = 'application/json'; } |
 
 .PARAMETER Body
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Body | System.Hashtable | Request body to be serialized as JSON for non-GET methods. | @{ } |
+| Name | Type             | Description                                                | Default |
+|------|------------------|------------------------------------------------------------|---------|
+| Body | System.Hashtable | Request body to be serialized as JSON for non-GET methods. | @{ }    |
 
 .OUTPUTS
-PSCustomObject — Function return value produced by `Write-FunctionReturnValue`.
+PSCustomObject -- Function return value produced by `Write-FunctionReturnValue`.
 - `RestApiRequestSuccessful`: Data contains `Response`.
 - `RestApiRequestFailed`: Data contains `Exception`, `Uri`, `Method`, `Headers`, `Body` or `StatusCode` and `Response`.
 
@@ -42,6 +42,9 @@ PS> Send-RestApiRequest -WebPath '/v1/items' -Method 'POST' -Body @{ name = 'tes
 Uses `Read-RestApiConfig` to ensure RestApi is configured and `Invoke-RestMethod`
 with `-SkipCertificateCheck` for local/self-signed certificates. Non-200 status
 codes are treated as failures and returned via `Write-FunctionReturnValue`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Send-RestApiRequest()
 {

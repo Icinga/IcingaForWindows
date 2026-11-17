@@ -8,28 +8,31 @@ Select a console color name for a given object type or parameter.
 for special cases like parameters and null values.
 
 .PARAMETER ObjectName
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ObjectName | System.String | The CLR type name or friendly name to evaluate | |
+| Name       | Type          | Description                                    | Default |
+|------------|---------------|------------------------------------------------|---------|
+| ObjectName | System.String | The CLR type name or friendly name to evaluate |         |
 
 .PARAMETER IsParameter
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsParameter | System.SwitchParameter | When set returns the color used for parameter names | $false |
+| Name        | Type                   | Description                                         | Default |
+|-------------|------------------------|-----------------------------------------------------|---------|
+| IsParameter | System.SwitchParameter | When set returns the color used for parameter names | $false  |
 
 .PARAMETER IsNullValue
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| IsNullValue | System.SwitchParameter | When set returns the color used for null values | $false |
+| Name        | Type                   | Description                                     | Default |
+|-------------|------------------------|-------------------------------------------------|---------|
+| IsNullValue | System.SwitchParameter | When set returns the color used for null values | $false  |
 
 .OUTPUTS
-System.String — The name of a `System.ConsoleColor` value.
+System.String -- The name of a `System.ConsoleColor` value.
 
 .EXAMPLE
 PS> Get-LoggingConsoleColorForObjectType -ObjectName 'String'
 
 .NOTES
 Color choices are mapped to common CLR type names and special flags.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-LoggingConsoleColorForObjectType()
 {

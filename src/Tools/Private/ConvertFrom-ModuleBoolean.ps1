@@ -12,9 +12,9 @@ are logged through Write-FunctionReturnValue using StringToBoolConversionInvalid
 and evaluate to $false.
 
 .PARAMETER Value
-| Name  | Type          | Description                                               | Default |
-|-------|---------------|-----------------------------------------------------------|---------|
-| Value | System.Object | Input value from JSON or Icinga macros to convert.        | $null   |
+| Name  | Type          | Description                                        | Default |
+|-------|---------------|----------------------------------------------------|---------|
+| Value | System.Object | Input value from JSON or Icinga macros to convert. | $null   |
 
 .OUTPUTS
 System.Boolean -- Resolved boolean value ($true or $false).
@@ -29,6 +29,9 @@ string truthiness.
 .NOTES
 Uses Write-FunctionReturnValue with key StringToBoolConversionInvalidValue when
 an unrecognized value is supplied.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertFrom-ModuleBoolean()
 {

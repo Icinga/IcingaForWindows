@@ -19,7 +19,7 @@ starts the listener and connector threads. This function must be called once dur
 process initialization and must not be called again while threads are running.
 
 .OUTPUTS
-None — Performs initialization and starts background threads. Returns early via
+None -- Performs initialization and starts background threads. Returns early via
 Write-FunctionReturnValue when the certificate file is missing.
 
 .EXAMPLE
@@ -34,11 +34,14 @@ The PFX is loaded without an explicit password; ensure it is not password-protec
 Global state modified: $Global:IcingaForWindows.Public.IcingaProtocol.Config,
 Certificate, Connections and WorkerQueue. Config.WorkerCount must be a positive integer
 before this function is called.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaAgentEnvironment()
 {
     # Read connection configuration
-    $ConnectionConfig     = Read-IcingaProtocolConnection;
+    $ConnectionConfig = Read-IcingaProtocolConnection;
 
     # If we do not provide any connection configuration, it means the master/satellite will connect to us instead
     if ($null -ne $ConnectionConfig) {

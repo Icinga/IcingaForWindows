@@ -16,9 +16,9 @@ in parentheses to chain methods directly, for example
 positional in the order Name, Value, Unit.
 
 .PARAMETER Name
-| Name | Type          | Description                          | Default |
-|------|---------------|--------------------------------------|---------|
-| Name | System.String | Display name of the plugin node.     | $null   |
+| Name | Type          | Description                      | Default |
+|------|---------------|----------------------------------|---------|
+| Name | System.String | Display name of the plugin node. | $null   |
 
 .PARAMETER Value
 | Name  | Type          | Description                                                           | Default |
@@ -53,6 +53,9 @@ background thread waits until the main runspace is idle, which stalls daemons an
 workers. The runtime lookup returns the type the current runspace loaded itself.
 Keep the node inside the runspace that created it and hand only its rendered
 output, exit code and performance data to other threads.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-IcingaPlugin()
 {

@@ -8,18 +8,21 @@ TLS configuration object. It supports loading from a file path or by searching
 the specified certificate store using thumbprint, common name or issuer filters.
 
 .PARAMETER TlsCertConfig
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TlsCertConfig | System.PSCustomObject | Configuration describing how to locate the certificate | |
+| Name          | Type                  | Description                                            | Default |
+|---------------|-----------------------|--------------------------------------------------------|---------|
+| TlsCertConfig | System.PSCustomObject | Configuration describing how to locate the certificate |         |
 
 .OUTPUTS
-System.Security.Cryptography.X509Certificates.X509Certificate2 — The loaded certificate, or $null on failure.
+System.Security.Cryptography.X509Certificates.X509Certificate2 -- The loaded certificate, or $null on failure.
 
 .EXAMPLE
 PS> Get-TlsCertificate -TlsCertConfig $cfg
 
 .NOTES
 Uses `Write-FunctionReturnValue` to report detailed result codes for callers.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-TlsCertificate()
 {

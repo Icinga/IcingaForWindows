@@ -23,14 +23,14 @@ query (WindowsInformationQueried), a missing class name
 the ReturnCode of the IcingaError.
 
 .PARAMETER ClassName
-| Name      | Type          | Description                             | Default |
-|-----------|---------------|-----------------------------------------|---------|
-| ClassName | System.String | Name of the CIM class to query.         |         |
+| Name      | Type          | Description                     | Default |
+|-----------|---------------|---------------------------------|---------|
+| ClassName | System.String | Name of the CIM class to query. |         |
 
 .PARAMETER Namespace
-| Name      | Type          | Description                    | Default    |
-|-----------|---------------|--------------------------------|------------|
-| Namespace | System.String | CIM namespace of the class.    | root/cimv2 |
+| Name      | Type          | Description                 | Default    |
+|-----------|---------------|-----------------------------|------------|
+| Namespace | System.String | CIM namespace of the class. | root/cimv2 |
 
 .PARAMETER Filter
 | Name   | Type          | Description                                   | Default |
@@ -62,6 +62,9 @@ Windows-only, uses the local CIM provider. The required permissions depend on
 the class; standard users can read most root/cimv2 classes. Unknown classes and
 namespaces are logged at Debug level only, because optional classes are probed
 on purpose.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaWindowsInformation()
 {

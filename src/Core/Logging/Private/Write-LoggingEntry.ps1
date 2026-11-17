@@ -8,27 +8,27 @@ and additional data) and enqueues it into the global logging queue for processin
 by the logging daemon. It also assigns a per-message logging id for correlation.
 
 .PARAMETER Message
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Message | System.String | The log message text | |
+| Name    | Type          | Description          | Default |
+|---------|---------------|----------------------|---------|
+| Message | System.String | The log message text |         |
 
 .PARAMETER Level
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Level | System.String | Severity (Debug,Output,Audit,Info,Success,Warning,Error,Fatal) | 'Info' |
+| Name  | Type          | Description                                                    | Default |
+|-------|---------------|----------------------------------------------------------------|---------|
+| Level | System.String | Severity (Debug,Output,Audit,Info,Success,Warning,Error,Fatal) | 'Info'  |
 
 .PARAMETER EventId
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| EventId | System.Int32 | Numeric event identifier for the log entry | 15 |
+| Name    | Type         | Description                                | Default |
+|---------|--------------|--------------------------------------------|---------|
+| EventId | System.Int32 | Numeric event identifier for the log entry | 15      |
 
 .PARAMETER Data
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Data | System.Hashtable | Additional structured data to include with the log entry | @{} |
+| Name | Type             | Description                                              | Default |
+|------|------------------|----------------------------------------------------------|---------|
+| Data | System.Hashtable | Additional structured data to include with the log entry | @{}     |
 
 .OUTPUTS
-System.Management.Automation.PSCustomObject — The enqueued log object when called from a background daemon with Level 'Output'; None otherwise.
+System.Management.Automation.PSCustomObject -- The enqueued log object when called from a background daemon with Level 'Output'; None otherwise.
 
 .EXAMPLE
 PS> Write-LoggingEntry -Message 'Started processing' -Level 'Info' -EventId 100
@@ -36,6 +36,9 @@ PS> Write-LoggingEntry -Message 'Started processing' -Level 'Info' -EventId 100
 .NOTES
 This function is intentionally non-blocking: it enqueues messages for a background
 consumer. It uses `(Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId` to tag messages.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Write-LoggingEntry()
 {
@@ -65,7 +68,7 @@ function Write-LoggingEntry()
     }
 
     # Assign a unique message ID for tracking
-    $Data['LoggingMessageId'] = (Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId.ToString();
+    $Data['LoggingMessageId']   = (Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId.ToString();
 
     # If we reached this point, we should log the message
     # Move everything to the logging queue for processing, to not block the current thread

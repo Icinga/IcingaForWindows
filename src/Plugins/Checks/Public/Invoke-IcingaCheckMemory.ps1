@@ -27,14 +27,14 @@ Performance data uses the labels 'memory::ifw_memory::used',
 as UNKNOWN with its reason.
 
 .PARAMETER Warning
-| Name    | Type          | Description                                                         | Default |
-|---------|---------------|---------------------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold for the used memory, e.g. '80%' or '12GiB'.       |         |
+| Name    | Type          | Description                                                   | Default |
+|---------|---------------|---------------------------------------------------------------|---------|
+| Warning | System.String | Warning threshold for the used memory, e.g. '80%' or '12GiB'. |         |
 
 .PARAMETER Critical
-| Name     | Type          | Description                                                         | Default |
-|----------|---------------|---------------------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold for the used memory, e.g. '90%' or '14GiB'.      |         |
+| Name     | Type          | Description                                                    | Default |
+|----------|---------------|----------------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold for the used memory, e.g. '90%' or '14GiB'. |         |
 
 .PARAMETER PageFileWarning
 | Name            | Type          | Description                                                  | Default |
@@ -47,29 +47,29 @@ as UNKNOWN with its reason.
 | PageFileCritical | System.String | Critical threshold for every page file, e.g. '90%' or '3GiB'. |         |
 
 .PARAMETER MemoryPagesSecWarning
-| Name                  | Type          | Description                                   | Default |
-|-----------------------|---------------|-----------------------------------------------|---------|
-| MemoryPagesSecWarning | System.String | Warning threshold for the memory pages/sec.   |         |
+| Name                  | Type          | Description                                 | Default |
+|-----------------------|---------------|---------------------------------------------|---------|
+| MemoryPagesSecWarning | System.String | Warning threshold for the memory pages/sec. |         |
 
 .PARAMETER MemoryPagesSecCritical
-| Name                   | Type          | Description                                   | Default |
-|------------------------|---------------|-----------------------------------------------|---------|
-| MemoryPagesSecCritical | System.String | Critical threshold for the memory pages/sec.  |         |
+| Name                   | Type          | Description                                  | Default |
+|------------------------|---------------|----------------------------------------------|---------|
+| MemoryPagesSecCritical | System.String | Critical threshold for the memory pages/sec. |         |
 
 .PARAMETER IncludePageFile
-| Name            | Type         | Description                                              | Default |
-|-----------------|--------------|----------------------------------------------------------|---------|
-| IncludePageFile | System.Array | Only check page files matching these names (wildcards).  | @()     |
+| Name            | Type         | Description                                             | Default |
+|-----------------|--------------|---------------------------------------------------------|---------|
+| IncludePageFile | System.Array | Only check page files matching these names (wildcards). | @()     |
 
 .PARAMETER ExcludePageFile
-| Name            | Type         | Description                                          | Default |
-|-----------------|--------------|------------------------------------------------------|---------|
-| ExcludePageFile | System.Array | Skip page files matching these names (wildcards).    | @()     |
+| Name            | Type         | Description                                       | Default |
+|-----------------|--------------|---------------------------------------------------|---------|
+| ExcludePageFile | System.Array | Skip page files matching these names (wildcards). | @()     |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -94,6 +94,9 @@ Windows-only. Reads the '\Memory\Available Bytes' and '\Memory\Pages/sec'
 performance counters ('Performance Monitor Users') and the Win32_ComputerSystem,
 Win32_PageFileUsage and Win32_PageFileSetting CIM classes. The integer exit code
 is the return value; an Icinga command wrapper is expected to exit with it.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaCheckMemory()
 {

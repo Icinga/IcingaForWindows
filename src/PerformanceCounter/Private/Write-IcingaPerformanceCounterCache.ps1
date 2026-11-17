@@ -20,6 +20,9 @@ PS> Write-IcingaPerformanceCounterCache
 The cache file is `PerformanceCounter.json` under `Get-ModuleCacheDirectory`. Timestamps
 are stored in ISO 8601 round-trip format so they parse identically on Windows PowerShell
 5.1 and PowerShell 7.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Write-IcingaPerformanceCounterCache()
 {

@@ -8,15 +8,22 @@ named WebSocket configuration from the module config directory. It does
 not modify in-memory runtime structures.
 
 .PARAMETER Name
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket config to remove | |
+| Name | Type          | Description                                    | Default |
+|------|---------------|------------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket config to remove |         |
 
 .OUTPUTS
-System.Object — Emits a structured return value when no name is provided; otherwise it removes the file and returns quietly.
+System.Object -- Emits a structured return value when no name is provided; otherwise it removes the file and returns quietly.
 
 .EXAMPLE
 PS> Remove-ModuleWebSocketConfig -Name 'MyWebSocket'
+
+.NOTES
+Removes the JSON configuration file from the `WebSocket` subfolder inside
+`Get-ModuleConfigDirectory` via `Remove-SecureItem`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Remove-ModuleWebSocketConfig()
 {

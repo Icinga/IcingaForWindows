@@ -7,23 +7,26 @@ Format `SslStream` properties for console output.
 from a `System.Net.Security.SslStream` and returns a colorized string.
 
 .PARAMETER Stream
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Stream | System.Net.Security.SslStream | The SSL stream to inspect | |
+| Name   | Type                          | Description               | Default |
+|--------|-------------------------------|---------------------------|---------|
+| Stream | System.Net.Security.SslStream | The SSL stream to inspect |         |
 
 .PARAMETER Indent
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Indent | System.String | Optional indentation prefix | $null |
+| Name   | Type          | Description                 | Default |
+|--------|---------------|-----------------------------|---------|
+| Indent | System.String | Optional indentation prefix | $null   |
 
 .OUTPUTS
-System.String — A multi-line formatted representation of the stream properties.
+System.String -- A multi-line formatted representation of the stream properties.
 
 .EXAMPLE
 PS> Format-LoggingConsoleSslStream -Stream $sslStream -Indent '  '
 
 .NOTES
 Delegates property extraction to `Format-LoggingConsoleObjectProperties`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Format-LoggingConsoleSslStream()
 {

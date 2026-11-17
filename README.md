@@ -1,72 +1,180 @@
-[![PowerShell Version](https://img.shields.io/badge/PowerShell-5.1-777BB4?logo=PowerSHell)](https://learn.microsoft.com/en-US/powershell/scripting/install/installing-powershell-on-windows?view=powershell-5.1)
-[![GitHub Tag](https://img.shields.io/github/tag/Icinga/IcingaForWindows.svg)](https://github.com/Icinga/IcingaForWindows/releases/latest)
-[![GitHub Issues](https://img.shields.io/github/issues-search?query=repo%3AIcinga%2FIcingaForWindows%20is%3Aopen%20is%3Aissue&label=Issues&color=red
-)](https://github.com/Icinga/IcingaForWindows/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-search?query=repo%3AIcinga%2FIcingaForWindows%20is%3Aopen%20is%3Apr&label=Pull%20Requests&color=green
-)](https://github.com/Icinga/IcingaForWindows/pulls)
+[![PowerShell Version](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207.5%2B-5391FE?logo=powershell)](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](LICENSE)
+[![CI](https://github.com/Icinga/IcingaForWindows/actions/workflows/ci.yml/badge.svg)](https://github.com/Icinga/IcingaForWindows/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/Icinga/IcingaForWindows?include_prereleases)](https://github.com/Icinga/IcingaForWindows/releases)
+[![GitHub Issues](https://img.shields.io/github/issues/Icinga/IcingaForWindows?color=red)](https://github.com/Icinga/IcingaForWindows/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Icinga/IcingaForWindows?color=green)](https://github.com/Icinga/IcingaForWindows/pulls)
 
-IcingaForWindows Documentation
-==============
+# Icinga for Windows
 
-`IcingaForWindows` is a PowerShell monitoring stack for Windows hosts. Its runtime, configuration layout, threading model and public function surface are built around a single synchronized `$Global:IcingaForWindows` state object that is shared between the main session and every background daemon.
+**Icinga for Windows** (`v27.0.0`) is a unified, multi-threaded PowerShell monitoring platform and native Icinga 2 agent runtime for Windows Server and Windows client hosts.
 
-The module is built from small, single-purpose components under `src/`:
+All subsystems -- background daemons, the native Icinga 2 JSON-RPC protocol stack, the HTTPS REST API, the performance counter engine, and built-in or custom monitoring plugins -- coordinate through a single synchronized `$Global:IcingaForWindows` runtime state partitioned into `Public` (shared thread-safe queues and configuration), `Private` (runspace-local worker context), and `Protected` (environment metadata).
 
-* **Core.Runtime / Core.Logging / Core.Threading** — the shared runtime, the structured logging queue and the runspace-based thread pool that powers every daemon.
-* **Core.TCPStack / Core.RestApi / Core.WebSocket** — the TLS-aware TCP listener, the HTTP/REST worker pipeline and the WebSocket reader/writer pairs.
-* **Core.AccessControl** — role-based access roles consumed by the REST API.
-* **Core.ErrorHandling** — internal exit-code table and the `Write-FunctionReturnValue` helper used across the module.
-* **Api** — the high-level Icinga API endpoint (`Start-IcingaApi`) layered on top of the REST stack.
-* **IcingaProtocol** — the native Icinga 2 agent protocol implementation (`Start-IcingaAgent`).
-* **Config / Security / Tools** — configuration loading, certificate/security helpers and small reusable utilities.
+---
 
-Compiled module files (`lib/`) and the API reference under `docs/` are **auto-generated** from `src/` by the scripts in `build/`; do not edit them by hand.
+## Architecture Overview
 
-Getting started
--------------
+**Icinga for Windows** is organized into focused, single-function source files under `src/` that compile into two BOM-less UTF-8 runtime artifacts (`lib/IcingaForWindows.Classes.ps1` and `lib/IcingaForWindows.Kernel.ps1`):
 
-Requirements: PowerShell 5.1+ (PowerShell 7.5 recommended) on Windows. The module also imports on Linux/macOS for development via the `$env:ProgramData` fallback.
+* **Core (`Runtime`, `Threading`, `Logging`, `ErrorHandling`)** -- Runspace pool thread management (`New-Thread`, `Start-ThreadHouseKeeper`), structured logging queue (`Write-LoggingEntry`), garbage collection, and semantic internal return codes (`Set-InternalExitCodes`).
+* **Core Network (`TCPStack`, `RestApi`, `WebSocket`, `AccessControl`)** -- TLS 1.2+ socket management, multi-worker HTTPS REST API (`Start-RestApiDaemon`), persistent WebSocket client workers (`Start-ModuleWebSocketDaemon`), and role-based access control.
+* **Icinga Protocol (`IcingaProtocol`)** -- Native Icinga 2 JSON-RPC netstring listener/connector (`Start-IcingaAgent`) and secure `event::ExecuteCommand` check dispatch for `Invoke-IcingaCheck*` cmdlets and approved external binaries/scripts inside `$env:ProgramData\IcingaForWindows\Binaries`.
+* **Performance Counter Engine (`PerformanceCounter`)** -- Dedicated background daemon (`Start-IcingaPerformanceCounterDaemon`), category-level bulk snapshots, static AST counter pre-warming at startup, and automatic inline session fallback.
+* **Monitoring Plugins & Public SDK (`Plugins`, `Classes`)** -- Fluent `IcingaPlugin` check/package framework, public `New-IcingaPlugin` SDK cmdlet, `IcingaThresholds` and `IcingaUnit` engines, OS data providers (`Disk`, `FileSystem`, `Process`, `ScheduledTask`), and nine built-in monitoring checks (`CPU`, `Directory`, `Memory`, `PartitionSpace`, `PerfCounter`, `Process`, `ScheduledTask`, `Service`, `Uptime`).
+* **Configuration, Security & Tools (`Config`, `Security`, `Tools`)** -- Approved-path filesystem wrappers, Windows PowerShell 5.1 memory-safe JSON serialization (`ConvertFrom-ModuleJson` / `ConvertTo-ModuleJson`), unit conversion, natural sorting, and `SecureString` helpers.
+
+### Runtime & Check Execution Flow
+
+```mermaid
+flowchart TD
+    Icinga2["Icinga 2 Parent / Master Node"] <-->|"TLS JSON-RPC Netstrings (5665)"| Proto["IcingaProtocol Daemon & Workers"]
+    ApiClient["HTTPS / Automation Client"] <-->|"TLS HTTP REST / WebSocket"| Rest["RestApi & WebSocket Workers"]
+
+    subgraph Runtime["Icinga for Windows Runtime ($Global:IcingaForWindows)"]
+        Proto --> State[("Synchronized State<br/>Public | Private | Protected")]
+        Rest --> State
+        Pool["Runspace Thread Pool & HouseKeeper"] --> State
+        Log["Logging & GC Daemons"] --> State
+        PerfDaemon["PerformanceCounter Daemon<br/>(Warm Handles & Category Snapshots)"] <--> State
+    end
+
+    Proto -->|"event::ExecuteCommand"| Dispatcher["Command Resolver & Dispatcher"]
+    Dispatcher -->|"Invoke-IcingaCheck*"| SDK["New-IcingaPlugin Fluent SDK<br/>(IcingaPlugin + IcingaThresholds)"]
+    Dispatcher -->|"Approved Binaries Only"| Bin["External .exe / .cmd / .ps1<br/>(ProgramData/IcingaForWindows/Binaries)"]
+
+    SDK --> Providers["OS Data Providers<br/>(Disk, FileSystem, Process, ScheduledTask, CIM)"]
+    SDK <-->|"Zero-Sleep Counter Reads"| PerfDaemon
+```
+
+### Build, Documentation & CI Governance Pipeline
+
+```mermaid
+flowchart LR
+    Src["src/<br/>(Classes, Public, Private)"] --> Compiler["build/Build-ModuleProject.ps1"]
+    Compiler --> Lib["lib/IcingaForWindows.{Classes,Kernel}.ps1<br/>(UTF-8 without BOM + SPDX)"]
+
+    Src --> DocGen["build/Build-ModuleDocs.ps1<br/>(-Strict $true)"]
+    DocGen --> ApiDocs["docs/Icinga.*.md & docs/index.md"]
+
+    Src --> Gates["CI Static & Governance Gates"]
+    Gates --> PSSA["Invoke-ScriptAnalysis.ps1<br/>(PSScriptAnalyzer)"]
+    Gates --> Style["Test-ModuleCodeStyling.ps1<br/>(Style, Scope & SPDX)"]
+    Gates --> Changelog["Test-ModuleChangelog.ps1<br/>(PR Changelog & Roadmap)"]
+    Gates --> Leak["Test-ModuleDaemonMemoryLeak.ps1<br/>(AST Loop & IDisposable)"]
+
+    Lib --> Pester["build/Invoke-ModuleTests.ps1<br/>(Pester 5+ Unit Tests)"]
+```
+
+---
+
+## Quick Start
+
+**Requirements:** Windows PowerShell 5.1 or PowerShell 7.5+ on Windows Server / Windows 11. For local development and unit testing, the module also imports cleanly on Linux and macOS via the `$env:ProgramData` home-directory fallback.
 
 ```powershell
+# Import the Icinga for Windows module
 Import-Module IcingaForWindows -Force -Global;
-Use-IcingaForWindows -LogLevel 'Info';   # alias: ifw
+
+# Initialize the runtime in the current session and start background daemons (alias: ifw)
+Use-IcingaForWindows -NoNewShell -LogLevel 'Info' -RunBackgroundDaemons;
+
+# Run built-in monitoring plugins interactively
+Invoke-IcingaCheckCPU -Warning '80' -Critical '95';
+Invoke-IcingaCheckMemory -Warning '85%' -Critical '95%';
+Invoke-IcingaCheckPartitionSpace -Warning '80%' -Critical '90%';
 ```
 
-`Use-IcingaForWindows` initializes the base environment, loads the on-disk configuration and access control, and starts the standard background daemons (logging, housekeeper, REST API, WebSocket, Icinga agent). It is idempotent and can be re-run safely.
+---
 
-Documentation
--------------
+## Writing Custom Plugins (`New-IcingaPlugin` SDK)
 
-The API reference and guides live under `docs/`. Start here:
-
-* [API Reference Index](docs/index.md) — one page per component, lists every public and private function with synopsis, parameters, examples and a source link.
-* [Icinga REST API](docs/Icinga.Core.RestApi.md) · [Icinga API endpoint](docs/Icinga.Api.md)
-* [Icinga Protocol Stack](docs/Icinga.IcingaProtocol.md)
-* [TCP Stack](docs/Icinga.Core.TCPStack.md) · [WebSocket Layer](docs/Icinga.Core.WebSocket.md)
-* [Threading Runtime](docs/Icinga.Core.Threading.md) · [Logging](docs/Icinga.Core.Logging.md) · [Error Handling](docs/Icinga.Core.ErrorHandling.md)
-* [Access Control](docs/Icinga.Core.AccessControl.md) · [Security Helpers](docs/Icinga.Security.md)
-* [Runtime](docs/Icinga.Core.Runtime.md) · [Configuration](docs/Icinga.Config.md) · [Tools](docs/Icinga.Tools.md)
-
-Developer Guide
-------------
-
-If you wish to extend the module or write custom integrations against the internal runtime, start with the [Developer Guide](docs/Developer/) — currently focused on the threading model:
-
-* [Threading architecture](docs/Developer/Threading/01-Threading.md) — how `$Global:IcingaForWindows.Public.Threading`, the runspace pool and per-thread `Private` state fit together, and how to spawn your own background threads.
-
-The contribution rules, code style and the binding comment-based help format are documented in [CLAUDE.md](CLAUDE.md). Rebuilding the module and regenerating the API reference is done via:
+External modules and custom check scripts build checks through the exported `New-IcingaPlugin` cmdlet without referencing internal PowerShell class literals directly:
 
 ```powershell
-Build-ModuleProject;                                 # compile src/ → lib/ and run tests
-.\build\Build-ModuleDocs.ps1;                        # regenerate docs/*.md from comment-based help
-Build-ModuleProject -GenerateDocs;                   # both in one shot
+function Invoke-IcingaCheckCustomQueue()
+{
+    param (
+        [string]$Warning    = $null,
+        [string]$Critical   = $null,
+        [int]$Verbosity     = 0,
+        [switch]$NoPerfData = $false
+    );
+
+    $Package = New-IcingaPlugin -Name 'Message Queues';
+    $Package.SetNoPerfData($NoPerfData).SetVerbose($Verbosity).Commit();
+
+    $QueueCheck = New-IcingaPlugin -Name 'Orders Queue' -Value 42 -Unit 'c';
+    $QueueCheck.Warning($Warning).Critical($Critical).CheckRange().Commit();
+    $Package.AddCheck($QueueCheck).Commit();
+
+    return $Package.Compile();
+}
 ```
 
-Contributing
-------------
+See the [Custom Plugin Developer Guide](docs/Developer/Plugins/04-Custom-Plugin-Developer-Guide.md) for full details on composite packages, units, thresholds, error handling, and unit testing.
 
-IcingaForWindows is an Open Source project (GPLv3) and lives from your contributions — feature requests, issues, documentation or code.
+---
 
-* Please check whether a related issue already exists on our [Issue Tracker](https://github.com/Icinga/IcingaForWindows/issues)
-* Send a [Pull Request](https://github.com/Icinga/IcingaForWindows/pulls)
-* The master branch shall never be corrupt!
+## Developer Build & Validation Commands
+
+Compiled files under `lib/` and API reference pages (`docs/Icinga.*.md`, `docs/index.md`) are **auto-generated** -- never edit them by hand.
+
+```powershell
+# 1. Compile src/ -> lib/ and run AST daemon memory-leak validation
+.\build\Build-ModuleProject.ps1 -SkipTests -TestDaemonMemoryLeaks;
+
+# 2. Regenerate strict Markdown API documentation (verifies .NOTES + SPDX across all functions)
+.\build\Build-ModuleDocs.ps1 -Strict $true;
+
+# 3. Validate repository-wide PowerShell code styling, function scope, and SPDX headers
+.\build\Test-ModuleCodeStyling.ps1;
+
+# 4. Validate Changelog.md and Roadmap.md (enforces changelog entries on non-main branches)
+.\build\Test-ModuleChangelog.ps1;
+
+# 5. Run PSScriptAnalyzer static analysis
+.\build\Invoke-ScriptAnalysis.ps1 -FailOn 'Warning';
+
+# 6. Execute the Pester unit test suite
+.\build\Invoke-ModuleTests.ps1;
+```
+
+---
+
+## Documentation Map
+
+### General & Governance
+* [Changelog](docs/General/Changelog.md) · [Roadmap](docs/General/Roadmap.md)
+* [Code, Architecture & Documentation Ruleset (`01-Instruction.md`)](docs/Agents/guidelines/01-Instruction.md)
+* [Knowledgebase (`IWKB001xxx`)](docs/Knowledgebase/index.md)
+
+### Developer Architecture Guides
+* [Threading & Runspace Class Isolation](docs/Developer/Threading/01-Threading.md) · [Daemon Memory-Leak Prevention](docs/Developer/CodeQuality/01-MemoryLeaks.md)
+* [Icinga 2 Check & Binary Execution Pipeline](docs/Developer/IcingaProtocol/01-Check-and-Binary-Execution.md)
+* [Performance Counter Architecture](docs/Developer/PerformanceCounter/01-Technical-Architecture-and-Reference.md) · [Performance Counter Developer Guide](docs/Developer/PerformanceCounter/02-Usability-and-Developer-Guide.md)
+* [Plugin Architecture & Concepts](docs/Developer/Plugins/01-Architecture-and-Concepts.md) · [`IcingaPlugin` Reference](docs/Developer/Plugins/02-IcingaPlugin-Reference.md) · [Result & Error Objects](docs/Developer/Plugins/03-Result-and-Error-Objects.md) · [Custom Plugin Developer Guide](docs/Developer/Plugins/04-Custom-Plugin-Developer-Guide.md)
+
+### Auto-Generated Component API Reference
+* **[API Reference Index](docs/index.md)** -- Complete index of all public cmdlets and private helpers
+* **Monitoring & Protocol:** [Monitoring Checks](docs/Icinga.Plugins.Checks.md) · [Plugin SDK (`Plugins.Lib`)](docs/Icinga.Plugins.Lib.md) · [Icinga Protocol](docs/Icinga.IcingaProtocol.md) · [Performance Counter](docs/Icinga.PerformanceCounter.md)
+* **OS Data Providers:** [Disk](docs/Icinga.Plugins.Provider.Disk.md) · [FileSystem](docs/Icinga.Plugins.Provider.FileSystem.md) · [Process](docs/Icinga.Plugins.Provider.Process.md) · [ScheduledTask](docs/Icinga.Plugins.Provider.ScheduledTask.md)
+* **Core Runtime & Network:** [Runtime](docs/Icinga.Core.Runtime.md) · [Threading](docs/Icinga.Core.Threading.md) · [Logging](docs/Icinga.Core.Logging.md) · [Error Handling](docs/Icinga.Core.ErrorHandling.md) · [TCP Stack](docs/Icinga.Core.TCPStack.md) · [REST API](docs/Icinga.Core.RestApi.md) · [WebSocket](docs/Icinga.Core.WebSocket.md) · [Access Control](docs/Icinga.Core.AccessControl.md)
+* **Platform Utilities:** [Configuration](docs/Icinga.Config.md) · [Security](docs/Icinga.Security.md) · [Tools](docs/Icinga.Tools.md)
+
+---
+
+## Contributing
+
+**Icinga for Windows** is an open-source project and welcomes bug reports, feature requests, documentation improvements, and pull requests:
+
+1. Check the [Issue Tracker](https://github.com/Icinga/IcingaForWindows/issues) and [Roadmap](docs/General/Roadmap.md) before starting work.
+2. Follow all code-styling, runspace-isolation, `.NOTES`, and SPDX licensing rules in [`docs/Agents/guidelines/01-Instruction.md`](docs/Agents/guidelines/01-Instruction.md).
+3. Add a changelog bullet entry under the current unreleased version in [`docs/General/Changelog.md`](docs/General/Changelog.md) on every pull request / feature branch (`build/Test-ModuleChangelog.ps1`).
+4. Verify all build, documentation, styling, memory-leak, and Pester checks pass before opening a [Pull Request](https://github.com/Icinga/IcingaForWindows/pulls).
+
+---
+
+## License
+
+**Icinga for Windows** is licensed under the **GNU General Public License v3.0 or later (`GPL-3.0-or-later`)**. See [LICENSE](LICENSE) for the full license text.

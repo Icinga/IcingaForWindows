@@ -19,6 +19,9 @@ PS> Read-IcingaPerformanceCounterCache
 `ConvertFrom-Json` returns a PSCustomObject on both Windows PowerShell 5.1 and
 PowerShell 7 (the `-AsHashtable` switch is deliberately not used because it is PowerShell
 6+ only). Entries are read through the object's properties for cross-version compatibility.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-IcingaPerformanceCounterCache()
 {

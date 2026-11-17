@@ -15,17 +15,17 @@ a dedicated background thread spawned
 by Start-IcingaProtocolSocketReader.
 
 .PARAMETER TcpClient
-| Name      | Type                         | Description                                                              | Default |
-|-----------|------------------------------|--------------------------------------------------------------------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client whose remote endpoint identifies the writer queue.  | $null   |
+| Name      | Type                         | Description                                                             | Default |
+|-----------|------------------------------|-------------------------------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client whose remote endpoint identifies the writer queue. | $null   |
 
 .PARAMETER SslStream
-| Name      | Type                          | Description                                                             | Default |
-|-----------|-------------------------------|-------------------------------------------------------------------------|---------|
-| SslStream | System.Net.Security.SslStream | Authenticated SSL stream used by Send-TCPMessage to write bytes.        | $null   |
+| Name      | Type                          | Description                                                      | Default |
+|-----------|-------------------------------|------------------------------------------------------------------|---------|
+| SslStream | System.Net.Security.SslStream | Authenticated SSL stream used by Send-TCPMessage to write bytes. | $null   |
 
 .OUTPUTS
-None — Dequeues and sends messages; no pipeline output.
+None -- Dequeues and sends messages; no pipeline output.
 
 .EXAMPLE
 PS> New-Thread -Command 'Start-IcingaProtocolSocketWriter' -Parameters @{ '-TcpClient' = $tcp; '-SslStream' = $stream } -Start -WaitForJobs
@@ -36,6 +36,9 @@ Starts the writer thread and waits until its queue entry is registered before co
 The writer queue entry for the endpoint is created inside this function using a
 ConcurrentQueue-backed BlockingCollection. The WaitForJobs flag on New-Thread ensures the
 queue slot exists before the first message is enqueued by other threads.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaProtocolSocketWriter()
 {

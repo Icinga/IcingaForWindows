@@ -29,6 +29,9 @@ WorkerId must be a valid index into the WorkerQueue ArrayList initialized by
 New-IcingaAgentEnvironment. Accesses shared state via Get-GlobalRuntimeVariable
 and nulls all per-iteration reference variables in finally to prevent daemon
 memory retention.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaProtocolWorker()
 {

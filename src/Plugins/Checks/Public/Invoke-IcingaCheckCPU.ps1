@@ -41,14 +41,14 @@ is stored in the thread-local runtime state for the REST API instead.
 This plugin is Windows-only because it relies on the Windows performance counters.
 
 .PARAMETER Warning
-| Name    | Type          | Description                                                        | Default |
-|---------|---------------|--------------------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold in percent, using the Icinga threshold grammar.  |         |
+| Name    | Type          | Description                                                       | Default |
+|---------|---------------|-------------------------------------------------------------------|---------|
+| Warning | System.String | Warning threshold in percent, using the Icinga threshold grammar. |         |
 
 .PARAMETER Critical
-| Name     | Type          | Description                                                         | Default |
-|----------|---------------|---------------------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold in percent, using the Icinga threshold grammar.  |         |
+| Name     | Type          | Description                                                        | Default |
+|----------|---------------|--------------------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold in percent, using the Icinga threshold grammar. |         |
 
 .PARAMETER Core
 | Name | Type          | Description                                                                   | Default |
@@ -56,9 +56,9 @@ This plugin is Windows-only because it relies on the Windows performance counter
 | Core | System.String | Core selector: '*' for all cores + totals, '_Total'/'Total' or a core number. | *       |
 
 .PARAMETER NodeFilter
-| Name       | Type         | Description                                                               | Default |
-|------------|--------------|---------------------------------------------------------------------------|---------|
-| NodeFilter | System.Array | NUMA node IDs to include (wildcards allowed; aliased to SocketFilter).    | @()     |
+| Name       | Type         | Description                                                            | Default |
+|------------|--------------|------------------------------------------------------------------------|---------|
+| NodeFilter | System.Array | NUMA node IDs to include (wildcards allowed; aliased to SocketFilter). | @()     |
 
 .PARAMETER OverallOnly
 | Name        | Type                                         | Description                                                                  | Default |
@@ -66,9 +66,9 @@ This plugin is Windows-only because it relies on the Windows performance counter
 | OverallOnly | System.Management.Automation.SwitchParameter | Collect all cores/nodes, but evaluate Warning/Critical only on Overall Load. | False   |
 
 .PARAMETER Verbosity
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 .PARAMETER NoPerfData
 | Name       | Type                                         | Description                           | Default |
@@ -101,6 +101,9 @@ Monitor Users'). Perfdata labels are '<node>_<core>::ifw_cpu::load' with the cor
 numbered across all nodes, '<node>_total::ifw_cpu::load' and
 'totalload::ifw_cpu::load'. The integer exit code is the return value; an Icinga
 command wrapper is expected to exit with it.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Invoke-IcingaCheckCPU()
 {

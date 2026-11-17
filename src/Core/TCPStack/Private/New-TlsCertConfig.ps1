@@ -8,43 +8,46 @@ TLS certificate, either by file path, thumbprint or search filters (CN/Issuer).
 It validates that at least one selector is provided.
 
 .PARAMETER CertPath
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertPath | System.String | Optional filesystem path to a certificate file | $null |
+| Name     | Type          | Description                                    | Default |
+|----------|---------------|------------------------------------------------|---------|
+| CertPath | System.String | Optional filesystem path to a certificate file | $null   |
 
 .PARAMETER CertThumbprint
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertThumbprint | System.String | Thumbprint to locate certificate in store | $null |
+| Name           | Type          | Description                               | Default |
+|----------------|---------------|-------------------------------------------|---------|
+| CertThumbprint | System.String | Thumbprint to locate certificate in store | $null   |
 
 .PARAMETER CertCN
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertCN | System.String | Common Name filter for certificate store search | $null |
+| Name   | Type          | Description                                     | Default |
+|--------|---------------|-------------------------------------------------|---------|
+| CertCN | System.String | Common Name filter for certificate store search | $null   |
 
 .PARAMETER CertStore
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertStore | System.String | Certificate store name (e.g. 'My') | 'My' |
+| Name      | Type          | Description                        | Default |
+|-----------|---------------|------------------------------------|---------|
+| CertStore | System.String | Certificate store name (e.g. 'My') | 'My'    |
 
 .PARAMETER CertStoreLocation
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name              | Type          | Description                          | Default        |
+|-------------------|---------------|--------------------------------------|----------------|
 | CertStoreLocation | System.String | Store location (e.g. 'LocalMachine') | 'LocalMachine' |
 
 .PARAMETER CertIssuer
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores | $null |
+| Name       | Type         | Description                                                      | Default |
+|------------|--------------|------------------------------------------------------------------|---------|
+| CertIssuer | System.Array | Array of issuer names to match when searching certificate stores | $null   |
 
 .OUTPUTS
-System.Management.Automation.PSCustomObject — Constructed TLS configuration object, returned via `Write-FunctionReturnValue`.
+System.Management.Automation.PSCustomObject -- Constructed TLS configuration object, returned via `Write-FunctionReturnValue`.
 
 .EXAMPLE
 PS> New-TlsCertConfig -CertThumbprint 'ABCDEF...'
 
 .NOTES
 At least one of `CertPath`, `CertThumbprint`, `CertCN` or `CertIssuer` must be provided.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function New-TlsCertConfig()
 {

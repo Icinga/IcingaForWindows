@@ -8,18 +8,21 @@ and writes it to the active SSL stream of the current TCP client. It logs
 an error if no valid stream is available.
 
 .PARAMETER MsgObj
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| MsgObj | System.Object | Object with `message` (buffer) and `length` properties | $null |
+| Name   | Type          | Description                                            | Default |
+|--------|---------------|--------------------------------------------------------|---------|
+| MsgObj | System.Object | Object with `message` (buffer) and `length` properties | $null   |
 
 .OUTPUTS
-None — Writes the message buffer to the SSL stream and flushes it; logs an error if no valid stream is available.
+None -- Writes the message buffer to the SSL stream and flushes it; logs an error if no valid stream is available.
 
 .EXAMPLE
 PS> Send-TCPMessage -MsgObj $msg
 
 .NOTES
 This helper assumes the active stream is an `SslStream` exposing `Write` and `Flush`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Send-TCPMessage()
 {

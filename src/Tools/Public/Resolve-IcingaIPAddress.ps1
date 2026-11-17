@@ -11,8 +11,8 @@ On failure or exception, the function uses the module's Write-FunctionReturnValu
 mechanism to emit a standardized return value and typically returns $null.
 
 .PARAMETER Address
-| Name    | Type          | Description                                                                  | Default |
-|---------|---------------|------------------------------------------------------------------------------|---------|
+| Name    | Type          | Description                                                                     | Default |
+|---------|---------------|---------------------------------------------------------------------------------|---------|
 | Address | System.String | Hostname or IP address to resolve. Empty or null triggers IPAddressLookupEmpty. | $null   |
 
 .EXAMPLE
@@ -27,7 +27,7 @@ PS> Resolve-IcingaIPAddress -Address '192.0.2.1'
 Returns '192.0.2.1' unchanged since the input is already a valid IPv4 literal.
 
 .OUTPUTS
-System.String — IPv4 or IPv6 address string on success.
+System.String -- IPv4 or IPv6 address string on success.
 Returns $null via Write-FunctionReturnValue on failure with tokens
 IPAddressLookupEmpty, IPAddressLookupFailure, IPAddressLookupFailedForV4AndV6
 or IPAddressLookupException.
@@ -37,6 +37,9 @@ DNS resolution is performed via [System.Net.Dns]::GetHostAddresses. IPv4 address
 are preferred; the function returns the first IPv4 found, otherwise the first IPv6.
 Simple regex literal checks are performed before DNS resolution to avoid unnecessary
 lookups. Error conditions are surfaced via Write-FunctionReturnValue.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Resolve-IcingaIPAddress()
 {

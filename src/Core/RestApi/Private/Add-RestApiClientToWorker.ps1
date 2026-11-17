@@ -8,9 +8,9 @@ of the RestApi worker queues managed in the global runtime state. Logs the
 assignment and validates the input client.
 
 .PARAMETER TcpClient
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient | Accepted TCP client to assign to a worker queue. | |
+| Name      | Type                         | Description                                      | Default |
+|-----------|------------------------------|--------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Accepted TCP client to assign to a worker queue. |         |
 
 .OUTPUTS
 None
@@ -22,6 +22,9 @@ PS> Add-RestApiClientToWorker -TcpClient $acceptedClient
 This helper expects RestApi worker queues to be initialized under
 `(Get-GlobalRuntimeVariable).Public.RestApi.WorkerQueue` and a
 `WorkerCount` value in the RestApi configuration.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Add-RestApiClientToWorker()
 {

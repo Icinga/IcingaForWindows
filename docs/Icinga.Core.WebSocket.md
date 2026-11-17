@@ -48,21 +48,21 @@ to disk.
 
 **`$Name`**
 
-| Name | Type          | Description                            | Default |
-|------|---------------|----------------------------------------|---------|
-| Name | System.String | Logical name for the WebSocket config  |         |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Name | System.String | Logical name for the WebSocket config |         |
 
 **`$Address`**
 
-| Name    | Type          | Description                        | Default |
-|---------|---------------|------------------------------------|---------|
-| Address | System.String | Remote WebSocket URI (wss://...)   |         |
+| Name    | Type          | Description                      | Default |
+|---------|---------------|----------------------------------|---------|
+| Address | System.String | Remote WebSocket URI (wss://...) |         |
 
 **`$Config`**
 
-| Name   | Type          | Description                                        | Default |
-|--------|---------------|----------------------------------------------------|---------|
-| Config | System.String | Path or pointer to the type-specific config file   |         |
+| Name   | Type          | Description                                      | Default |
+|--------|---------------|--------------------------------------------------|---------|
+| Config | System.String | Path or pointer to the type-specific config file |         |
 
 **`$Type`**
 
@@ -72,13 +72,13 @@ to disk.
 
 **`$Force`**
 
-| Name  | Type                    | Description                                    | Default |
-|-------|-------------------------|------------------------------------------------|---------|
-| Force | System.Management.Automation.SwitchParameter | Overwrite an existing config with the same name | $false |
+| Name  | Type                                         | Description                                     | Default |
+|-------|----------------------------------------------|-------------------------------------------------|---------|
+| Force | System.Management.Automation.SwitchParameter | Overwrite an existing config with the same name | $false  |
 
 #### Outputs
 
-System.Object — Returns a structured Icinga return indicating success or the
+System.Object -- Returns a structured Icinga return indicating success or the
 validation failure.
 
 #### Examples
@@ -94,7 +94,7 @@ pointer to the type-specific config, not the full in-memory object. Requires
 read access to the type-specific configuration file referenced by `Config`.
 Configuration is stored in `$Global:Icinga.Public.WebSocket.Config`.
 
-*Source: [src/Core/WebSocket/Public/Add-IcingaWebSocketConfig.ps1](../../src/Core/WebSocket/Public/Add-IcingaWebSocketConfig.ps1)*
+*Source: [src/Core/WebSocket/Public/Add-IcingaWebSocketConfig.ps1](../src/Core/WebSocket/Public/Add-IcingaWebSocketConfig.ps1)*
 
 ---
 
@@ -122,7 +122,7 @@ must be restarted separately to reflect the removal.
 
 #### Outputs
 
-System.Object — Emits a structured return value when no name is provided;
+System.Object -- Emits a structured return value when no name is provided;
 otherwise removes the file and returns quietly.
 
 #### Examples
@@ -137,7 +137,7 @@ Only the persisted pointer file on disk is removed. The in-memory configuration
 in `$Global:Icinga.Public.WebSocket.Config` is not modified. No special
 permissions beyond write access to the Icinga config directory are required.
 
-*Source: [src/Core/WebSocket/Public/Remove-IcingaWebSocketConfig.ps1](../../src/Core/WebSocket/Public/Remove-IcingaWebSocketConfig.ps1)*
+*Source: [src/Core/WebSocket/Public/Remove-IcingaWebSocketConfig.ps1](../src/Core/WebSocket/Public/Remove-IcingaWebSocketConfig.ps1)*
 
 ---
 
@@ -157,7 +157,7 @@ runtime and produces no return value.
 
 #### Outputs
 
-None — Writes the WebSocket configurations as a formatted output entry via
+None -- Writes the WebSocket configurations as a formatted output entry via
 `Write-LoggingEntry`.
 
 #### Examples
@@ -172,7 +172,7 @@ No parameters are required. The output is written through `Write-LoggingEntry`
 and is not returned to the pipeline. Requires the WebSocket environment to have
 been initialized via `Start-ModuleWebSocketDaemon` for meaningful output.
 
-*Source: [src/Core/WebSocket/Public/Show-IcingaWebSockets.ps1](../../src/Core/WebSocket/Public/Show-IcingaWebSockets.ps1)*
+*Source: [src/Core/WebSocket/Public/Show-IcingaWebSockets.ps1](../src/Core/WebSocket/Public/Show-IcingaWebSockets.ps1)*
 
 ---
 
@@ -194,37 +194,37 @@ only writes a path pointer to disk.
 
 **`$Name`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name for the WebSocket config | |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Name | System.String | Logical name for the WebSocket config |         |
 
 **`$Address`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Address | System.String | Remote WebSocket URI (wss://...) | |
+| Name    | Type          | Description                      | Default |
+|---------|---------------|----------------------------------|---------|
+| Address | System.String | Remote WebSocket URI (wss://...) |         |
 
 **`$Config`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Config | System.String | Path or pointer to the type-specific config | |
+| Name   | Type          | Description                                 | Default |
+|--------|---------------|---------------------------------------------|---------|
+| Config | System.String | Path or pointer to the type-specific config |         |
 
 **`$Type`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Type | System.String | Logical type for the WebSocket config | |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Type | System.String | Logical type for the WebSocket config |         |
 
 **`$Force`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Force | System.SwitchParameter | Overwrite an existing config with the same name | false |
+| Name  | Type                   | Description                                     | Default |
+|-------|------------------------|-------------------------------------------------|---------|
+| Force | System.SwitchParameter | Overwrite an existing config with the same name | false   |
 
 #### Outputs
 
-System.Object — Returns a structured module return indicating success or the validation failure.
+System.Object -- Returns a structured module return indicating success or the validation failure.
 
 #### Examples
 
@@ -239,7 +239,7 @@ the type-specific config (not the full in-memory object). The configuration is
 stored in `$Global:ModuleName.Public.WebSocket.Config` and accessed via
 `Get-GlobalRuntimeVariable`.
 
-*Source: [src/Core/WebSocket/Private/Add-ModuleWebSocketConfig.ps1](../../src/Core/WebSocket/Private/Add-ModuleWebSocketConfig.ps1)*
+*Source: [src/Core/WebSocket/Private/Add-ModuleWebSocketConfig.ps1](../src/Core/WebSocket/Private/Add-ModuleWebSocketConfig.ps1)*
 
 ---
 
@@ -260,19 +260,19 @@ structured module return on error conditions.
 
 **`$Message`**
 
-| Name    | Type         | Description                        | Default |
-|---------|--------------|------------------------------------|---------|
-| Message | System.String| Message payload to enqueue.        |         |
+| Name    | Type          | Description                 | Default |
+|---------|---------------|-----------------------------|---------|
+| Message | System.String | Message payload to enqueue. |         |
 
 **`$OverrideWebSocketName`**
 
-| Name                  | Type         | Description                               | Default |
-|-----------------------|--------------|-------------------------------------------|---------|
-| OverrideWebSocketName  | System.String| Optional runtime websocket name override.|         |
+| Name                  | Type          | Description                               | Default |
+|-----------------------|---------------|-------------------------------------------|---------|
+| OverrideWebSocketName | System.String | Optional runtime websocket name override. |         |
 
 #### Outputs
 
-System.Object — Emits module structured return values on error; otherwise the
+System.Object -- Emits module structured return values on error; otherwise the
 message is placed in the BlockingCollection and the function returns without
 an explicit value.
 
@@ -291,7 +291,7 @@ function must be called from within a worker context where
 `Get-GlobalRuntimeVariable` provides a valid WebSocket name via
 `Private.WebSocket.Name`.
 
-*Source: [src/Core/WebSocket/Private/Add-ModuleWebSocketMessageToQueue.ps1](../../src/Core/WebSocket/Private/Add-ModuleWebSocketMessageToQueue.ps1)*
+*Source: [src/Core/WebSocket/Private/Add-ModuleWebSocketMessageToQueue.ps1](../src/Core/WebSocket/Private/Add-ModuleWebSocketMessageToQueue.ps1)*
 
 ---
 
@@ -313,19 +313,19 @@ module return values.
 
 **`$Name`**
 
-| Name | Type         | Description                          | Default |
-|------|--------------|--------------------------------------|---------|
-| Name | System.String| Logical name for the WebSocket entry.|         |
+| Name | Type          | Description                           | Default |
+|------|---------------|---------------------------------------|---------|
+| Name | System.String | Logical name for the WebSocket entry. |         |
 
 **`$Address`**
 
-| Name    | Type         | Description                               | Default |
-|---------|--------------|-------------------------------------------|---------|
-| Address | System.String| WebSocket URI to connect to.              |         |
+| Name    | Type          | Description                  | Default |
+|---------|---------------|------------------------------|---------|
+| Address | System.String | WebSocket URI to connect to. |         |
 
 #### Outputs
 
-System.Object — Emits `Write-FunctionReturnValue` results describing success or failure.
+System.Object -- Emits `Write-FunctionReturnValue` results describing success or failure.
 
 #### Examples
 
@@ -340,7 +340,7 @@ new one is established. The resulting `ClientWebSocket` and
 `CancellationTokenSource` are stored in `$Global:ModuleName.Private.WebSocket`
 and must be accessed via `Get-GlobalRuntimeVariable` from worker threads.
 
-*Source: [src/Core/WebSocket/Private/Connect-ModuleWebSocket.ps1](../../src/Core/WebSocket/Private/Connect-ModuleWebSocket.ps1)*
+*Source: [src/Core/WebSocket/Private/Connect-ModuleWebSocket.ps1](../src/Core/WebSocket/Private/Connect-ModuleWebSocket.ps1)*
 
 ---
 
@@ -358,7 +358,7 @@ module results for success, not-connected, and various error conditions.
 
 #### Outputs
 
-System.Object — Structured `Write-FunctionReturnValue` values describing the outcome.
+System.Object -- Structured `Write-FunctionReturnValue` values describing the outcome.
 
 #### Examples
 
@@ -373,7 +373,7 @@ of any lingering `ClientWebSocket` and `CancellationTokenSource` objects to
 avoid memory leaks. The function accesses runtime state via
 `Get-GlobalRuntimeVariable`.
 
-*Source: [src/Core/WebSocket/Private/Disconnect-ModuleWebSocket.ps1](../../src/Core/WebSocket/Private/Disconnect-ModuleWebSocket.ps1)*
+*Source: [src/Core/WebSocket/Private/Disconnect-ModuleWebSocket.ps1](../src/Core/WebSocket/Private/Disconnect-ModuleWebSocket.ps1)*
 
 ---
 
@@ -393,7 +393,7 @@ function returns `$null`.
 
 #### Outputs
 
-System.Management.Automation.PSCustomObject — Returns the WebSocket configuration
+System.Management.Automation.PSCustomObject -- Returns the WebSocket configuration
 object for the current thread, or `$null` when no configuration is available.
 
 #### Examples
@@ -410,7 +410,7 @@ access to the current connection credentials and settings. The thread-local
 WebSocket name is read from `$Global:ModuleName.Private.WebSocket.Name` via
 `Get-GlobalRuntimeVariable`.
 
-*Source: [src/Core/WebSocket/Private/Get-ModuleCurrentWebSocketConfig.ps1](../../src/Core/WebSocket/Private/Get-ModuleCurrentWebSocketConfig.ps1)*
+*Source: [src/Core/WebSocket/Private/Get-ModuleCurrentWebSocketConfig.ps1](../src/Core/WebSocket/Private/Get-ModuleCurrentWebSocketConfig.ps1)*
 
 ---
 
@@ -429,7 +429,7 @@ that the public runtime structure is populated for subsequent operations.
 
 #### Outputs
 
-System.Object — Returns a structured `Write-FunctionReturnValue` indicating
+System.Object -- Returns a structured `Write-FunctionReturnValue` indicating
 success or the absence of any configurations to initialize.
 
 #### Examples
@@ -445,7 +445,7 @@ Uses `Read-ModuleWebSocketConfig` to load persisted configurations and
 Each instance receives its own `ReaderWorker` and `WriterWorker`
 `BlockingCollection` stored in `$Global:ModuleName.Public.WebSocket`.
 
-*Source: [src/Core/WebSocket/Private/New-ModuleWebSocketEnvironment.ps1](../../src/Core/WebSocket/Private/New-ModuleWebSocketEnvironment.ps1)*
+*Source: [src/Core/WebSocket/Private/New-ModuleWebSocketEnvironment.ps1](../src/Core/WebSocket/Private/New-ModuleWebSocketEnvironment.ps1)*
 
 ---
 
@@ -467,25 +467,25 @@ exceptions by emitting structured module return values.
 
 **`$Name`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection | |
+| Name | Type          | Description                              | Default |
+|------|---------------|------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection |         |
 
 **`$ClientWebSocket`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | The active client WebSocket instance | |
+| Name            | Type                                  | Description                          | Default |
+|-----------------|---------------------------------------|--------------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | The active client WebSocket instance |         |
 
 **`$CancellationTokenSource`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel read operations | |
+| Name                    | Type                                     | Description                                 | Default |
+|-------------------------|------------------------------------------|---------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel read operations |         |
 
 #### Outputs
 
-System.Object — Emits structured `Write-FunctionReturnValue` values on errors;
+System.Object -- Emits structured `Write-FunctionReturnValue` values on errors;
 otherwise received messages are placed into the named reader worker queue for
 downstream processing.
 
@@ -505,7 +505,7 @@ placed in the `ReaderWorker` BlockingCollection under
 `$Global:ModuleName.Public.WebSocket.<Name>`. The loop runs until
 `Test-ThreadRunning -CheckWebSocket` returns `$false`.
 
-*Source: [src/Core/WebSocket/Private/Read-ModuleWebSocket.ps1](../../src/Core/WebSocket/Private/Read-ModuleWebSocket.ps1)*
+*Source: [src/Core/WebSocket/Private/Read-ModuleWebSocket.ps1](../src/Core/WebSocket/Private/Read-ModuleWebSocket.ps1)*
 
 ---
 
@@ -524,7 +524,7 @@ Parsed configurations are stored in `$Global:ModuleName.Public.WebSocket.Config`
 
 #### Outputs
 
-System.Object — Emits structured `Write-FunctionReturnValue` values indicating
+System.Object -- Emits structured `Write-FunctionReturnValue` values indicating
 load results and returns the populated config object on success.
 
 #### Examples
@@ -540,7 +540,7 @@ pointer referencing the type-specific configuration file. Parsed configurations
 are stored in `$Global:ModuleName.Public.WebSocket.Config` and accessed via
 `Get-GlobalRuntimeVariable`.
 
-*Source: [src/Core/WebSocket/Private/Read-ModuleWebSocketConfig.ps1](../../src/Core/WebSocket/Private/Read-ModuleWebSocketConfig.ps1)*
+*Source: [src/Core/WebSocket/Private/Read-ModuleWebSocketConfig.ps1](../src/Core/WebSocket/Private/Read-ModuleWebSocketConfig.ps1)*
 
 ---
 
@@ -560,13 +560,13 @@ not modify in-memory runtime structures.
 
 **`$Name`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket config to remove | |
+| Name | Type          | Description                                    | Default |
+|------|---------------|------------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket config to remove |         |
 
 #### Outputs
 
-System.Object — Emits a structured return value when no name is provided; otherwise it removes the file and returns quietly.
+System.Object -- Emits a structured return value when no name is provided; otherwise it removes the file and returns quietly.
 
 #### Examples
 
@@ -574,7 +574,12 @@ System.Object — Emits a structured return value when no name is provided; othe
 PS> Remove-ModuleWebSocketConfig -Name 'MyWebSocket'
 ```
 
-*Source: [src/Core/WebSocket/Private/Remove-ModuleWebSocketConfig.ps1](../../src/Core/WebSocket/Private/Remove-ModuleWebSocketConfig.ps1)*
+#### Notes
+
+Removes the JSON configuration file from the `WebSocket` subfolder inside
+`Get-ModuleConfigDirectory` via `Remove-SecureItem`.
+
+*Source: [src/Core/WebSocket/Private/Remove-ModuleWebSocketConfig.ps1](../src/Core/WebSocket/Private/Remove-ModuleWebSocketConfig.ps1)*
 
 ---
 
@@ -587,14 +592,14 @@ PS> Remove-ModuleWebSocketConfig -Name 'MyWebSocket'
 #### Description
 
 `Show-ModuleWebSockets` reads all WebSocket configurations from
-`$Global:ModuleName.Public.WebSocket.Config` via `Get-GlobalRuntimeVariable` and
+`$Global:IcingaForWindows.Public.WebSocket.Config` via `Get-GlobalRuntimeVariable` and
 emits them as a formatted output message using `Write-LoggingEntry` at the
 `Output` level. The function is intended for interactive inspection during
 runtime and produces no return value.
 
 #### Outputs
 
-None — Writes the WebSocket configurations as a formatted output entry via
+None -- Writes the WebSocket configurations as a formatted output entry via
 `Write-LoggingEntry`.
 
 #### Examples
@@ -603,7 +608,11 @@ None — Writes the WebSocket configurations as a formatted output entry via
 PS> Show-ModuleWebSockets
 ```
 
-*Source: [src/Core/WebSocket/Private/Show-ModuleWebSockets.ps1](../../src/Core/WebSocket/Private/Show-ModuleWebSockets.ps1)*
+#### Notes
+
+Internal implementation behind the public `Show-IcingaWebSockets` cmdlet.
+
+*Source: [src/Core/WebSocket/Private/Show-ModuleWebSockets.ps1](../src/Core/WebSocket/Private/Show-ModuleWebSockets.ps1)*
 
 ---
 
@@ -621,7 +630,7 @@ The function returns immediately after the management thread is started.
 
 #### Outputs
 
-None — Starts a background thread and returns immediately without a return value.
+None -- Starts a background thread and returns immediately without a return value.
 
 #### Examples
 
@@ -636,7 +645,7 @@ initialized on a separate thread. The background thread executes
 `New-ModuleWebSocketEnvironment`, which loads all persisted WebSocket
 configurations and spawns per-instance handler threads.
 
-*Source: [src/Core/WebSocket/Private/Start-ModuleWebSocketDaemon.ps1](../../src/Core/WebSocket/Private/Start-ModuleWebSocketDaemon.ps1)*
+*Source: [src/Core/WebSocket/Private/Start-ModuleWebSocketDaemon.ps1](../src/Core/WebSocket/Private/Start-ModuleWebSocketDaemon.ps1)*
 
 ---
 
@@ -658,13 +667,13 @@ loop and is responsible for reconnection and keep-alive handling.
 
 **`$Name`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Name of the WebSocket configuration to manage | |
+| Name | Type          | Description                                   | Default |
+|------|---------------|-----------------------------------------------|---------|
+| Name | System.String | Name of the WebSocket configuration to manage |         |
 
 #### Outputs
 
-System.Object — Emits structured return codes for validation failures; otherwise
+System.Object -- Emits structured return codes for validation failures; otherwise
 the function runs until the thread manager requests termination.
 
 #### Examples
@@ -681,7 +690,7 @@ inside a dedicated thread spawned by `New-ModuleWebSocketEnvironment` and drives
 connection, reconnection, keep-alive handling, as well as spawning of reader,
 writer and processing worker threads.
 
-*Source: [src/Core/WebSocket/Private/Start-ModuleWebSocketHandler.ps1](../../src/Core/WebSocket/Private/Start-ModuleWebSocketHandler.ps1)*
+*Source: [src/Core/WebSocket/Private/Start-ModuleWebSocketHandler.ps1](../src/Core/WebSocket/Private/Start-ModuleWebSocketHandler.ps1)*
 
 ---
 
@@ -703,25 +712,25 @@ manager requests shutdown.
 
 **`$Name`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection to read from | |
+| Name | Type          | Description                                           | Default |
+|------|---------------|-------------------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection to read from |         |
 
 **`$ClientWebSocket`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance | |
+| Name            | Type                                  | Description                      | Default |
+|-----------------|---------------------------------------|----------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance |         |
 
 **`$CancellationTokenSource`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel operations | |
+| Name                    | Type                                     | Description                                         | Default |
+|-------------------------|------------------------------------------|-----------------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel operations |         |
 
 #### Outputs
 
-System.Object — Emits structured module return values on errors; otherwise
+System.Object -- Emits structured module return values on errors; otherwise
 messages are prepared and enqueued for further processing.
 
 #### Examples
@@ -730,7 +739,12 @@ messages are prepared and enqueued for further processing.
 PS> Start-ModuleWebSocketReaderWorker -Name 'MyWebSocket' -ClientWebSocket $ws -CancellationTokenSource $cts
 ```
 
-*Source: [src/Core/WebSocket/Private/Start-ModuleWebSocketReaderWorker.ps1](../../src/Core/WebSocket/Private/Start-ModuleWebSocketReaderWorker.ps1)*
+#### Notes
+
+Runs on a dedicated background worker runspace managed by `New-Thread` and
+exits cleanly when `Test-ThreadRunning -CheckWebSocket` returns `$false`.
+
+*Source: [src/Core/WebSocket/Private/Start-ModuleWebSocketReaderWorker.ps1](../src/Core/WebSocket/Private/Start-ModuleWebSocketReaderWorker.ps1)*
 
 ---
 
@@ -743,12 +757,13 @@ PS> Start-ModuleWebSocketReaderWorker -Name 'MyWebSocket' -ClientWebSocket $ws -
 #### Description
 
 `Test-ModuleWebSocket` verifies that a `ClientWebSocket` exists in
-`$Global:ModuleName.Private.WebSocket` and that its `State` equals `Open`.
-Returns a boolean value indicating whether the WebSocket is connected.
+`$Global:IcingaForWindows.Private.WebSocket` via `Get-GlobalRuntimeVariable` and
+that its `State` equals `Open`. Returns a boolean value indicating whether the
+WebSocket is connected.
 
 #### Outputs
 
-System.Boolean — $true when the WebSocket connection is active and open; $false otherwise.
+System.Boolean -- $true when the WebSocket connection is active and open; $false otherwise.
 
 #### Examples
 
@@ -756,7 +771,12 @@ System.Boolean — $true when the WebSocket connection is active and open; $fals
 PS> if (Test-ModuleWebSocket) { Write-LoggingEntry -Message 'WebSocket connected' -Level 'Output' }
 ```
 
-*Source: [src/Core/WebSocket/Private/Test-ModuleWebSocket.ps1](../../src/Core/WebSocket/Private/Test-ModuleWebSocket.ps1)*
+#### Notes
+
+Reads thread-local `Private.WebSocket.ClientWebSocket` state for the active
+WebSocket worker runspace.
+
+*Source: [src/Core/WebSocket/Private/Test-ModuleWebSocket.ps1](../src/Core/WebSocket/Private/Test-ModuleWebSocket.ps1)*
 
 ---
 
@@ -770,32 +790,33 @@ PS> if (Test-ModuleWebSocket) { Write-LoggingEntry -Message 'WebSocket connected
 
 `Update-ModuleWebSocketThread` stores the active WebSocket thread values
 (`Name`, `ClientWebSocket`, `CancellationTokenSource`) in
-`$Global:ModuleName.Private.WebSocket` so other WebSocket helper threads can
-access the current connection reference.
+`$Global:IcingaForWindows.Private.WebSocket` via `Get-GlobalRuntimeVariable` so
+other WebSocket helper functions in the same worker runspace can access the
+current connection reference.
 
 #### Parameters
 
 **`$Name`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection | |
+| Name | Type          | Description                              | Default |
+|------|---------------|------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection |         |
 
 **`$ClientWebSocket`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance | |
+| Name            | Type                                  | Description                      | Default |
+|-----------------|---------------------------------------|----------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance |         |
 
 **`$CancellationTokenSource`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel reads/writes | |
+| Name                    | Type                                     | Description                                           | Default |
+|-------------------------|------------------------------------------|-------------------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Cancellation token source used to cancel reads/writes |         |
 
 #### Outputs
 
-System.Object — Returns structured `Write-FunctionReturnValue` status codes indicating success or validation failures.
+System.Object -- Returns structured `Write-FunctionReturnValue` status codes indicating success or validation failures.
 
 #### Examples
 
@@ -803,7 +824,11 @@ System.Object — Returns structured `Write-FunctionReturnValue` status codes in
 PS> Update-ModuleWebSocketThread -Name 'MyWebSocket' -ClientWebSocket $ws -CancellationTokenSource $cts
 ```
 
-*Source: [src/Core/WebSocket/Private/Update-ModuleWebSocketThread.ps1](../../src/Core/WebSocket/Private/Update-ModuleWebSocketThread.ps1)*
+#### Notes
+
+Populates thread-local `Private.WebSocket` state before reader or writer loops start.
+
+*Source: [src/Core/WebSocket/Private/Update-ModuleWebSocketThread.ps1](../src/Core/WebSocket/Private/Update-ModuleWebSocketThread.ps1)*
 
 ---
 
@@ -824,25 +849,25 @@ is not connected and emits structured return values on errors.
 
 **`$Name`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Name | System.String | Logical name of the WebSocket connection to write to | |
+| Name | Type          | Description                                          | Default |
+|------|---------------|------------------------------------------------------|---------|
+| Name | System.String | Logical name of the WebSocket connection to write to |         |
 
 **`$ClientWebSocket`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance | |
+| Name            | Type                                  | Description                      | Default |
+|-----------------|---------------------------------------|----------------------------------|---------|
+| ClientWebSocket | System.Net.WebSockets.ClientWebSocket | Active client WebSocket instance |         |
 
 **`$CancellationTokenSource`**
 
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel send operations | |
+| Name                    | Type                                     | Description                                 | Default |
+|-------------------------|------------------------------------------|---------------------------------------------|---------|
+| CancellationTokenSource | System.Threading.CancellationTokenSource | Token source used to cancel send operations |         |
 
 #### Outputs
 
-System.Object — Emits structured `Write-FunctionReturnValue` values on send errors.
+System.Object -- Emits structured `Write-FunctionReturnValue` values on send errors.
 
 #### Examples
 
@@ -850,6 +875,10 @@ System.Object — Emits structured `Write-FunctionReturnValue` values on send er
 PS> Write-ModuleWebSocket -Name 'MyWebSocket' -ClientWebSocket $ws -CancellationTokenSource $cts
 ```
 
-*Source: [src/Core/WebSocket/Private/Write-ModuleWebSocket.ps1](../../src/Core/WebSocket/Private/Write-ModuleWebSocket.ps1)*
+#### Notes
 
+Runs on a dedicated background writer runspace and disposes `SendAsync` task
+handles after each frame to prevent memory leaks.
+
+*Source: [src/Core/WebSocket/Private/Write-ModuleWebSocket.ps1](../src/Core/WebSocket/Private/Write-ModuleWebSocket.ps1)*
 

@@ -8,7 +8,7 @@ Writes a formatted access role summary to the module logging system at the
 the global runtime variable and emits them as structured log data.
 
 .OUTPUTS
-None — Emits structured log output at the Output level as a side effect.
+None -- Emits structured log output at the Output level as a side effect.
 
 .EXAMPLE
 PS> Show-ModuleAccessRoles
@@ -19,6 +19,9 @@ Writes the currently loaded access roles to the logging system at Output level.
 This helper does not modify state; it only emits the current
 (Get-GlobalRuntimeVariable).Protected.AccessControl via Write-LoggingEntry.
 Read-ModuleAccessControl must have been called previously to populate the list.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Show-ModuleAccessRoles()
 {

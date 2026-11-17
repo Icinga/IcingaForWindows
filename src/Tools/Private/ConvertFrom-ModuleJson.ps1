@@ -10,12 +10,12 @@ which natively returns dictionaries instead of PSCustomObjects. In PowerShell 6 
 it uses the native ConvertFrom-Json cmdlet with the -AsHashtable switch.
 
 .PARAMETER InputObject
-| Name        | Type          | Description                                | Default |
-|-------------|---------------|--------------------------------------------|---------|
-| InputObject | System.String | The JSON string to deserialize.            | ''      |
+| Name        | Type          | Description                     | Default |
+|-------------|---------------|---------------------------------|---------|
+| InputObject | System.String | The JSON string to deserialize. | ''      |
 
 .OUTPUTS
-System.Collections.Hashtable — Returns a hashtable (or dictionary) representation of the JSON string.
+System.Collections.Hashtable -- Returns a hashtable (or dictionary) representation of the JSON string.
 Returns `$null` if the input is empty or parsing fails.
 
 .EXAMPLE
@@ -24,6 +24,9 @@ PS> $hashtable = ConvertFrom-ModuleJson -InputObject '{"key": "value"}'
 .NOTES
 In Windows PowerShell 5.1, this function dynamically loads the System.Web.Extensions
 assembly if it is not already loaded in the current runspace.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertFrom-ModuleJson()
 {
@@ -43,7 +46,7 @@ function ConvertFrom-ModuleJson()
                 Add-Type -AssemblyName System.Web.Extensions;
             }
 
-            $Serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer;
+            $Serializer               = New-Object System.Web.Script.Serialization.JavaScriptSerializer;
             $Serializer.MaxJsonLength = 2147483647;
 
             return $Serializer.DeserializeObject($InputObject);

@@ -23,7 +23,7 @@ failure through Success and a semantic ReturnCode instead. All bound arithmetic
 uses [decimal] for precision and open ends are stored as [double] infinities.
 
 .OUTPUTS
-IcingaThresholdRange — Value object describing the parsed range.
+IcingaThresholdRange -- Value object describing the parsed range.
 
 .EXAMPLE
 PS> [IcingaThresholdRange]::new('10:20', 0, $false)
@@ -39,23 +39,26 @@ Resolves 90% of the base value 1000 into the upper bound 900.
 Self-contained value object. Does not modify global state or access external
 services. Reuses the IcingaUnit class for unit-carrying bounds. Safe to construct
 in multi-threaded runspaces.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaThresholdRange
 {
-    hidden [string]$Threshold    = '';
-    hidden [bool]$IsSet          = $false;
-    hidden [bool]$Inverted       = $false;
-    hidden [double]$Start        = 0;
-    hidden [double]$End          = 0;
-    hidden [string]$StartUnit    = '';
-    hidden [string]$EndUnit      = '';
-    hidden [string]$StartPercent = '';
-    hidden [string]$EndPercent   = '';
-    hidden [string]$Family       = '';
-    hidden [bool]$Success        = $false;
-    hidden [string]$ReturnCode   = '';
-    hidden [double]$BaseValue    = 0;
-    hidden [bool]$HasBaseValue   = $false;
+    hidden [string]$Threshold          = '';
+    hidden [bool]$IsSet                = $false;
+    hidden [bool]$Inverted             = $false;
+    hidden [double]$Start              = 0;
+    hidden [double]$End                = 0;
+    hidden [string]$StartUnit          = '';
+    hidden [string]$EndUnit            = '';
+    hidden [string]$StartPercent       = '';
+    hidden [string]$EndPercent         = '';
+    hidden [string]$Family             = '';
+    hidden [bool]$Success              = $false;
+    hidden [string]$ReturnCode         = '';
+    hidden [double]$BaseValue          = 0;
+    hidden [bool]$HasBaseValue         = $false;
 
     static hidden [regex]$PercentRegex = [regex]::new('^\s*(-?\d+(?:[.,]\d+)?)\s*%\s*$', [System.Text.RegularExpressions.RegexOptions]::Compiled);
     static hidden [regex]$NumberRegex  = [regex]::new('^\s*(-?\d+(?:[.,]\d+)?)\s*$', [System.Text.RegularExpressions.RegexOptions]::Compiled);
@@ -71,22 +74,22 @@ class IcingaThresholdRange
     records a failure via Success and ReturnCode instead of throwing.
 
     .PARAMETER Threshold
-    | Name      | Type          | Description                                                | Default |
-    |-----------|---------------|------------------------------------------------------------|---------|
-    | Threshold | System.String | Threshold range string, e.g. '10', '10:', '~:10', '@10:20'.|         |
+    | Name      | Type          | Description                                                 | Default |
+    |-----------|---------------|-------------------------------------------------------------|---------|
+    | Threshold | System.String | Threshold range string, e.g. '10', '10:', '~:10', '@10:20'. |         |
 
     .PARAMETER BaseValue
-    | Name      | Type           | Description                                             | Default |
-    |-----------|----------------|---------------------------------------------------------|---------|
-    | BaseValue | System.Double  | Base value that percent bounds are resolved against.    |         |
+    | Name      | Type          | Description                                          | Default |
+    |-----------|---------------|------------------------------------------------------|---------|
+    | BaseValue | System.Double | Base value that percent bounds are resolved against. |         |
 
     .PARAMETER HasBaseValue
-    | Name         | Type           | Description                                        | Default |
-    |--------------|----------------|----------------------------------------------------|---------|
-    | HasBaseValue | System.Boolean | Whether a base value was supplied for percent math.|         |
+    | Name         | Type           | Description                                         | Default |
+    |--------------|----------------|-----------------------------------------------------|---------|
+    | HasBaseValue | System.Boolean | Whether a base value was supplied for percent math. |         |
 
     .OUTPUTS
-    IcingaThresholdRange — Configured range instance with Success and ReturnCode.
+    IcingaThresholdRange -- Configured range instance with Success and ReturnCode.
 
     .EXAMPLE
     PS> [IcingaThresholdRange]::new('~:10', 0, $false)
@@ -110,7 +113,7 @@ class IcingaThresholdRange
         $this.Threshold = $Threshold;
         $this.IsSet     = $true;
 
-        [string]$Body = $Threshold.Trim();
+        [string]$Body   = $Threshold.Trim();
 
         # A leading '@' inverts the range: alert when the value is inside the
         # bounds instead of outside them.
@@ -190,24 +193,24 @@ class IcingaThresholdRange
     number is taken as-is in the smallest/base unit. Any other token is rejected.
 
     .PARAMETER Token
-    | Name  | Type          | Description                          | Default |
-    |-------|---------------|--------------------------------------|---------|
-    | Token | System.String | Single bound token to resolve.       |         |
+    | Name  | Type          | Description                    | Default |
+    |-------|---------------|--------------------------------|---------|
+    | Token | System.String | Single bound token to resolve. |         |
 
     .PARAMETER Result
-    | Name   | Type                             | Description                                  | Default |
-    |--------|----------------------------------|----------------------------------------------|---------|
-    | Result | System.Management.Automation.PSReference | Receives the resolved numeric bound value.   |         |
+    | Name   | Type                                     | Description                                | Default |
+    |--------|------------------------------------------|--------------------------------------------|---------|
+    | Result | System.Management.Automation.PSReference | Receives the resolved numeric bound value. |         |
 
     .PARAMETER Family
-    | Name   | Type                                     | Description                                            | Default |
-    |--------|------------------------------------------|--------------------------------------------------------|---------|
-    | Family | System.Management.Automation.PSReference | Receives the unit family ('Data'/'Time'), '' when none.|         |
+    | Name   | Type                                     | Description                                             | Default |
+    |--------|------------------------------------------|---------------------------------------------------------|---------|
+    | Family | System.Management.Automation.PSReference | Receives the unit family ('Data'/'Time'), '' when none. |         |
 
     .PARAMETER Unit
-    | Name | Type                                     | Description                                       | Default |
-    |------|------------------------------------------|---------------------------------------------------|---------|
-    | Unit | System.Management.Automation.PSReference | Receives the original unit token, '' when none.   |         |
+    | Name | Type                                     | Description                                     | Default |
+    |------|------------------------------------------|-------------------------------------------------|---------|
+    | Unit | System.Management.Automation.PSReference | Receives the original unit token, '' when none. |         |
 
     .PARAMETER PercentToken
     | Name         | Type                                     | Description                                        | Default |
@@ -215,7 +218,7 @@ class IcingaThresholdRange
     | PercentToken | System.Management.Automation.PSReference | Receives the original percent token, '' when none. |         |
 
     .OUTPUTS
-    System.Boolean — $true on success, $false when the bound could not be resolved.
+    System.Boolean -- $true on success, $false when the bound could not be resolved.
 
     .EXAMPLE
     PS> $this.ParseBound('100MB', [ref]$value, [ref]$family, [ref]$unit, [ref]$percent)
@@ -231,7 +234,7 @@ class IcingaThresholdRange
         $Unit.Value         = '';
         $PercentToken.Value = '';
 
-        [string]$Trimmed = $Token.Trim();
+        [string]$Trimmed    = $Token.Trim();
 
         if ([string]::IsNullOrEmpty($Trimmed)) {
             $this.Fail('IcingaThresholdInvalidBound');
@@ -294,12 +297,12 @@ class IcingaThresholdRange
     raises an alert.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                  | Default |
-    |-------|---------------|----------------------------------------------|---------|
-    | Value | System.Double | Measured value in base units to evaluate.    |         |
+    | Name  | Type          | Description                               | Default |
+    |-------|---------------|-------------------------------------------|---------|
+    | Value | System.Double | Measured value in base units to evaluate. |         |
 
     .OUTPUTS
-    System.Boolean — $true when the value is in the alert region, otherwise $false.
+    System.Boolean -- $true when the value is in the alert region, otherwise $false.
 
     .EXAMPLE
     PS> $range.InAlertRange(15)
@@ -331,7 +334,7 @@ class IcingaThresholdRange
     parsed range renders back into exactly the same notation it was given.
 
     .OUTPUTS
-    System.String — The original threshold string ('' for an unset range).
+    System.String -- The original threshold string ('' for an unset range).
 
     .EXAMPLE
     PS> $range.ToString()
@@ -355,7 +358,7 @@ class IcingaThresholdRange
     invariant culture and open ends are omitted. An unset range returns ''.
 
     .OUTPUTS
-    System.String — The alert condition, or '' when the range is unset.
+    System.String -- The alert condition, or '' when the range is unset.
 
     .EXAMPLE
     PS> $range.ToAlertString()
@@ -385,7 +388,7 @@ class IcingaThresholdRange
     | EffectiveFamily | System.String | Family of the compared quantity ('Data'/'Time'), '' when none. |         |
 
     .OUTPUTS
-    System.String — The alert condition, or '' when the range is unset.
+    System.String -- The alert condition, or '' when the range is unset.
 
     .EXAMPLE
     PS> $range.ToAlertString('Data')
@@ -449,7 +452,7 @@ class IcingaThresholdRange
     warning/critical fields of a plugin result. An unset range returns ''.
 
     .OUTPUTS
-    System.String — The resolved range string, or '' when the range is unset.
+    System.String -- The resolved range string, or '' when the range is unset.
 
     .EXAMPLE
     PS> $range.ToBaseThresholdString()
@@ -475,12 +478,12 @@ class IcingaThresholdRange
     such as '15GiB:' is covered too.
 
     .PARAMETER EffectiveFamily
-    | Name            | Type          | Description                                                     | Default |
-    |-----------------|---------------|-----------------------------------------------------------------|---------|
-    | EffectiveFamily | System.String | Family of the compared quantity ('Data'/'Time'), '' when none.  |         |
+    | Name            | Type          | Description                                                    | Default |
+    |-----------------|---------------|----------------------------------------------------------------|---------|
+    | EffectiveFamily | System.String | Family of the compared quantity ('Data'/'Time'), '' when none. |         |
 
     .OUTPUTS
-    System.String — The resolved range string, or '' when the range is unset.
+    System.String -- The resolved range string, or '' when the range is unset.
 
     .EXAMPLE
     PS> $range.ToBaseThresholdString('Data')
@@ -535,12 +538,12 @@ class IcingaThresholdRange
     error code in ReturnCode for downstream error propagation.
 
     .PARAMETER Code
-    | Name | Type          | Description                                  | Default |
-    |------|---------------|----------------------------------------------|---------|
-    | Code | System.String | Semantic return code identifying the failure.|         |
+    | Name | Type          | Description                                   | Default |
+    |------|---------------|-----------------------------------------------|---------|
+    | Code | System.String | Semantic return code identifying the failure. |         |
 
     .OUTPUTS
-    None — Updates instance state.
+    None -- Updates instance state.
 
     .EXAMPLE
     PS> $this.Fail('IcingaThresholdInvalidBound')
@@ -561,7 +564,7 @@ class IcingaThresholdRange
     .DESCRIPTION
     Returns the single-character base-unit symbol for a resolved unit family: 'B'
     for the Data family (bytes) and 's' for the Time family (seconds). Any other
-    family — including the empty family of a plain number — yields an empty string
+    family -- including the empty family of a plain number -- yields an empty string
     so that unit-less values render without a suffix.
 
     .PARAMETER Family
@@ -570,7 +573,7 @@ class IcingaThresholdRange
     | Family | System.String | Resolved unit family ('Data' or 'Time'). |         |
 
     .OUTPUTS
-    System.String — The base-unit symbol, or '' when the family is unknown/unset.
+    System.String -- The base-unit symbol, or '' when the family is unknown/unset.
 
     .EXAMPLE
     PS> [IcingaThresholdRange]::UnitSymbol('Data')
@@ -598,8 +601,8 @@ class IcingaThresholdRange
     Bytes are indivisible, so a Data-family value must never carry a fractional part in a
     rendered result field even when it was derived from a fractional unit (for example
     '254.55GiB') or from percentage arithmetic. This rounds a Data-family value to the
-    nearest whole base unit and returns every other family — including sub-second Time
-    values and unit-less numbers — unchanged, preserving their precision.
+    nearest whole base unit and returns every other family -- including sub-second Time
+    values and unit-less numbers -- unchanged, preserving their precision.
 
     .PARAMETER Value
     | Name  | Type          | Description                         | Default |
@@ -612,7 +615,7 @@ class IcingaThresholdRange
     | Family | System.String | Resolved unit family ('Data' or 'Time'). |         |
 
     .OUTPUTS
-    System.Double — The value rounded to a whole number for 'Data', otherwise unchanged.
+    System.Double -- The value rounded to a whole number for 'Data', otherwise unchanged.
 
     .EXAMPLE
     PS> [IcingaThresholdRange]::RoundBaseValue(273320981299.2, 'Data')
@@ -641,9 +644,9 @@ class IcingaThresholdRange
     numbers and percent-resolved values. Used for the InputValue result field.
 
     .PARAMETER Value
-    | Name  | Type          | Description                          | Default |
-    |-------|---------------|--------------------------------------|---------|
-    | Value | System.Double | Value already scaled to base units.  |         |
+    | Name  | Type          | Description                         | Default |
+    |-------|---------------|-------------------------------------|---------|
+    | Value | System.Double | Value already scaled to base units. |         |
 
     .PARAMETER Family
     | Name   | Type          | Description                              | Default |
@@ -651,7 +654,7 @@ class IcingaThresholdRange
     | Family | System.String | Resolved unit family ('Data' or 'Time'). |         |
 
     .OUTPUTS
-    System.String — The base value with its base-unit symbol, e.g. '19000000B'.
+    System.String -- The base value with its base-unit symbol, e.g. '19000000B'.
 
     .EXAMPLE
     PS> [IcingaThresholdRange]::FormatBase(19000000, 'Data')
@@ -679,9 +682,9 @@ class IcingaThresholdRange
     bare number if the conversion fails.
 
     .PARAMETER Value
-    | Name  | Type          | Description                          | Default |
-    |-------|---------------|--------------------------------------|---------|
-    | Value | System.Double | Value already scaled to base units.  |         |
+    | Name  | Type          | Description                         | Default |
+    |-------|---------------|-------------------------------------|---------|
+    | Value | System.Double | Value already scaled to base units. |         |
 
     .PARAMETER Family
     | Name   | Type          | Description                              | Default |
@@ -694,7 +697,7 @@ class IcingaThresholdRange
     | Unit | System.String | Original unit token to render the value in. |         |
 
     .OUTPUTS
-    System.String — The value rendered in its original unit, e.g. '10MB' or '6h'.
+    System.String -- The value rendered in its original unit, e.g. '10MB' or '6h'.
 
     .EXAMPLE
     PS> [IcingaThresholdRange]::FormatBest(10000000, 'Data', 'MB')
@@ -729,15 +732,15 @@ Result of evaluating a measured value against an IcingaThresholds definition
 .DESCRIPTION
 IcingaThresholdResult is the value object every IcingaThresholds comparison method
 returns. It carries the measured value together with the warning and critical
-thresholds it was compared against — for numeric comparisons these are expressed
-in the smallest (base) unit, for pattern comparisons they hold the raw strings —
+thresholds it was compared against -- for numeric comparisons these are expressed
+in the smallest (base) unit, for pattern comparisons they hold the raw strings --
 plus the resulting Icinga plugin state code and a short, user-friendly output
 message describing why that state was chosen. When the threshold was created with a
 base value, BaseValue additionally carries that resolved base (its maximum) in the
 smallest unit; otherwise it is $null.
 
 .OUTPUTS
-IcingaThresholdResult — Value object describing a single evaluation.
+IcingaThresholdResult -- Value object describing a single evaluation.
 
 .EXAMPLE
 PS> [IcingaThresholdResult]::new(950, 800, 900, 2, 'value 950 is greater than critical threshold 900')
@@ -747,6 +750,9 @@ Creates a critical result for a value that exceeded the critical threshold.
 .NOTES
 Self-contained value object. Does not modify global state or access external
 services. Safe to construct in multi-threaded runspaces.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaThresholdResult
 {
@@ -772,19 +778,19 @@ class IcingaThresholdResult
     | InputValue | System.Object | Measured value in the smallest unit, or the raw input. |         |
 
     .PARAMETER WarningValue
-    | Name         | Type          | Description                                          | Default |
-    |--------------|---------------|------------------------------------------------------|---------|
-    | WarningValue | System.Object | Warning threshold (smallest unit or pattern), or $null.|       |
+    | Name         | Type          | Description                                             | Default |
+    |--------------|---------------|---------------------------------------------------------|---------|
+    | WarningValue | System.Object | Warning threshold (smallest unit or pattern), or $null. |         |
 
     .PARAMETER CriticalValue
-    | Name          | Type          | Description                                            | Default |
-    |---------------|---------------|--------------------------------------------------------|---------|
-    | CriticalValue | System.Object | Critical threshold (smallest unit or pattern), or $null.|       |
+    | Name          | Type          | Description                                              | Default |
+    |---------------|---------------|----------------------------------------------------------|---------|
+    | CriticalValue | System.Object | Critical threshold (smallest unit or pattern), or $null. |         |
 
     .PARAMETER StatusCode
-    | Name       | Type         | Description                                       | Default |
-    |------------|--------------|---------------------------------------------------|---------|
-    | StatusCode | System.Int32 | Icinga plugin state: 0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN. |   |
+    | Name       | Type         | Description                                                  | Default |
+    |------------|--------------|--------------------------------------------------------------|---------|
+    | StatusCode | System.Int32 | Icinga plugin state: 0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN. |         |
 
     .PARAMETER Output
     | Name   | Type          | Description                                     | Default |
@@ -792,7 +798,7 @@ class IcingaThresholdResult
     | Output | System.String | Human-readable description of the result state. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — Configured result instance.
+    IcingaThresholdResult -- Configured result instance.
 
     .EXAMPLE
     PS> [IcingaThresholdResult]::new(5, $null, 10, 2, 'value 5 is lower than critical threshold 10')
@@ -818,7 +824,7 @@ class IcingaThresholdResult
     string context.
 
     .OUTPUTS
-    System.String — The Output message.
+    System.String -- The Output message.
 
     .EXAMPLE
     PS> $result.ToString()
@@ -854,14 +860,14 @@ may be plain numbers (smallest/base unit), unit strings such as '10GB' or '500ms
 base value itself may be a number or a unit string such as '1TB'. The warning and
 critical strings are stored verbatim so they round-trip 1:1.
 
-The class never throws. Any problem — an invalid threshold or base value, an
+The class never throws. Any problem -- an invalid threshold or base value, an
 unresolvable measured value, a percentage without a base value, or an invalid
-pattern — yields a result with StatusCode 3 (UNKNOWN) and a clean explanatory
+pattern -- yields a result with StatusCode 3 (UNKNOWN) and a clean explanatory
 Output message. A null or empty warning or critical is a valid "unset" threshold
 that never raises that state.
 
 .OUTPUTS
-IcingaThresholds — Threshold object exposing the comparison methods.
+IcingaThresholds -- Threshold object exposing the comparison methods.
 
 .EXAMPLE
 PS> [IcingaThresholds]::new('10:20', '5:30').CheckRange(3)
@@ -877,20 +883,23 @@ Resolves the percent thresholds against the 1 TB maximum and evaluates 950 GB.
 Self-contained value object. Reuses IcingaUnit for unit normalization and
 IcingaThresholdRange for range parsing. Does not modify global state or access
 external services. Safe to construct in multi-threaded runspaces.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaThresholds
 {
-    [string]$Warning  = '';
-    [string]$Critical = '';
-    [double]$Maximum  = 0;
+    [string]$Warning                      = '';
+    [string]$Critical                     = '';
+    [double]$Maximum                      = 0;
 
-    hidden [bool]$HasBaseValue = $false;
-    hidden [bool]$BaseValid    = $true;
-    hidden [string]$BaseError  = '';
-    hidden [string]$BaseFamily = '';
-    hidden [string]$BaseUnit   = '';
+    hidden [bool]$HasBaseValue            = $false;
+    hidden [bool]$BaseValid               = $true;
+    hidden [string]$BaseError             = '';
+    hidden [string]$BaseFamily            = '';
+    hidden [string]$BaseUnit              = '';
 
-    static hidden [regex]$PercentRegex = [regex]::new('^\s*(-?\d+(?:[.,]\d+)?)\s*%\s*$', [System.Text.RegularExpressions.RegexOptions]::Compiled);
+    static hidden [regex]$PercentRegex    = [regex]::new('^\s*(-?\d+(?:[.,]\d+)?)\s*%\s*$', [System.Text.RegularExpressions.RegexOptions]::Compiled);
 
     # Regex metacharacters that make a pattern more than a plain literal. Whitespace and
     # '#' are literal under the operators' default options and so are not listed.
@@ -905,17 +914,17 @@ class IcingaThresholds
     supported without a base value and produce an UNKNOWN result at comparison time.
 
     .PARAMETER Warning
-    | Name    | Type          | Description                                  | Default |
-    |---------|---------------|----------------------------------------------|---------|
-    | Warning | System.String | Warning threshold string ('' = unset).       |         |
+    | Name    | Type          | Description                            | Default |
+    |---------|---------------|----------------------------------------|---------|
+    | Warning | System.String | Warning threshold string ('' = unset). |         |
 
     .PARAMETER Critical
-    | Name     | Type          | Description                                 | Default |
-    |----------|---------------|---------------------------------------------|---------|
-    | Critical | System.String | Critical threshold string ('' = unset).     |         |
+    | Name     | Type          | Description                             | Default |
+    |----------|---------------|-----------------------------------------|---------|
+    | Critical | System.String | Critical threshold string ('' = unset). |         |
 
     .OUTPUTS
-    IcingaThresholds — Configured threshold object.
+    IcingaThresholds -- Configured threshold object.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('10:20', '5:30')
@@ -938,22 +947,22 @@ class IcingaThresholds
     Percentages in thresholds are resolved against this base value.
 
     .PARAMETER Warning
-    | Name    | Type          | Description                                  | Default |
-    |---------|---------------|----------------------------------------------|---------|
-    | Warning | System.String | Warning threshold string ('' = unset).       |         |
+    | Name    | Type          | Description                            | Default |
+    |---------|---------------|----------------------------------------|---------|
+    | Warning | System.String | Warning threshold string ('' = unset). |         |
 
     .PARAMETER Critical
-    | Name     | Type          | Description                                 | Default |
-    |----------|---------------|---------------------------------------------|---------|
-    | Critical | System.String | Critical threshold string ('' = unset).     |         |
+    | Name     | Type          | Description                             | Default |
+    |----------|---------------|-----------------------------------------|---------|
+    | Critical | System.String | Critical threshold string ('' = unset). |         |
 
     .PARAMETER BaseValue
-    | Name      | Type          | Description                                                     | Default |
-    |-----------|---------------|-----------------------------------------------------------------|---------|
-    | BaseValue | System.String | Base/maximum value; a number or unit string such as '1TB'.      |         |
+    | Name      | Type          | Description                                                | Default |
+    |-----------|---------------|------------------------------------------------------------|---------|
+    | BaseValue | System.String | Base/maximum value; a number or unit string such as '1TB'. |         |
 
     .OUTPUTS
-    IcingaThresholds — Configured threshold object.
+    IcingaThresholds -- Configured threshold object.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('20%:', '10%:', '1TB')
@@ -977,19 +986,19 @@ class IcingaThresholds
     every comparison into an UNKNOWN result; nothing is thrown.
 
     .PARAMETER Warning
-    | Name    | Type          | Description                      | Default |
-    |---------|---------------|----------------------------------|---------|
-    | Warning | System.String | Warning threshold string.        |         |
+    | Name    | Type          | Description               | Default |
+    |---------|---------------|---------------------------|---------|
+    | Warning | System.String | Warning threshold string. |         |
 
     .PARAMETER Critical
-    | Name     | Type          | Description                     | Default |
-    |----------|---------------|---------------------------------|---------|
-    | Critical | System.String | Critical threshold string.      |         |
+    | Name     | Type          | Description                | Default |
+    |----------|---------------|----------------------------|---------|
+    | Critical | System.String | Critical threshold string. |         |
 
     .PARAMETER BaseValue
-    | Name      | Type          | Description                                        | Default |
-    |-----------|---------------|----------------------------------------------------|---------|
-    | BaseValue | System.String | Base value as a number or unit string.             |         |
+    | Name      | Type          | Description                            | Default |
+    |-----------|---------------|----------------------------------------|---------|
+    | BaseValue | System.String | Base value as a number or unit string. |         |
 
     .PARAMETER HasBaseValue
     | Name         | Type           | Description                        | Default |
@@ -997,7 +1006,7 @@ class IcingaThresholds
     | HasBaseValue | System.Boolean | Whether a base value was supplied. |         |
 
     .OUTPUTS
-    None — Updates instance state.
+    None -- Updates instance state.
 
     .EXAMPLE
     PS> $this.Initialize('20%:', '10%:', '1TB', $true)
@@ -1039,12 +1048,12 @@ class IcingaThresholds
     message.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                              | Default |
-    |-------|---------------|----------------------------------------------------------|---------|
-    | Value | System.Object | Measured value; a number, a '<number><unit>' string, or $null. |   |
+    | Name  | Type          | Description                                                    | Default |
+    |-------|---------------|----------------------------------------------------------------|---------|
+    | Value | System.Object | Measured value; a number, a '<number><unit>' string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> $thresholds.CheckRange(15)
@@ -1132,12 +1141,12 @@ class IcingaThresholds
     thresholds yield UNKNOWN.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                              | Default |
-    |-------|---------------|----------------------------------------------------------|---------|
-    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null.|        |
+    | Name  | Type          | Description                                                | Default |
+    |-------|---------------|------------------------------------------------------------|---------|
+    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> $thresholds.CheckGreater(950)
@@ -1160,12 +1169,12 @@ class IcingaThresholds
     otherwise OK. Unresolvable input or thresholds yield UNKNOWN.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                              | Default |
-    |-------|---------------|----------------------------------------------------------|---------|
-    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null.|        |
+    | Name  | Type          | Description                                                | Default |
+    |-------|---------------|------------------------------------------------------------|---------|
+    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> $thresholds.CheckGreaterEqual(90)
@@ -1188,12 +1197,12 @@ class IcingaThresholds
     thresholds yield UNKNOWN.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                              | Default |
-    |-------|---------------|----------------------------------------------------------|---------|
-    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null.|        |
+    | Name  | Type          | Description                                                | Default |
+    |-------|---------------|------------------------------------------------------------|---------|
+    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> $thresholds.CheckLower(5)
@@ -1216,12 +1225,12 @@ class IcingaThresholds
     OK. Unresolvable input or thresholds yield UNKNOWN.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                              | Default |
-    |-------|---------------|----------------------------------------------------------|---------|
-    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null.|        |
+    | Name  | Type          | Description                                                | Default |
+    |-------|---------------|------------------------------------------------------------|---------|
+    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> $thresholds.CheckLowerEqual(10)
@@ -1245,12 +1254,12 @@ class IcingaThresholds
     resolved against the Maximum. Without a base value the result is UNKNOWN.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                              | Default |
-    |-------|---------------|----------------------------------------------------------|---------|
-    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null.|        |
+    | Name  | Type          | Description                                                | Default |
+    |-------|---------------|------------------------------------------------------------|---------|
+    | Value | System.Object | Measured value; number, '<number><unit>' string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('80%', '90%', '1TB').CheckMax('950GB')
@@ -1277,12 +1286,12 @@ class IcingaThresholds
     yields UNKNOWN.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Value to test as a string, or $null.     |         |
+    | Name  | Type          | Description                          | Default |
+    |-------|---------------|--------------------------------------|---------|
+    | Value | System.Object | Value to test as a string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('^warn', '^err').CheckMatch('error state')
@@ -1305,12 +1314,12 @@ class IcingaThresholds
     invalid pattern yields UNKNOWN.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Value to test as a string, or $null.     |         |
+    | Name  | Type          | Description                          | Default |
+    |-------|---------------|--------------------------------------|---------|
+    | Value | System.Object | Value to test as a string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('^ok', '^healthy').CheckNotMatch('degraded')
@@ -1332,12 +1341,12 @@ class IcingaThresholds
     when it is like the warning wildcard pattern, otherwise OK.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Value to test as a string, or $null.     |         |
+    | Name  | Type          | Description                          | Default |
+    |-------|---------------|--------------------------------------|---------|
+    | Value | System.Object | Value to test as a string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('*warn*', '*error*').CheckLike('fatal error occurred')
@@ -1359,12 +1368,12 @@ class IcingaThresholds
     WARNING when it is not like the warning wildcard pattern, otherwise OK.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Value to test as a string, or $null.     |         |
+    | Name  | Type          | Description                          | Default |
+    |-------|---------------|--------------------------------------|---------|
+    | Value | System.Object | Value to test as a string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('*ok*', '*healthy*').CheckNotLike('service down')
@@ -1387,12 +1396,12 @@ class IcingaThresholds
     string equality test, not a pattern match.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Value to test as a string, or $null.     |         |
+    | Name  | Type          | Description                          | Default |
+    |-------|---------------|--------------------------------------|---------|
+    | Value | System.Object | Value to test as a string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('degraded', 'offline').CheckEqual('offline')
@@ -1415,12 +1424,12 @@ class IcingaThresholds
     case-insensitive string equality test, not a pattern match.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Value to test as a string, or $null.     |         |
+    | Name  | Type          | Description                          | Default |
+    |-------|---------------|--------------------------------------|---------|
+    | Value | System.Object | Value to test as a string, or $null. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> [IcingaThresholds]::new('online', 'online').CheckNotEqual('offline')
@@ -1446,14 +1455,14 @@ class IcingaThresholds
     resolution failure returns an UNKNOWN result with an explanatory message.
 
     .PARAMETER Value
-    | Name  | Type          | Description                           | Default |
-    |-------|---------------|---------------------------------------|---------|
-    | Value | System.Object | Measured value to evaluate.           |         |
+    | Name  | Type          | Description                 | Default |
+    |-------|---------------|-----------------------------|---------|
+    | Value | System.Object | Measured value to evaluate. |         |
 
     .PARAMETER Operator
-    | Name     | Type          | Description                                       | Default |
-    |----------|---------------|---------------------------------------------------|---------|
-    | Operator | System.String | Comparison operator: 'gt', 'ge', 'lt' or 'le'.    |         |
+    | Name     | Type          | Description                                    | Default |
+    |----------|---------------|------------------------------------------------|---------|
+    | Operator | System.String | Comparison operator: 'gt', 'ge', 'lt' or 'le'. |         |
 
     .PARAMETER OperatorText
     | Name         | Type          | Description                              | Default |
@@ -1461,7 +1470,7 @@ class IcingaThresholds
     | OperatorText | System.String | Human-readable operator for the message. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> $this.CompareNumeric(950, 'gt', 'greater than')
@@ -1557,13 +1566,13 @@ class IcingaThresholds
     pattern or a null value returns an UNKNOWN result with an explanatory message.
 
     .PARAMETER Value
-    | Name  | Type          | Description                     | Default |
-    |-------|---------------|---------------------------------|---------|
-    | Value | System.Object | Value to test as a string.      |         |
+    | Name  | Type          | Description                | Default |
+    |-------|---------------|----------------------------|---------|
+    | Value | System.Object | Value to test as a string. |         |
 
     .PARAMETER Operator
-    | Name     | Type          | Description                                            | Default |
-    |----------|---------------|--------------------------------------------------------|---------|
+    | Name     | Type          | Description                                                  | Default |
+    |----------|---------------|--------------------------------------------------------------|---------|
     | Operator | System.String | One of 'match', 'notmatch', 'like', 'notlike', 'eq' or 'ne'. |         |
 
     .PARAMETER OperatorText
@@ -1572,7 +1581,7 @@ class IcingaThresholds
     | OperatorText | System.String | Human-readable operator for the message. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The evaluation result.
+    IcingaThresholdResult -- The evaluation result.
 
     .EXAMPLE
     PS> $this.CompareString('error', 'match', 'matches')
@@ -1631,14 +1640,14 @@ class IcingaThresholds
     whether the comparison is true.
 
     .PARAMETER Value
-    | Name  | Type          | Description                   | Default |
-    |-------|---------------|-------------------------------|---------|
-    | Value | System.Double | Resolved measured value.      |         |
+    | Name  | Type          | Description              | Default |
+    |-------|---------------|--------------------------|---------|
+    | Value | System.Double | Resolved measured value. |         |
 
     .PARAMETER Threshold
-    | Name      | Type          | Description                   | Default |
-    |-----------|---------------|-------------------------------|---------|
-    | Threshold | System.Double | Resolved threshold value.     |         |
+    | Name      | Type          | Description               | Default |
+    |-----------|---------------|---------------------------|---------|
+    | Threshold | System.Double | Resolved threshold value. |         |
 
     .PARAMETER Operator
     | Name     | Type          | Description                                    | Default |
@@ -1646,7 +1655,7 @@ class IcingaThresholds
     | Operator | System.String | Comparison operator: 'gt', 'ge', 'lt' or 'le'. |         |
 
     .OUTPUTS
-    System.Boolean — Result of the comparison.
+    System.Boolean -- Result of the comparison.
 
     .EXAMPLE
     PS> $this.CompareOp(950, 900, 'gt')
@@ -1681,9 +1690,9 @@ class IcingaThresholds
     wildcard (like/notlike) semantics and returns whether the comparison is true.
 
     .PARAMETER Value
-    | Name  | Type          | Description                | Default |
-    |-------|---------------|----------------------------|---------|
-    | Value | System.String | Value to test.             |         |
+    | Name  | Type          | Description    | Default |
+    |-------|---------------|----------------|---------|
+    | Value | System.String | Value to test. |         |
 
     .PARAMETER Pattern
     | Name    | Type          | Description                | Default |
@@ -1691,12 +1700,12 @@ class IcingaThresholds
     | Pattern | System.String | Regex or wildcard pattern. |         |
 
     .PARAMETER Operator
-    | Name     | Type          | Description                                        | Default |
-    |----------|---------------|----------------------------------------------------|---------|
+    | Name     | Type          | Description                                                  | Default |
+    |----------|---------------|--------------------------------------------------------------|---------|
     | Operator | System.String | One of 'match', 'notmatch', 'like', 'notlike', 'eq' or 'ne'. |         |
 
     .OUTPUTS
-    System.Boolean — Result of the comparison.
+    System.Boolean -- Result of the comparison.
 
     .EXAMPLE
     PS> $this.MatchOp('error', '^err', 'match')
@@ -1741,12 +1750,12 @@ class IcingaThresholds
     nothing to quantify; such patterns belong to the '-like' comparisons instead.
 
     .PARAMETER Pattern
-    | Name    | Type          | Description                      | Default |
-    |---------|---------------|----------------------------------|---------|
-    | Pattern | System.String | Pattern to validate as a regex.  |         |
+    | Name    | Type          | Description                     | Default |
+    |---------|---------------|---------------------------------|---------|
+    | Pattern | System.String | Pattern to validate as a regex. |         |
 
     .OUTPUTS
-    System.Boolean — $true when the pattern compiles as a regex, otherwise $false.
+    System.Boolean -- $true when the pattern compiles as a regex, otherwise $false.
 
     .EXAMPLE
     PS> $this.IsValidRegex('^err')
@@ -1771,29 +1780,29 @@ class IcingaThresholds
     .DESCRIPTION
     Central factory for every IcingaThresholdResult this class returns. It creates
     the result from the measured value, the warning and critical thresholds, the
-    plugin state and the output message, and — when the threshold was created with a
-    valid base value — additionally records that resolved base (its maximum) in
+    plugin state and the output message, and -- when the threshold was created with a
+    valid base value -- additionally records that resolved base (its maximum) in
     BaseValue so callers see it alongside WarningValue and CriticalValue.
 
     .PARAMETER InputValue
-    | Name       | Type          | Description                             | Default |
-    |------------|---------------|-----------------------------------------|---------|
-    | InputValue | System.Object | Measured value for the result field.    |         |
+    | Name       | Type          | Description                          | Default |
+    |------------|---------------|--------------------------------------|---------|
+    | InputValue | System.Object | Measured value for the result field. |         |
 
     .PARAMETER WarningValue
-    | Name         | Type          | Description                           | Default |
-    |--------------|---------------|---------------------------------------|---------|
-    | WarningValue | System.Object | Warning threshold field, or $null.    |         |
+    | Name         | Type          | Description                        | Default |
+    |--------------|---------------|------------------------------------|---------|
+    | WarningValue | System.Object | Warning threshold field, or $null. |         |
 
     .PARAMETER CriticalValue
-    | Name          | Type          | Description                          | Default |
-    |---------------|---------------|--------------------------------------|---------|
-    | CriticalValue | System.Object | Critical threshold field, or $null.  |         |
+    | Name          | Type          | Description                         | Default |
+    |---------------|---------------|-------------------------------------|---------|
+    | CriticalValue | System.Object | Critical threshold field, or $null. |         |
 
     .PARAMETER StatusCode
-    | Name       | Type         | Description                                        | Default |
-    |------------|--------------|----------------------------------------------------|---------|
-    | StatusCode | System.Int32 | Icinga plugin state: 0 OK, 1 WARN, 2 CRIT, 3 UNKNOWN.|       |
+    | Name       | Type         | Description                                           | Default |
+    |------------|--------------|-------------------------------------------------------|---------|
+    | StatusCode | System.Int32 | Icinga plugin state: 0 OK, 1 WARN, 2 CRIT, 3 UNKNOWN. |         |
 
     .PARAMETER Output
     | Name   | Type          | Description                        | Default |
@@ -1801,7 +1810,7 @@ class IcingaThresholds
     | Output | System.String | Human-readable result description. |         |
 
     .OUTPUTS
-    IcingaThresholdResult — The configured result, with BaseValue set when a base
+    IcingaThresholdResult -- The configured result, with BaseValue set when a base
     value is available.
 
     .EXAMPLE
@@ -1830,26 +1839,26 @@ class IcingaThresholds
     base value. The value and the base value are both rendered in their own unit and
     followed by their resolved base-unit form in parentheses (for example
     '1000MB (1000000000B)'). The parenthetical is omitted whenever it would merely
-    repeat the rendered form — a plain number, or a value already given in the base
-    unit — so no redundant '(…)' is shown.
+    repeat the rendered form -- a plain number, or a value already given in the base
+    unit -- so no redundant '(...)' is shown.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Object | Original measured value as supplied.     |         |
+    | Name  | Type          | Description                          | Default |
+    |-------|---------------|--------------------------------------|---------|
+    | Value | System.Object | Original measured value as supplied. |         |
 
     .PARAMETER InputOut
-    | Name     | Type          | Description                                     | Default |
-    |----------|---------------|-------------------------------------------------|---------|
-    | InputOut | System.String | Value resolved to its base-unit form (with B/s).|         |
+    | Name     | Type          | Description                                      | Default |
+    |----------|---------------|--------------------------------------------------|---------|
+    | InputOut | System.String | Value resolved to its base-unit form (with B/s). |         |
 
     .PARAMETER ValueFamily
-    | Name        | Type          | Description                                  | Default |
-    |-------------|---------------|----------------------------------------------|---------|
-    | ValueFamily | System.String | The value's unit family, '' for a plain number.|       |
+    | Name        | Type          | Description                                     | Default |
+    |-------------|---------------|-------------------------------------------------|---------|
+    | ValueFamily | System.String | The value's unit family, '' for a plain number. |         |
 
     .OUTPUTS
-    System.String — The formatted "cannot be greater than the BaseValue" message.
+    System.String -- The formatted "cannot be greater than the BaseValue" message.
 
     .EXAMPLE
     PS> $this.DescribeBaseValueExceeded('10GB', '10000000000B', 'Data')
@@ -1883,12 +1892,12 @@ class IcingaThresholds
     percentage instead of dividing by zero.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                   | Default |
-    |-------|---------------|-----------------------------------------------|---------|
-    | Value | System.Double | Measured value in base units.                 |         |
+    | Name  | Type          | Description                   | Default |
+    |-------|---------------|-------------------------------|---------|
+    | Value | System.Double | Measured value in base units. |         |
 
     .OUTPUTS
-    System.String — The percentage number without a sign, e.g. '50', or '' when unset.
+    System.String -- The percentage number without a sign, e.g. '50', or '' when unset.
 
     .EXAMPLE
     PS> $this.PercentOf(100)
@@ -1917,9 +1926,9 @@ class IcingaThresholds
     numeric comparison message so a percent-driven check reads '100 (50%)'.
 
     .PARAMETER Value
-    | Name  | Type          | Description                          | Default |
-    |-------|---------------|--------------------------------------|---------|
-    | Value | System.Double | Measured value in base units.        |         |
+    | Name  | Type          | Description                   | Default |
+    |-------|---------------|-------------------------------|---------|
+    | Value | System.Double | Measured value in base units. |         |
 
     .PARAMETER Family
     | Name   | Type          | Description                                | Default |
@@ -1927,17 +1936,17 @@ class IcingaThresholds
     | Family | System.String | The value's resolved unit family, '' none. |         |
 
     .PARAMETER Unit
-    | Name | Type          | Description                              | Default |
-    |------|---------------|------------------------------------------|---------|
-    | Unit | System.String | The value's original unit token, '' none.|         |
+    | Name | Type          | Description                               | Default |
+    |------|---------------|-------------------------------------------|---------|
+    | Unit | System.String | The value's original unit token, '' none. |         |
 
     .PARAMETER ShowPercent
-    | Name        | Type           | Description                                        | Default |
-    |-------------|----------------|----------------------------------------------------|---------|
-    | ShowPercent | System.Boolean | Whether to append the value's percentage of base.  |         |
+    | Name        | Type           | Description                                       | Default |
+    |-------------|----------------|---------------------------------------------------|---------|
+    | ShowPercent | System.Boolean | Whether to append the value's percentage of base. |         |
 
     .OUTPUTS
-    System.String — The value display, e.g. '100 (50%)' or '100'.
+    System.String -- The value display, e.g. '100 (50%)' or '100'.
 
     .EXAMPLE
     PS> $this.FormatValueDisplay(100, '', '', $true)
@@ -1972,9 +1981,9 @@ class IcingaThresholds
     own unit through FormatBest, exactly as before.
 
     .PARAMETER Value
-    | Name  | Type          | Description                            | Default |
-    |-------|---------------|----------------------------------------|---------|
-    | Value | System.Double | Resolved threshold value in base units.|         |
+    | Name  | Type          | Description                             | Default |
+    |-------|---------------|-----------------------------------------|---------|
+    | Value | System.Double | Resolved threshold value in base units. |         |
 
     .PARAMETER Family
     | Name   | Type          | Description                                    | Default |
@@ -1982,9 +1991,9 @@ class IcingaThresholds
     | Family | System.String | The threshold's resolved unit family, '' none. |         |
 
     .PARAMETER Unit
-    | Name | Type          | Description                                  | Default |
-    |------|---------------|----------------------------------------------|---------|
-    | Unit | System.String | The threshold's original unit token, '' none.|         |
+    | Name | Type          | Description                                   | Default |
+    |------|---------------|-----------------------------------------------|---------|
+    | Unit | System.String | The threshold's original unit token, '' none. |         |
 
     .PARAMETER Percent
     | Name    | Type          | Description                                             | Default |
@@ -1992,7 +2001,7 @@ class IcingaThresholds
     | Percent | System.String | Original percent token when the threshold is a percent. |         |
 
     .OUTPUTS
-    System.String — The threshold display, e.g. '40 (20%)' or '10MB'.
+    System.String -- The threshold display, e.g. '40 (20%)' or '10MB'.
 
     .EXAMPLE
     PS> $this.FormatThresholdDisplay(40, '', '', '20%')
@@ -2020,24 +2029,24 @@ class IcingaThresholds
     user-friendly reason is written to the ErrorMessage reference.
 
     .PARAMETER Token
-    | Name  | Type          | Description                     | Default |
-    |-------|---------------|---------------------------------|---------|
-    | Token | System.String | Threshold token to resolve.     |         |
+    | Name  | Type          | Description                 | Default |
+    |-------|---------------|-----------------------------|---------|
+    | Token | System.String | Threshold token to resolve. |         |
 
     .PARAMETER Result
-    | Name   | Type                                     | Description                          | Default |
-    |--------|------------------------------------------|--------------------------------------|---------|
-    | Result | System.Management.Automation.PSReference | Receives the resolved base value.    |         |
+    | Name   | Type                                     | Description                       | Default |
+    |--------|------------------------------------------|-----------------------------------|---------|
+    | Result | System.Management.Automation.PSReference | Receives the resolved base value. |         |
 
     .PARAMETER ErrorMessage
-    | Name         | Type                                     | Description                       | Default |
-    |--------------|------------------------------------------|-----------------------------------|---------|
-    | ErrorMessage | System.Management.Automation.PSReference | Receives a reason on failure.     |         |
+    | Name         | Type                                     | Description                   | Default |
+    |--------------|------------------------------------------|-------------------------------|---------|
+    | ErrorMessage | System.Management.Automation.PSReference | Receives a reason on failure. |         |
 
     .PARAMETER Family
-    | Name   | Type                                     | Description                                            | Default |
-    |--------|------------------------------------------|--------------------------------------------------------|---------|
-    | Family | System.Management.Automation.PSReference | Receives the unit family ('Data'/'Time'), '' when none.|         |
+    | Name   | Type                                     | Description                                             | Default |
+    |--------|------------------------------------------|---------------------------------------------------------|---------|
+    | Family | System.Management.Automation.PSReference | Receives the unit family ('Data'/'Time'), '' when none. |         |
 
     .PARAMETER Unit
     | Name | Type                                     | Description                                     | Default |
@@ -2050,7 +2059,7 @@ class IcingaThresholds
     | PercentToken | System.Management.Automation.PSReference | Receives the original percent token, '' when none. |         |
 
     .OUTPUTS
-    System.Boolean — $true on success, $false when the token could not be resolved.
+    System.Boolean -- $true on success, $false when the token could not be resolved.
 
     .EXAMPLE
     PS> $this.TryResolveThreshold('90%', [ref]$value, [ref]$reason, [ref]$family, [ref]$unit, [ref]$percent)
@@ -2064,9 +2073,9 @@ class IcingaThresholds
         $Unit.Value         = '';
         $PercentToken.Value = '';
 
-        [string]$Trimmed = $Token.Trim();
+        [string]$Trimmed    = $Token.Trim();
 
-        $PercentMatch = [IcingaThresholds]::PercentRegex.Match($Trimmed);
+        $PercentMatch       = [IcingaThresholds]::PercentRegex.Match($Trimmed);
         if ($PercentMatch.Success) {
             if (-not ($this.HasBaseValue -and $this.BaseValid)) {
                 $ErrorMessage.Value = ("the percent threshold '{0}' requires a base value" -f $Token);
@@ -2107,9 +2116,9 @@ class IcingaThresholds
     uninterpretable input fails. Delegates to the four-argument overload.
 
     .PARAMETER Value
-    | Name  | Type          | Description                 | Default |
-    |-------|---------------|-----------------------------|---------|
-    | Value | System.Object | Value to resolve.           |         |
+    | Name  | Type          | Description       | Default |
+    |-------|---------------|-------------------|---------|
+    | Value | System.Object | Value to resolve. |         |
 
     .PARAMETER Result
     | Name   | Type                                     | Description                            | Default |
@@ -2117,7 +2126,7 @@ class IcingaThresholds
     | Result | System.Management.Automation.PSReference | Receives the resolved base-unit value. |         |
 
     .OUTPUTS
-    System.Boolean — $true on success, $false when the value cannot be resolved.
+    System.Boolean -- $true on success, $false when the value cannot be resolved.
 
     .EXAMPLE
     PS> $this.TryResolveValue('10GB', [ref]$value)
@@ -2144,9 +2153,9 @@ class IcingaThresholds
     an empty family and token so they render without a unit.
 
     .PARAMETER Value
-    | Name  | Type          | Description                 | Default |
-    |-------|---------------|-----------------------------|---------|
-    | Value | System.Object | Value to resolve.           |         |
+    | Name  | Type          | Description       | Default |
+    |-------|---------------|-------------------|---------|
+    | Value | System.Object | Value to resolve. |         |
 
     .PARAMETER Result
     | Name   | Type                                     | Description                            | Default |
@@ -2154,9 +2163,9 @@ class IcingaThresholds
     | Result | System.Management.Automation.PSReference | Receives the resolved base-unit value. |         |
 
     .PARAMETER Family
-    | Name   | Type                                     | Description                                            | Default |
-    |--------|------------------------------------------|--------------------------------------------------------|---------|
-    | Family | System.Management.Automation.PSReference | Receives the unit family ('Data'/'Time'), '' when none.|         |
+    | Name   | Type                                     | Description                                             | Default |
+    |--------|------------------------------------------|---------------------------------------------------------|---------|
+    | Family | System.Management.Automation.PSReference | Receives the unit family ('Data'/'Time'), '' when none. |         |
 
     .PARAMETER Unit
     | Name | Type                                     | Description                                     | Default |
@@ -2164,7 +2173,7 @@ class IcingaThresholds
     | Unit | System.Management.Automation.PSReference | Receives the original unit token, '' when none. |         |
 
     .OUTPUTS
-    System.Boolean — $true on success, $false when the value cannot be resolved.
+    System.Boolean -- $true on success, $false when the value cannot be resolved.
 
     .EXAMPLE
     PS> $this.TryResolveValue('10GB', [ref]$value, [ref]$family, [ref]$unit)
@@ -2225,17 +2234,17 @@ class IcingaThresholds
     short, human-readable explanation for the result Output.
 
     .PARAMETER Code
-    | Name | Type          | Description                          | Default |
-    |------|---------------|--------------------------------------|---------|
-    | Code | System.String | ReturnCode from IcingaThresholdRange.|         |
+    | Name | Type          | Description                           | Default |
+    |------|---------------|---------------------------------------|---------|
+    | Code | System.String | ReturnCode from IcingaThresholdRange. |         |
 
     .PARAMETER Threshold
-    | Name      | Type          | Description                        | Default |
-    |-----------|---------------|------------------------------------|---------|
-    | Threshold | System.String | The offending threshold string.    |         |
+    | Name      | Type          | Description                     | Default |
+    |-----------|---------------|---------------------------------|---------|
+    | Threshold | System.String | The offending threshold string. |         |
 
     .OUTPUTS
-    System.String — A user-friendly explanation.
+    System.String -- A user-friendly explanation.
 
     .EXAMPLE
     PS> $this.RangeError('IcingaThresholdStartGreaterEnd', '20:10')
@@ -2267,9 +2276,9 @@ class IcingaThresholds
     lies within the bounds. A percent bound additionally shows its percent token.
 
     .PARAMETER Value
-    | Name  | Type          | Description                              | Default |
-    |-------|---------------|------------------------------------------|---------|
-    | Value | System.Double | Measured value that raised the alert.    |         |
+    | Name  | Type          | Description                           | Default |
+    |-------|---------------|---------------------------------------|---------|
+    | Value | System.Double | Measured value that raised the alert. |         |
 
     .PARAMETER ValueDisplay
     | Name         | Type          | Description                                                    | Default |
@@ -2277,12 +2286,12 @@ class IcingaThresholds
     | ValueDisplay | System.String | Measured value pre-rendered for display (unit and percentage). |         |
 
     .PARAMETER Range
-    | Name  | Type                 | Description                          | Default |
-    |-------|----------------------|--------------------------------------|---------|
-    | Range | IcingaThresholdRange | The range that is in its alert region.|        |
+    | Name  | Type                 | Description                            | Default |
+    |-------|----------------------|----------------------------------------|---------|
+    | Range | IcingaThresholdRange | The range that is in its alert region. |         |
 
     .OUTPUTS
-    System.String — The short, human-readable alert description.
+    System.String -- The short, human-readable alert description.
 
     .EXAMPLE
     PS> $this.DescribeRangeAlert(100, '100 (50%)', $range)
@@ -2318,14 +2327,14 @@ class IcingaThresholds
     when warning is lower than or equal to critical.
 
     .PARAMETER WarningValue
-    | Name         | Type          | Description                      | Default |
-    |--------------|---------------|----------------------------------|---------|
-    | WarningValue | System.Double | Resolved warning threshold.      |         |
+    | Name         | Type          | Description                 | Default |
+    |--------------|---------------|-----------------------------|---------|
+    | WarningValue | System.Double | Resolved warning threshold. |         |
 
     .PARAMETER CriticalValue
-    | Name          | Type          | Description                     | Default |
-    |---------------|---------------|---------------------------------|---------|
-    | CriticalValue | System.Double | Resolved critical threshold.    |         |
+    | Name          | Type          | Description                  | Default |
+    |---------------|---------------|------------------------------|---------|
+    | CriticalValue | System.Double | Resolved critical threshold. |         |
 
     .PARAMETER Operator
     | Name     | Type          | Description                                    | Default |
@@ -2333,7 +2342,7 @@ class IcingaThresholds
     | Operator | System.String | Comparison operator: 'gt', 'ge', 'lt' or 'le'. |         |
 
     .OUTPUTS
-    System.Boolean — $true when the warning state is unreachable.
+    System.Boolean -- $true when the warning state is unreachable.
 
     .EXAMPLE
     PS> $this.NumericWarningMasked(90, 80, 'gt')
@@ -2365,9 +2374,9 @@ class IcingaThresholds
     invariant culture.
 
     .PARAMETER Value
-    | Name  | Type          | Description                  | Default |
-    |-------|---------------|------------------------------|---------|
-    | Value | System.Double | Resolved threshold value.    |         |
+    | Name  | Type          | Description               | Default |
+    |-------|---------------|---------------------------|---------|
+    | Value | System.Double | Resolved threshold value. |         |
 
     .PARAMETER Operator
     | Name     | Type          | Description                                    | Default |
@@ -2375,17 +2384,17 @@ class IcingaThresholds
     | Operator | System.String | Comparison operator: 'gt', 'ge', 'lt' or 'le'. |         |
 
     .PARAMETER Family
-    | Name   | Type          | Description                                     | Default |
-    |--------|---------------|-------------------------------------------------|---------|
-    | Family | System.String | Resolved unit family ('Data'/'Time'), '' none.  |         |
+    | Name   | Type          | Description                                    | Default |
+    |--------|---------------|------------------------------------------------|---------|
+    | Family | System.String | Resolved unit family ('Data'/'Time'), '' none. |         |
 
     .PARAMETER Unit
-    | Name | Type          | Description                                 | Default |
-    |------|---------------|---------------------------------------------|---------|
-    | Unit | System.String | Original unit token to render, '' when none.|         |
+    | Name | Type          | Description                                  | Default |
+    |------|---------------|----------------------------------------------|---------|
+    | Unit | System.String | Original unit token to render, '' when none. |         |
 
     .OUTPUTS
-    System.String — The alert condition, e.g. '> 90'.
+    System.String -- The alert condition, e.g. '> 90'.
 
     .EXAMPLE
     PS> $this.NumericAlertString(90, 'gt', '', '')
@@ -2428,17 +2437,17 @@ class IcingaThresholds
     open-ended ranges.
 
     .PARAMETER WarningRange
-    | Name         | Type                 | Description                 | Default |
-    |--------------|----------------------|-----------------------------|---------|
-    | WarningRange | IcingaThresholdRange | Parsed warning range.       |         |
+    | Name         | Type                 | Description           | Default |
+    |--------------|----------------------|-----------------------|---------|
+    | WarningRange | IcingaThresholdRange | Parsed warning range. |         |
 
     .PARAMETER CriticalRange
-    | Name          | Type                 | Description                | Default |
-    |---------------|----------------------|----------------------------|---------|
-    | CriticalRange | IcingaThresholdRange | Parsed critical range.     |         |
+    | Name          | Type                 | Description            | Default |
+    |---------------|----------------------|------------------------|---------|
+    | CriticalRange | IcingaThresholdRange | Parsed critical range. |         |
 
     .OUTPUTS
-    System.String — 'WARNING', 'OK', or '' when the pair is sound.
+    System.String -- 'WARNING', 'OK', or '' when the pair is sound.
 
     .EXAMPLE
     PS> $this.RangeUnreachableState($warnRange, $critRange)
@@ -2525,7 +2534,7 @@ class IcingaThresholds
     | Operator | System.String | One of 'match', 'notmatch', 'like', 'notlike', 'eq' or 'ne'. |         |
 
     .OUTPUTS
-    System.Boolean — $true when the warning state is unreachable, otherwise $false.
+    System.Boolean -- $true when the warning state is unreachable, otherwise $false.
 
     .EXAMPLE
     PS> $this.PatternWarningMasked('like')
@@ -2575,21 +2584,21 @@ class IcingaThresholds
     contains that literal; the Inner language is therefore contained in the Outer
     language exactly when the Outer literal occurs somewhere inside the Inner literal.
     Any pattern that carries a regex metacharacter is not a plain literal and is
-    declined with $false so a sound configuration is never falsely rejected — general
+    declined with $false so a sound configuration is never falsely rejected -- general
     regex-language containment is not decided here.
 
     .PARAMETER Inner
-    | Name  | Type          | Description                                          | Default |
-    |-------|---------------|------------------------------------------------------|---------|
-    | Inner | System.String | Pattern whose match language must be contained.      |         |
+    | Name  | Type          | Description                                     | Default |
+    |-------|---------------|-------------------------------------------------|---------|
+    | Inner | System.String | Pattern whose match language must be contained. |         |
 
     .PARAMETER Outer
-    | Name  | Type          | Description                                          | Default |
-    |-------|---------------|------------------------------------------------------|---------|
-    | Outer | System.String | Pattern that must contain the Inner match language.  |         |
+    | Name  | Type          | Description                                         | Default |
+    |-------|---------------|-----------------------------------------------------|---------|
+    | Outer | System.String | Pattern that must contain the Inner match language. |         |
 
     .OUTPUTS
-    System.Boolean — $true when both patterns are plain literals and L(Inner) is a
+    System.Boolean -- $true when both patterns are plain literals and L(Inner) is a
     subset of L(Outer), otherwise $false.
 
     .EXAMPLE
@@ -2627,9 +2636,9 @@ class IcingaThresholds
     contains one yields $false so a sound configuration is never falsely rejected.
 
     .PARAMETER Inner
-    | Name  | Type          | Description                                            | Default |
-    |-------|---------------|--------------------------------------------------------|---------|
-    | Inner | System.String | Wildcard pattern whose language must be contained.     |         |
+    | Name  | Type          | Description                                        | Default |
+    |-------|---------------|----------------------------------------------------|---------|
+    | Inner | System.String | Wildcard pattern whose language must be contained. |         |
 
     .PARAMETER Outer
     | Name  | Type          | Description                                            | Default |
@@ -2637,7 +2646,7 @@ class IcingaThresholds
     | Outer | System.String | Wildcard pattern that must contain the Inner language. |         |
 
     .OUTPUTS
-    System.Boolean — $true when L(Inner) is a subset of L(Outer), otherwise $false.
+    System.Boolean -- $true when L(Inner) is a subset of L(Outer), otherwise $false.
 
     .EXAMPLE
     PS> $this.WildcardSubset('*fo*', '*f*')
@@ -2663,7 +2672,7 @@ class IcingaThresholds
             return $false;
         }
 
-        [int]$Accept = $OuterKinds.Length;
+        [int]$Accept                                               = $OuterKinds.Length;
 
         # Minterm alphabet: every distinct character the outer pattern discriminates on,
         # plus one sentinel ('') that stands for any other character. All non-literal
@@ -2684,8 +2693,8 @@ class IcingaThresholds
         # Reach: every outer state set reachable by some concrete string the inner
         # pattern can produce, keyed canonically so duplicates collapse.
         [System.Collections.Generic.Dictionary[string, int[]]]$Reach = [System.Collections.Generic.Dictionary[string, int[]]]::new();
-        [int[]]$Start = $this.WildcardClosure(@(0), $OuterKinds);
-        $Reach[$this.PosKey($Start)] = $Start;
+        [int[]]$Start                                                = $this.WildcardClosure(@(0), $OuterKinds);
+        $Reach[$this.PosKey($Start)]                                 = $Start;
 
         for ($t = 0; $t -lt $InnerKinds.Length; $t++) {
             [System.Collections.Generic.Dictionary[string, int[]]]$Next = [System.Collections.Generic.Dictionary[string, int[]]]::new();
@@ -2699,13 +2708,13 @@ class IcingaThresholds
                 }
 
                 foreach ($State in $Reach.Values) {
-                    [int[]]$Moved = $this.WildcardStep($State, $Symbol, $OuterKinds, $OuterChars);
+                    [int[]]$Moved               = $this.WildcardStep($State, $Symbol, $OuterKinds, $OuterChars);
                     $Next[$this.PosKey($Moved)] = $Moved;
                 }
             } elseif ($InnerKinds[$t] -eq 'any') {
                 foreach ($State in $Reach.Values) {
                     foreach ($Symbol in $Alphabet) {
-                        [int[]]$Moved = $this.WildcardStep($State, $Symbol, $OuterKinds, $OuterChars);
+                        [int[]]$Moved               = $this.WildcardStep($State, $Symbol, $OuterKinds, $OuterChars);
                         $Next[$this.PosKey($Moved)] = $Moved;
                     }
                 }
@@ -2725,7 +2734,7 @@ class IcingaThresholds
                     [int[]]$State = $Work.Dequeue();
                     foreach ($Symbol in $Alphabet) {
                         [int[]]$Moved = $this.WildcardStep($State, $Symbol, $OuterKinds, $OuterChars);
-                        [string]$Key = $this.PosKey($Moved);
+                        [string]$Key  = $this.PosKey($Moved);
                         if (-not $Next.ContainsKey($Key)) {
                             $Next[$Key] = $Moved;
                             $Work.Enqueue($Moved);
@@ -2761,22 +2770,22 @@ class IcingaThresholds
     method return $false so the caller treats the containment as undecidable.
 
     .PARAMETER Pattern
-    | Name    | Type          | Description                        | Default |
-    |---------|---------------|------------------------------------|---------|
-    | Pattern | System.String | Wildcard pattern to tokenize.      |         |
+    | Name    | Type          | Description                   | Default |
+    |---------|---------------|-------------------------------|---------|
+    | Pattern | System.String | Wildcard pattern to tokenize. |         |
 
     .PARAMETER Kinds
-    | Name  | Type                                     | Description                                       | Default |
-    |-------|------------------------------------------|---------------------------------------------------|---------|
-    | Kinds | System.Management.Automation.PSReference | Receives the per-token kinds ('star'/'any'/'lit').|         |
+    | Name  | Type                                     | Description                                        | Default |
+    |-------|------------------------------------------|----------------------------------------------------|---------|
+    | Kinds | System.Management.Automation.PSReference | Receives the per-token kinds ('star'/'any'/'lit'). |         |
 
     .PARAMETER Chars
-    | Name  | Type                                     | Description                                          | Default |
-    |-------|------------------------------------------|------------------------------------------------------|---------|
-    | Chars | System.Management.Automation.PSReference | Receives the per-token literal character, '' if none.|         |
+    | Name  | Type                                     | Description                                           | Default |
+    |-------|------------------------------------------|-------------------------------------------------------|---------|
+    | Chars | System.Management.Automation.PSReference | Receives the per-token literal character, '' if none. |         |
 
     .OUTPUTS
-    System.Boolean — $true when the pattern was fully tokenized, $false when it contains
+    System.Boolean -- $true when the pattern was fully tokenized, $false when it contains
     an unsupported character class.
 
     .EXAMPLE
@@ -2791,7 +2800,7 @@ class IcingaThresholds
         [System.Collections.Generic.List[string]]$K = [System.Collections.Generic.List[string]]::new();
         [System.Collections.Generic.List[string]]$C = [System.Collections.Generic.List[string]]::new();
 
-        [int]$i = 0;
+        [int]$i                                     = 0;
         while ($i -lt $Pattern.Length) {
             [char]$Ch = $Pattern[$i];
 
@@ -2850,17 +2859,17 @@ class IcingaThresholds
     token count is the accepting position.
 
     .PARAMETER Positions
-    | Name      | Type          | Description                                  | Default |
-    |-----------|---------------|----------------------------------------------|---------|
-    | Positions | System.Int32[]| Positions to expand.                         |         |
+    | Name      | Type           | Description          | Default |
+    |-----------|----------------|----------------------|---------|
+    | Positions | System.Int32[] | Positions to expand. |         |
 
     .PARAMETER Kinds
-    | Name  | Type           | Description                                | Default |
-    |-------|----------------|--------------------------------------------|---------|
-    | Kinds | System.String[]| Token kinds of the outer pattern.          |         |
+    | Name  | Type            | Description                       | Default |
+    |-------|-----------------|-----------------------------------|---------|
+    | Kinds | System.String[] | Token kinds of the outer pattern. |         |
 
     .OUTPUTS
-    System.Int32[] — The epsilon-closed set of positions.
+    System.Int32[] -- The epsilon-closed set of positions.
 
     .EXAMPLE
     PS> $this.WildcardClosure(@(0), $outerKinds)
@@ -2906,27 +2915,27 @@ class IcingaThresholds
     epsilon-closed before it is returned.
 
     .PARAMETER Positions
-    | Name      | Type          | Description                                        | Default |
-    |-----------|---------------|----------------------------------------------------|---------|
-    | Positions | System.Int32[]| Epsilon-closed positions to advance.               |         |
+    | Name      | Type           | Description                          | Default |
+    |-----------|----------------|--------------------------------------|---------|
+    | Positions | System.Int32[] | Epsilon-closed positions to advance. |         |
 
     .PARAMETER Symbol
-    | Name   | Type          | Description                                             | Default |
-    |--------|---------------|---------------------------------------------------------|---------|
-    | Symbol | System.String | Input symbol; '' is the sentinel for any other character.|       |
+    | Name   | Type          | Description                                               | Default |
+    |--------|---------------|-----------------------------------------------------------|---------|
+    | Symbol | System.String | Input symbol; '' is the sentinel for any other character. |         |
 
     .PARAMETER Kinds
-    | Name  | Type           | Description                        | Default |
-    |-------|----------------|------------------------------------|---------|
-    | Kinds | System.String[]| Token kinds of the outer pattern.  |         |
+    | Name  | Type            | Description                       | Default |
+    |-------|-----------------|-----------------------------------|---------|
+    | Kinds | System.String[] | Token kinds of the outer pattern. |         |
 
     .PARAMETER Chars
-    | Name  | Type           | Description                                  | Default |
-    |-------|----------------|----------------------------------------------|---------|
-    | Chars | System.String[]| Literal characters of the outer pattern.     |         |
+    | Name  | Type            | Description                              | Default |
+    |-------|-----------------|------------------------------------------|---------|
+    | Chars | System.String[] | Literal characters of the outer pattern. |         |
 
     .OUTPUTS
-    System.Int32[] — The epsilon-closed set of positions after the transition.
+    System.Int32[] -- The epsilon-closed set of positions after the transition.
 
     .EXAMPLE
     PS> $this.WildcardStep(@(0, 1), 'f', $outerKinds, $outerChars)
@@ -2965,21 +2974,21 @@ class IcingaThresholds
     Determine whether a set of wildcard-automaton positions is accepting
 
     .DESCRIPTION
-    Returns whether the accepting position — the index equal to the outer pattern's token
-    count, reached when every token has been consumed — is present in the given set.
+    Returns whether the accepting position -- the index equal to the outer pattern's token
+    count, reached when every token has been consumed -- is present in the given set.
 
     .PARAMETER Positions
-    | Name      | Type          | Description                          | Default |
-    |-----------|---------------|--------------------------------------|---------|
-    | Positions | System.Int32[]| Positions to test.                   |         |
+    | Name      | Type           | Description        | Default |
+    |-----------|----------------|--------------------|---------|
+    | Positions | System.Int32[] | Positions to test. |         |
 
     .PARAMETER Accept
-    | Name   | Type         | Description                           | Default |
-    |--------|--------------|---------------------------------------|---------|
-    | Accept | System.Int32 | The accepting position index.         |         |
+    | Name   | Type         | Description                   | Default |
+    |--------|--------------|-------------------------------|---------|
+    | Accept | System.Int32 | The accepting position index. |         |
 
     .OUTPUTS
-    System.Boolean — $true when the accepting position is present, otherwise $false.
+    System.Boolean -- $true when the accepting position is present, otherwise $false.
 
     .EXAMPLE
     PS> $this.WildcardAccepts(@(0, 1, 3), 3)
@@ -3008,12 +3017,12 @@ class IcingaThresholds
     ascending and joined with commas.
 
     .PARAMETER Positions
-    | Name      | Type          | Description                          | Default |
-    |-----------|---------------|--------------------------------------|---------|
-    | Positions | System.Int32[]| Positions to render.                 |         |
+    | Name      | Type           | Description          | Default |
+    |-----------|----------------|----------------------|---------|
+    | Positions | System.Int32[] | Positions to render. |         |
 
     .OUTPUTS
-    System.String — The canonical comma-joined key, '' for an empty set.
+    System.String -- The canonical comma-joined key, '' for an empty set.
 
     .EXAMPLE
     PS> $this.PosKey(@(2, 0, 1))

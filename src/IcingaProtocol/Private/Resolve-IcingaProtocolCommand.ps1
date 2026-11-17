@@ -22,14 +22,14 @@ extension, shorthand PowerShell check names such as 'cpu' or 'IcingaCheckCPU'
 are expanded to 'Invoke-IcingaCheck*' and resolved as PowerShell check commands.
 
 .PARAMETER Macros
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
-| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand.  | $null   |
+| Name   | Type          | Description                                                          | Default |
+|--------|---------------|----------------------------------------------------------------------|---------|
+| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand. | $null   |
 
 .PARAMETER CheckCommand
-| Name         | Type          | Description                                                                   | Default |
-|--------------|---------------|-------------------------------------------------------------------------------|---------|
-| CheckCommand | System.String | Optional Icinga CheckCommand object name (params.command) for error context.  | ''      |
+| Name         | Type          | Description                                                                  | Default |
+|--------------|---------------|------------------------------------------------------------------------------|---------|
+| CheckCommand | System.String | Optional Icinga CheckCommand object name (params.command) for error context. | ''      |
 
 .OUTPUTS
 System.Collections.Hashtable -- Resolution descriptor containing Status, Kind,
@@ -49,6 +49,9 @@ in Get-ModuleBinaryDirectory.
 .NOTES
 Never searches $env:PATH for binaries or scripts. External executables must
 reside inside Get-ModuleBinaryDirectory.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Resolve-IcingaProtocolCommand()
 {

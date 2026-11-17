@@ -8,7 +8,7 @@ Close and dispose the active WebSocket connection.
 module results for success, not-connected, and various error conditions.
 
 .OUTPUTS
-System.Object — Structured `Write-FunctionReturnValue` values describing the outcome.
+System.Object -- Structured `Write-FunctionReturnValue` values describing the outcome.
 
 .EXAMPLE
 PS> Disconnect-ModuleWebSocket
@@ -18,6 +18,9 @@ This function is safe to call even when no connection exists. It ensures cleanup
 of any lingering `ClientWebSocket` and `CancellationTokenSource` objects to
 avoid memory leaks. The function accesses runtime state via
 `Get-GlobalRuntimeVariable`.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Disconnect-ModuleWebSocket()
 {
@@ -29,7 +32,7 @@ function Disconnect-ModuleWebSocket()
             $CancelTokenSource = $GlobalVariable.Private.WebSocket.CancellationTokenSource;
             $CancelTokenSource.Cancel();
 
-            $CloseProgress = $GlobalVariable.Private.WebSocket.ClientWebSocket.CloseAsync(
+            $CloseProgress     = $GlobalVariable.Private.WebSocket.ClientWebSocket.CloseAsync(
                 [System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure,
                 'Closing WebSocket connection',
                 [System.Threading.CancellationToken]::None
@@ -42,7 +45,7 @@ function Disconnect-ModuleWebSocket()
 
             # Clear our close progress to avoid memory leaks
             $CloseProgress.Dispose();
-            $CloseProgress = $null;
+            $CloseProgress                                            = $null;
             $GlobalVariable.Private.WebSocket.ClientWebSocket.Dispose();
             $GlobalVariable.Private.WebSocket.ClientWebSocket         = $null;
             $GlobalVariable.Private.WebSocket.CancellationTokenSource.Dispose();
@@ -60,7 +63,7 @@ function Disconnect-ModuleWebSocket()
     try {
         if ($null -ne $GlobalVariable.Private.WebSocket.ClientWebSocket) {
             $GlobalVariable.Private.WebSocket.ClientWebSocket.Dispose();
-            $GlobalVariable.Private.WebSocket.ClientWebSocket         = $null;
+            $GlobalVariable.Private.WebSocket.ClientWebSocket = $null;
         }
 
         if ($null -ne $GlobalVariable.Private.WebSocket.CancellationTokenSource) {

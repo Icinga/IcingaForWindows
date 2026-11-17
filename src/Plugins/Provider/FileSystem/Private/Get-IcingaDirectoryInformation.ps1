@@ -128,6 +128,9 @@ Returns every log file larger than 100MB below D:\Logs together with the statist
 Reads the file system through System.IO.DirectoryInfo; the user needs list
 permission on every scanned directory. Relative paths are resolved against the
 current PowerShell file system location. No external services are used.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-IcingaDirectoryInformation()
 {

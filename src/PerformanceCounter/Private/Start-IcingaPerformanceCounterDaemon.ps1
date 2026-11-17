@@ -25,6 +25,9 @@ PS> Start-IcingaPerformanceCounterDaemon
 Must run inside a dedicated background runspace created by `New-Thread`. All shared state is
 accessed through `Get-GlobalRuntimeVariable` because the runspace receives only a snapshot of
 the runtime at startup. The daemon exits cleanly when `Test-ThreadRunning` returns $false.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Start-IcingaPerformanceCounterDaemon()
 {

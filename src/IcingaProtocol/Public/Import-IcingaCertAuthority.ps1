@@ -10,17 +10,17 @@ CertificateAuthority store (on Windows) or saves it to the module's certificate
 directory as 'ca.crt' (on Linux/macOS).
 
 .PARAMETER Certificate
-| Name        | Type          | Description                                | Default |
-|-------------|---------------|--------------------------------------------|---------|
-| Certificate | System.String | The PEM-formatted CA certificate payload.  |         |
+| Name        | Type          | Description                               | Default |
+|-------------|---------------|-------------------------------------------|---------|
+| Certificate | System.String | The PEM-formatted CA certificate payload. |         |
 
 .PARAMETER Path
-| Name | Type          | Description                                         | Default |
-|------|---------------|-----------------------------------------------------|---------|
-| Path | System.String | Local file path or HTTP/HTTPS URL to the CA cert.   |         |
+| Name | Type          | Description                                       | Default |
+|------|---------------|---------------------------------------------------|---------|
+| Path | System.String | Local file path or HTTP/HTTPS URL to the CA cert. |         |
 
 .OUTPUTS
-None — Performs the import or file write without returning a value.
+None -- Performs the import or file write without returning a value.
 
 .EXAMPLE
 PS> Import-IcingaCertAuthority -Certificate '-----BEGIN CERTIFICATE-----...'
@@ -35,6 +35,9 @@ Downloads and imports the CA certificate from a web server.
 .NOTES
 Operates on the CurrentUser CertificateAuthority store to avoid Windows security prompts.
 Does not require administrative elevation.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Import-IcingaCertAuthority()
 {
@@ -66,14 +69,14 @@ function Import-IcingaCertAuthority()
         $CertBytes = [System.Text.Encoding]::UTF8.GetBytes($Certificate);
         $CertObj   = [System.Security.Cryptography.X509Certificates.X509Certificate2]::New($CertBytes);
 
-        $Store = [System.Security.Cryptography.X509Certificates.X509Store]::New(
+        $Store     = [System.Security.Cryptography.X509Certificates.X509Store]::New(
             [System.Security.Cryptography.X509Certificates.StoreName]::Root,
             [System.Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine
         );
         $Store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite);
 
         # Only add if it's not already in the store
-        $Exists = $false;
+        $Exists    = $false;
         foreach ($Existing in $Store.Certificates) {
             if ($Existing.Thumbprint -eq $CertObj.Thumbprint) {
                 $Exists = $true;

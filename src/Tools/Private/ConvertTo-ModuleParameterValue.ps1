@@ -40,6 +40,9 @@ Coerces the string '2' into Int32 2 with Status 'Bound'.
 .NOTES
 Callers must call Dispose() on AllocatedSecret when non-null once command
 execution completes.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-ModuleParameterValue()
 {

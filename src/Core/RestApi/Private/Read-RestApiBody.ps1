@@ -9,14 +9,14 @@ Honors `Content-Length`, enforces access control via
 bytes, string and parsed JSON (if applicable).
 
 .PARAMETER ParsedHeaders
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| ParsedHeaders | System.Collections.Hashtable | Parsed header object produced by `Expand-RestApiHeader`. | @{ } |
+| Name          | Type                         | Description                                              | Default |
+|---------------|------------------------------|----------------------------------------------------------|---------|
+| ParsedHeaders | System.Collections.Hashtable | Parsed header object produced by `Expand-RestApiHeader`. | @{ }    |
 
 .PARAMETER PreReadBodyBytes
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| PreReadBodyBytes | byte[] | Any body bytes that were read along with the headers. | @() |
+| Name             | Type   | Description                                           | Default |
+|------------------|--------|-------------------------------------------------------|---------|
+| PreReadBodyBytes | byte[] | Any body bytes that were read along with the headers. | @()     |
 
 .OUTPUTS
 Hashtable with keys `RawBytes`, `RawString`, `JsonObj`, `ContentLength`.
@@ -27,6 +27,9 @@ PS> Read-RestApiBody -ParsedHeaders $parsed -PreReadBodyBytes $extraBytes
 .NOTES
 Closes the TCP connection and returns `$null` if access control denies
 the request or a timeout occurs while reading.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-RestApiBody()
 {
@@ -101,7 +104,7 @@ function Read-RestApiBody()
             if ($BytesRead -gt 0) {
                 # Append read bytes to body buffer
                 $BodyBufferStream.Write($ReadBuffer, 0, $BytesRead);
-                $TotalBytesRead     += $BytesRead;
+                $TotalBytesRead += $BytesRead;
             } else {
                 Start-Sleep -Milliseconds 10;
             };

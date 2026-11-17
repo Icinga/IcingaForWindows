@@ -25,6 +25,9 @@ Returns 3, the code used for the scheduled task state performance data.
 Defined in the kernel ahead of every function, so functions may use it as a
 parameter type. Not visible outside the module scope; callers pass the name or
 code as a string.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 enum IcingaScheduledTaskStatus
 {
@@ -55,6 +58,9 @@ Returns IcingaScheduledTaskStatus::Ready.
 
 .NOTES
 Pure conversion helper without state or external dependencies.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 class IcingaScheduledTaskStatusMap
 {
@@ -68,9 +74,9 @@ class IcingaScheduledTaskStatusMap
     Returns Unknown for $null, empty strings, unknown names and undefined codes.
 
     .PARAMETER Value
-    | Name  | Type          | Description                                               | Default |
-    |-------|---------------|-----------------------------------------------------------|---------|
-    | Value | System.Object | Status name, ScheduledTask StateEnum or numeric code.     |         |
+    | Name  | Type          | Description                                           | Default |
+    |-------|---------------|-------------------------------------------------------|---------|
+    | Value | System.Object | Status name, ScheduledTask StateEnum or numeric code. |         |
 
     .OUTPUTS
     IcingaScheduledTaskStatus -- The resolved status, Unknown when it cannot be mapped.

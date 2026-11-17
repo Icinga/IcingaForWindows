@@ -17,19 +17,19 @@ wildcard pattern is logged through Write-FunctionReturnValue
 pattern.
 
 .PARAMETER InputObject
-| Name        | Type          | Description                                  | Default |
-|-------------|---------------|----------------------------------------------|---------|
-| InputObject | System.Object | Value, or array of values, to test.          | $null   |
+| Name        | Type          | Description                         | Default |
+|-------------|---------------|-------------------------------------|---------|
+| InputObject | System.Object | Value, or array of values, to test. | $null   |
 
 .PARAMETER Include
-| Name    | Type         | Description                                            | Default |
-|---------|--------------|--------------------------------------------------------|---------|
-| Include | System.Array | Wildcard patterns of which at least one has to match.  | @()     |
+| Name    | Type         | Description                                           | Default |
+|---------|--------------|-------------------------------------------------------|---------|
+| Include | System.Array | Wildcard patterns of which at least one has to match. | @()     |
 
 .PARAMETER Exclude
-| Name    | Type         | Description                                   | Default |
-|---------|--------------|-----------------------------------------------|---------|
-| Exclude | System.Array | Wildcard patterns of which none may match.    | @()     |
+| Name    | Type         | Description                                | Default |
+|---------|--------------|--------------------------------------------|---------|
+| Exclude | System.Array | Wildcard patterns of which none may match. | @()     |
 
 .OUTPUTS
 System.Boolean -- For a single value, whether it passes the filters.
@@ -49,6 +49,9 @@ Returns the array @('C', 'E').
 No external dependencies. A $null value never passes. Used by the plugins for
 their -Include/-Exclude parameters, which must not rely on script blocks so the
 plugins stay usable in JEA sessions.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-IcingaArrayFilter()
 {

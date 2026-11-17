@@ -8,18 +8,21 @@ thread registry and returns the elapsed seconds (rounded) since that timestamp.
 If the thread or timestamp is missing, `$null` is returned.
 
 .PARAMETER ThreadId
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
+| Name     | Type          | Description                                         | Default        |
+|----------|---------------|-----------------------------------------------------|----------------|
 | ThreadId | System.String | The thread id to query. Defaults to current thread. | (Get-ThreadId) |
 
 .OUTPUTS
-System.Double — Seconds since the last heartbeat, or $null if the thread is unknown.
+System.Double -- Seconds since the last heartbeat, or $null if the thread is unknown.
 
 .EXAMPLE
 PS> Get-ThreadLastSeen -ThreadId $tid
 
 .NOTES
 Used by health checks and thread state transitions in the housekeeper.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ThreadLastSeen()
 {

@@ -40,6 +40,9 @@ Reads the value of 'Check_Timeout' case-insensitively from the dictionary.
 .NOTES
 Compatible with Windows PowerShell 5.1 and PowerShell 7+. Does not mutate global
 state.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Get-ModuleObjectValue()
 {

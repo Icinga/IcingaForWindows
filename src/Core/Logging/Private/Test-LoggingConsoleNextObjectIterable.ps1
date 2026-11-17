@@ -8,18 +8,21 @@ Determine whether an object should be treated as iterable for logging.
 for scalar values such as strings.
 
 .PARAMETER Value
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| Value | System.Object | The value to test for iterable printing | |
+| Name  | Type          | Description                             | Default |
+|-------|---------------|-----------------------------------------|---------|
+| Value | System.Object | The value to test for iterable printing |         |
 
 .OUTPUTS
-System.Boolean — `$true` when the value is considered iterable for logging.
+System.Boolean -- `$true` when the value is considered iterable for logging.
 
 .EXAMPLE
 PS> Test-LoggingConsoleNextObjectIterable -Value $arr
 
 .NOTES
 Strings and certain CLR types are intentionally excluded from iteration.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Test-LoggingConsoleNextObjectIterable()
 {

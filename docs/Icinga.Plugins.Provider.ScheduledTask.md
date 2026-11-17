@@ -38,9 +38,9 @@ grouped by TaskPath and sorted by TaskName.
 
 **`$ExcludeTaskName`**
 
-| Name            | Type         | Description                                                  | Default |
-|-----------------|--------------|--------------------------------------------------------------|---------|
-| ExcludeTaskName | System.Array | Skip tasks matching these names (wildcards allowed).         | @()     |
+| Name            | Type         | Description                                          | Default |
+|-----------------|--------------|------------------------------------------------------|---------|
+| ExcludeTaskName | System.Array | Skip tasks matching these names (wildcards allowed). | @()     |
 
 **`$TaskPath`**
 
@@ -50,9 +50,9 @@ grouped by TaskPath and sorted by TaskName.
 
 **`$ExcludeTaskPath`**
 
-| Name            | Type         | Description                                                  | Default |
-|-----------------|--------------|--------------------------------------------------------------|---------|
-| ExcludeTaskPath | System.Array | Skip tasks matching these paths (wildcards allowed).         | @()     |
+| Name            | Type         | Description                                          | Default |
+|-----------------|--------------|------------------------------------------------------|---------|
+| ExcludeTaskPath | System.Array | Skip tasks matching these paths (wildcards allowed). | @()     |
 
 #### Outputs
 
@@ -73,5 +73,5 @@ Returns all scheduled tasks under the \Icinga\ task path hierarchy.
 Windows-only. Relies on Get-ScheduledTask and Get-ScheduledTaskInfo from the
 ScheduledTasks module.
 
-*Source: [src/Plugins/Provider/ScheduledTask/Private/Get-IcingaScheduledTask.ps1](../../src/Plugins/Provider/ScheduledTask/Private/Get-IcingaScheduledTask.ps1)*
+*Source: [src/Plugins/Provider/ScheduledTask/Private/Get-IcingaScheduledTask.ps1](../src/Plugins/Provider/ScheduledTask/Private/Get-IcingaScheduledTask.ps1)*
 

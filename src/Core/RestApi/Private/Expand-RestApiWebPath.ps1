@@ -8,12 +8,12 @@ slashes (except for root) and returning an object with the normalized path
 and an array of path segments.
 
 .PARAMETER WebPath
-| Name | Type | Description | Default |
-|------|------|-------------|---------|
-| WebPath | System.String | The HTTP path to normalize (e.g. '/api/v1/resource/'). | |
+| Name    | Type          | Description                                            | Default |
+|---------|---------------|--------------------------------------------------------|---------|
+| WebPath | System.String | The HTTP path to normalize (e.g. '/api/v1/resource/'). |         |
 
 .OUTPUTS
-System.Collections.Hashtable — parsed path object with keys `Segments`, `QueryParams`, `WebPath`,
+System.Collections.Hashtable -- parsed path object with keys `Segments`, `QueryParams`, `WebPath`,
 `HasQuery`, `SegmentCount` and optional `Version`, `Space`, `Action`, `Resource`.
 
 .EXAMPLE
@@ -22,6 +22,9 @@ PS> Expand-RestApiWebPath -Path '/api//v1/resource/'
 .NOTES
 This helper is used when routing incoming requests to configured RestApi
 spaces and handlers.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Expand-RestApiWebPath()
 {

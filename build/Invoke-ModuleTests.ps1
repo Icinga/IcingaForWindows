@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Run the Pester test suite for the Icinga for Windows module.
+Run the Pester test suite for the Icinga for Windows module
 
 .DESCRIPTION
 Standalone test runner extracted from the module build so the unit
@@ -9,7 +9,7 @@ compile and documentation stages. The script ensures the module's
 parent directory is on `$env:PSModulePath` (so `Import-Module
 IcingaForWindows` resolves the checked-out copy), verifies that
 Pester 5 or newer is available, executes every `*.Tests.ps1` file
-under `Tests/` and throws when any test fails so the calling shell
+under `Tests/`, and throws when any test fails so the calling shell
 exits with a non-zero code.
 
 The compiled `lib/` artifact and an up-to-date manifest must exist
@@ -18,9 +18,9 @@ the build job produces those artifacts; locally run
 `Build-ModuleProject` first.
 
 .PARAMETER ModuleBasePath
-| Name           | Type          | Description                                                        | Default                       |
-|----------------|---------------|--------------------------------------------------------------------|-------------------------------|
-| ModuleBasePath | System.String | Absolute path to the Icinga module root (the folder above `src`).  | Resolved from the script path |
+| Name           | Type          | Description                                                                   | Default                       |
+|----------------|---------------|-------------------------------------------------------------------------------|-------------------------------|
+| ModuleBasePath | System.String | Absolute path to the Icinga for Windows module root (the folder above `src`). | Resolved from the script path |
 
 .PARAMETER Path
 | Name | Type          | Description                                              | Default                  |
@@ -42,9 +42,12 @@ PS> .\build\Invoke-ModuleTests.ps1 -Path '.\Tests\Join-WebPath.Tests.ps1'
 Runs a single test file.
 
 .NOTES
-Requires Pester 5.0+. Imports the IcingaForWindows module, which
-initialises `$Global:IcingaForWindows`. Designed for PowerShell 7.5+
-on Windows.
+Requires Pester 5.0+. Imports the `IcingaForWindows` module, which
+initializes `$Global:IcingaForWindows`. Designed for PowerShell 5.1+
+and PowerShell 7.5+.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 
 [CmdletBinding()]
@@ -57,7 +60,9 @@ $ErrorActionPreference = 'Stop';
 $ProgressPreference    = 'SilentlyContinue';
 
 if ([string]::IsNullOrEmpty($ModuleBasePath)) {
-    $ModuleBasePath = Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..') | Select-Object -ExpandProperty Path;
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath);
+} elseif (Test-Path -Path $ModuleBasePath) {
+    $ModuleBasePath = [System.IO.Path]::GetFullPath((Resolve-Path -Path $ModuleBasePath).ProviderPath);
 }
 
 if ([string]::IsNullOrEmpty($Path)) {
@@ -86,11 +91,11 @@ if (-not ($env:PSModulePath -split [System.IO.Path]::PathSeparator | Where-Objec
 }
 
 Write-Host '' -ForegroundColor White;
-Write-Host '╔═════════════════════════════════════════════════════════════════════╗' -ForegroundColor Cyan;
-Write-Host '║                                                                     ║' -ForegroundColor Cyan;
-Write-Host '║                       Icinga for Windows - Tests                   ║' -ForegroundColor Cyan;
-Write-Host '║                                                                     ║' -ForegroundColor Cyan;
-Write-Host '╚═════════════════════════════════════════════════════════════════════╝' -ForegroundColor Cyan;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
+Write-Host '|                                                                     |' -ForegroundColor Cyan;
+Write-Host '|                      Icinga for Windows - Tests                     |' -ForegroundColor Cyan;
+Write-Host '|                                                                     |' -ForegroundColor Cyan;
+Write-Host '+---------------------------------------------------------------------+' -ForegroundColor Cyan;
 Write-Host '' -ForegroundColor White;
 
 # The suite targets Pester 5+. Importing it explicitly avoids silently
@@ -120,9 +125,9 @@ $TestResults                                 = Invoke-Pester -Configuration $Pes
 
 Write-Host '' -ForegroundColor White;
 Write-Host '[2/2] Evaluating results ...' -ForegroundColor Yellow;
-Write-Host "  Total:   $($TestResults.TotalCount)"   -ForegroundColor White;
-Write-Host "  Passed:  $($TestResults.PassedCount)"  -ForegroundColor Green;
-Write-Host "  Failed:  $($TestResults.FailedCount)"  -ForegroundColor Red;
+Write-Host "  Total:   $($TestResults.TotalCount)" -ForegroundColor White;
+Write-Host "  Passed:  $($TestResults.PassedCount)" -ForegroundColor Green;
+Write-Host "  Failed:  $($TestResults.FailedCount)" -ForegroundColor Red;
 Write-Host "  Skipped: $($TestResults.SkippedCount)" -ForegroundColor Gray;
 
 if ($TestResults.FailedCount -gt 0) {
@@ -131,6 +136,6 @@ if ($TestResults.FailedCount -gt 0) {
 }
 
 Write-Host '' -ForegroundColor White;
-Write-Host '  ✓ All tests passed' -ForegroundColor Green;
+Write-Host '  * All tests passed' -ForegroundColor Green;
 
 Exit-Icinga -ExitCode 0;

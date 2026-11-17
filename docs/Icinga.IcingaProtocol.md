@@ -60,19 +60,19 @@ directory as 'ca.crt' (on Linux/macOS).
 
 **`$Certificate`**
 
-| Name        | Type          | Description                                | Default |
-|-------------|---------------|--------------------------------------------|---------|
-| Certificate | System.String | The PEM-formatted CA certificate payload.  |         |
+| Name        | Type          | Description                               | Default |
+|-------------|---------------|-------------------------------------------|---------|
+| Certificate | System.String | The PEM-formatted CA certificate payload. |         |
 
 **`$Path`**
 
-| Name | Type          | Description                                         | Default |
-|------|---------------|-----------------------------------------------------|---------|
-| Path | System.String | Local file path or HTTP/HTTPS URL to the CA cert.   |         |
+| Name | Type          | Description                                       | Default |
+|------|---------------|---------------------------------------------------|---------|
+| Path | System.String | Local file path or HTTP/HTTPS URL to the CA cert. |         |
 
 #### Outputs
 
-None — Performs the import or file write without returning a value.
+None -- Performs the import or file write without returning a value.
 
 #### Examples
 
@@ -93,7 +93,7 @@ Downloads and imports the CA certificate from a web server.
 Operates on the CurrentUser CertificateAuthority store to avoid Windows security prompts.
 Does not require administrative elevation.
 
-*Source: [src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1](../../src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1)*
+*Source: [src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1](../src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1)*
 
 ---
 
@@ -117,19 +117,19 @@ certificate is removed from the store automatically.
 
 **`$CommonName`**
 
-| Name       | Type          | Description                                | Default |
-|------------|---------------|--------------------------------------------|---------|
-| CommonName | System.String | The common name (CN) for the certificate.  | $null   |
+| Name       | Type          | Description                               | Default |
+|------------|---------------|-------------------------------------------|---------|
+| CommonName | System.String | The common name (CN) for the certificate. | $null   |
 
 **`$SignedCert`**
 
-| Name       | Type          | Description                                | Default |
-|------------|---------------|--------------------------------------------|---------|
-| SignedCert | System.String | The PEM-formatted signed certificate.      | $null   |
+| Name       | Type          | Description                           | Default |
+|------------|---------------|---------------------------------------|---------|
+| SignedCert | System.String | The PEM-formatted signed certificate. | $null   |
 
 #### Outputs
 
-System.Object — Returns a structured result via Write-FunctionReturnValue containing the storage path.
+System.Object -- Returns a structured result via Write-FunctionReturnValue containing the storage path.
 
 #### Examples
 
@@ -150,7 +150,7 @@ Merges the signed certificate with the existing private key for 'IcingaNode'.
 Requires administrative privileges on Windows to access the LocalMachine certificate store.
 Cross-platform compatible; relies on .NET cryptography classes.
 
-*Source: [src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1](../../src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1)*
+*Source: [src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1](../src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1)*
 
 ---
 
@@ -169,25 +169,25 @@ This object is typically passed into New-IcingaProtocolEnvironment.
 
 **`$Name`**
 
-| Name | Type          | Description                                | Default |
-|------|---------------|--------------------------------------------|---------|
-| Name | System.String | The human-readable name of the endpoint.   |         |
+| Name | Type          | Description                              | Default |
+|------|---------------|------------------------------------------|---------|
+| Name | System.String | The human-readable name of the endpoint. |         |
 
 **`$Address`**
 
-| Name    | Type          | Description                                | Default |
-|---------|---------------|--------------------------------------------|---------|
-| Address | System.String | The IP address or FQDN of the endpoint.    |         |
+| Name    | Type          | Description                             | Default |
+|---------|---------------|-----------------------------------------|---------|
+| Address | System.String | The IP address or FQDN of the endpoint. |         |
 
 **`$Port`**
 
-| Name | Type         | Description                                | Default |
-|------|--------------|--------------------------------------------|---------|
-| Port | System.Int32 | The TCP port to connect to.                |         |
+| Name | Type         | Description                 | Default |
+|------|--------------|-----------------------------|---------|
+| Port | System.Int32 | The TCP port to connect to. |         |
 
 #### Outputs
 
-System.Collections.Hashtable — Returns a hashtable with the endpoint configuration.
+System.Collections.Hashtable -- Returns a hashtable with the endpoint configuration.
 
 #### Examples
 
@@ -201,7 +201,7 @@ Creates a new endpoint object for Master1.
 
 This object is required for configuring the Icinga environment structure.
 
-*Source: [src/IcingaProtocol/Public/New-IcingaProtocolEndpoint.ps1](../../src/IcingaProtocol/Public/New-IcingaProtocolEndpoint.ps1)*
+*Source: [src/IcingaProtocol/Public/New-IcingaProtocolEndpoint.ps1](../src/IcingaProtocol/Public/New-IcingaProtocolEndpoint.ps1)*
 
 ---
 
@@ -221,37 +221,37 @@ or returns a diff against the current configuration if -DryRun is used.
 
 **`$Endpoints`**
 
-| Name      | Type         | Description                                | Default |
-|-----------|--------------|--------------------------------------------|---------|
-| Endpoints | System.Array | An array of endpoint hashtables.           | @()     |
+| Name      | Type         | Description                      | Default |
+|-----------|--------------|----------------------------------|---------|
+| Endpoints | System.Array | An array of endpoint hashtables. | @()     |
 
 **`$Zone`**
 
-| Name | Type          | Description                                | Default  |
-|------|---------------|--------------------------------------------|----------|
-| Zone | System.String | The name of the Icinga zone.               | 'master' |
+| Name | Type          | Description                  | Default  |
+|------|---------------|------------------------------|----------|
+| Zone | System.String | The name of the Icinga zone. | 'master' |
 
 **`$Hostname`**
 
-| Name     | Type          | Description                                | Default     |
-|----------|---------------|--------------------------------------------|-------------|
-| Hostname | System.String | The local hostname for this node.          | '$hostname' |
+| Name     | Type          | Description                       | Default     |
+|----------|---------------|-----------------------------------|-------------|
+| Hostname | System.String | The local hostname for this node. | '$hostname' |
 
 **`$TlsCertConfig`**
 
-| Name          | Type           | Description                                | Default |
-|---------------|----------------|--------------------------------------------|---------|
-| TlsCertConfig | PSCustomObject | The TLS certificate configuration object.  | $null   |
+| Name          | Type           | Description                               | Default |
+|---------------|----------------|-------------------------------------------|---------|
+| TlsCertConfig | PSCustomObject | The TLS certificate configuration object. | $null   |
 
 **`$DryRun`**
 
-| Name   | Type   | Description                                | Default |
-|--------|--------|--------------------------------------------|---------|
-| DryRun | switch | Outputs a diff without saving the file.    | $false  |
+| Name   | Type   | Description                             | Default |
+|--------|--------|-----------------------------------------|---------|
+| DryRun | switch | Outputs a diff without saving the file. | $false  |
 
 #### Outputs
 
-System.Object — Returns a status object from Write-FunctionReturnValue or a diff string.
+System.Object -- Returns a status object from Write-FunctionReturnValue or a diff string.
 
 #### Examples
 
@@ -266,7 +266,7 @@ Generates the protocol configuration and writes it to disk.
 
 Writes configuration data to the internal Icinga Protocol connection JSON file.
 
-*Source: [src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1](../../src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1)*
+*Source: [src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1](../src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1)*
 
 ---
 
@@ -285,7 +285,7 @@ threads for Icinga JSON-RPC communication.
 
 #### Outputs
 
-None — Starts a background thread; no pipeline output.
+None -- Starts a background thread; no pipeline output.
 
 #### Examples
 
@@ -299,7 +299,7 @@ This function requires New-IcingaAgentEnvironment and New-Thread to be available
 The agent environment is initialized asynchronously in the spawned thread.
 Call this once during module startup after global configuration is in place.
 
-*Source: [src/IcingaProtocol/Public/Start-IcingaAgent.ps1](../../src/IcingaProtocol/Public/Start-IcingaAgent.ps1)*
+*Source: [src/IcingaProtocol/Public/Start-IcingaAgent.ps1](../src/IcingaProtocol/Public/Start-IcingaAgent.ps1)*
 
 ---
 
@@ -330,13 +330,13 @@ to emit a standardized operation result object indicating success or failure.
 
 **`$TcpClient`**
 
-| Name      | Type                             | Description                                             | Default |
-|-----------|----------------------------------|---------------------------------------------------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient     | Active TcpClient instance to store in the connections table. | $null   |
+| Name      | Type                         | Description                                                  | Default |
+|-----------|------------------------------|--------------------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Active TcpClient instance to store in the connections table. | $null   |
 
 #### Outputs
 
-PSCustomObject — Return value produced by Write-FunctionReturnValue.
+PSCustomObject -- Return value produced by Write-FunctionReturnValue.
 Possible tokens: IcingaClientAddingFailed (validation failed) or IcingaClientAdded (success).
 
 #### Examples
@@ -359,7 +359,7 @@ This function modifies $Global:IcingaForWindows.Public.IcingaProtocol.Connection
 The caller is responsible for the lifetime and disposal of the TcpClient objects.
 No additional connectivity checks are performed; the function only stores the provided instance.
 
-*Source: [src/IcingaProtocol/Private/Add-IcingaProtocolClient.ps1](../../src/IcingaProtocol/Private/Add-IcingaProtocolClient.ps1)*
+*Source: [src/IcingaProtocol/Private/Add-IcingaProtocolClient.ps1](../src/IcingaProtocol/Private/Add-IcingaProtocolClient.ps1)*
 
 ---
 
@@ -383,9 +383,9 @@ and are dropped without throwing.
 
 **`$Message`**
 
-| Name    | Type          | Description                                                                  | Default |
-|---------|---------------|------------------------------------------------------------------------------|---------|
-| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty.  | $null   |
+| Name    | Type          | Description                                                                 | Default |
+|---------|---------------|-----------------------------------------------------------------------------|---------|
+| Message | System.String | Serialized JSON-RPC message payload to enqueue. Ignored when null or empty. | $null   |
 
 #### Outputs
 
@@ -404,7 +404,7 @@ Parses the JSON-RPC message and dispatches it to the next protocol worker queue.
 Caller must ensure WorkerCount and WorkerQueue are initialized in
 Public.IcingaProtocol before invoking this helper.
 
-*Source: [src/IcingaProtocol/Private/Add-IcingaRPCMessageToWorker.ps1](../../src/IcingaProtocol/Private/Add-IcingaRPCMessageToWorker.ps1)*
+*Source: [src/IcingaProtocol/Private/Add-IcingaRPCMessageToWorker.ps1](../src/IcingaProtocol/Private/Add-IcingaRPCMessageToWorker.ps1)*
 
 ---
 
@@ -430,13 +430,13 @@ that it works correctly inside worker thread runspaces.
 
 **`$MsgObj`**
 
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
+| Name   | Type          | Description                                                             | Default |
+|--------|---------------|-------------------------------------------------------------------------|---------|
 | MsgObj | System.Object | Message object as returned by New-IcingaRPCMessage (@{message;length}). | $null   |
 
 #### Outputs
 
-None — The function enqueues the message or sends it directly; no pipeline output is produced.
+None -- The function enqueues the message or sends it directly; no pipeline output is produced.
 
 #### Examples
 
@@ -450,7 +450,7 @@ This function uses Get-GlobalRuntimeVariable to access global state, making it s
 call from within thread runspaces. The writer queue is keyed by the string representation
 of the remote endpoint IP address.
 
-*Source: [src/IcingaProtocol/Private/Add-IcingaRPCMessageToWriterQueue.ps1](../../src/IcingaProtocol/Private/Add-IcingaRPCMessageToWriterQueue.ps1)*
+*Source: [src/IcingaProtocol/Private/Add-IcingaRPCMessageToWriterQueue.ps1](../src/IcingaProtocol/Private/Add-IcingaRPCMessageToWriterQueue.ps1)*
 
 ---
 
@@ -486,15 +486,15 @@ Two Icinga 2 delivery modes are supported seamlessly across Windows PowerShell
 
 **`$ResolvedCommand`**
 
-| Name            | Type                         | Description                                                  | Default |
-|-----------------|------------------------------|--------------------------------------------------------------|---------|
-| ResolvedCommand | System.Collections.Hashtable | Command descriptor returned by Resolve-IcingaProtocolCommand.| @{}     |
+| Name            | Type                         | Description                                                   | Default |
+|-----------------|------------------------------|---------------------------------------------------------------|---------|
+| ResolvedCommand | System.Collections.Hashtable | Command descriptor returned by Resolve-IcingaProtocolCommand. | @{}     |
 
 **`$Macros`**
 
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
-| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand.  | $null   |
+| Name   | Type          | Description                                                          | Default |
+|--------|---------------|----------------------------------------------------------------------|---------|
+| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand. | $null   |
 
 #### Outputs
 
@@ -517,7 +517,7 @@ Callers must dispose every entry in AllocatedSecureStrings once plugin execution
 completes. On validation errors, any SecureString allocated earlier in the same
 call is disposed before returning.
 
-*Source: [src/IcingaProtocol/Private/ConvertFrom-IcingaProtocolMacros.ps1](../../src/IcingaProtocol/Private/ConvertFrom-IcingaProtocolMacros.ps1)*
+*Source: [src/IcingaProtocol/Private/ConvertFrom-IcingaProtocolMacros.ps1](../src/IcingaProtocol/Private/ConvertFrom-IcingaProtocolMacros.ps1)*
 
 ---
 
@@ -546,21 +546,21 @@ table:
 
 **`$Expression`**
 
-| Name       | Type          | Description                                               | Default |
-|------------|---------------|-----------------------------------------------------------|---------|
-| Expression | System.Object | Raw 'value' or 'set_if' expression from ifw_api_arguments.| $null   |
+| Name       | Type          | Description                                                | Default |
+|------------|---------------|------------------------------------------------------------|---------|
+| Expression | System.Object | Raw 'value' or 'set_if' expression from ifw_api_arguments. | $null   |
 
 **`$MacroMap`**
 
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| MacroMap | System.Object | Case-sensitive OrderedDictionary of macro key/values.    | $null   |
+| Name     | Type          | Description                                           | Default |
+|----------|---------------|-------------------------------------------------------|---------|
+| MacroMap | System.Object | Case-sensitive OrderedDictionary of macro key/values. | $null   |
 
 **`$MacroIgnoreCase`**
 
-| Name            | Type                         | Description                                       | Default |
-|-----------------|------------------------------|---------------------------------------------------|---------|
-| MacroIgnoreCase | System.Collections.Hashtable | Case-insensitive fallback hashtable for macros.   | @{}     |
+| Name            | Type                         | Description                                     | Default |
+|-----------------|------------------------------|-------------------------------------------------|---------|
+| MacroIgnoreCase | System.Collections.Hashtable | Case-insensitive fallback hashtable for macros. | @{}     |
 
 #### Outputs
 
@@ -579,7 +579,7 @@ Interpolates the '$address$' and '$port$' tokens in a single pass.
 
 Pure macro evaluator with no side effects or global state dependencies.
 
-*Source: [src/IcingaProtocol/Private/Expand-IcingaProtocolMacroValue.ps1](../../src/IcingaProtocol/Private/Expand-IcingaProtocolMacroValue.ps1)*
+*Source: [src/IcingaProtocol/Private/Expand-IcingaProtocolMacroValue.ps1](../src/IcingaProtocol/Private/Expand-IcingaProtocolMacroValue.ps1)*
 
 ---
 
@@ -608,21 +608,21 @@ UseShellExecute = $false:
 
 **`$BinaryPath`**
 
-| Name       | Type          | Description                                               | Default |
-|------------|---------------|-----------------------------------------------------------|---------|
-| BinaryPath | System.String | Full canonical path to the approved binary executable.    | ''      |
+| Name       | Type          | Description                                            | Default |
+|------------|---------------|--------------------------------------------------------|---------|
+| BinaryPath | System.String | Full canonical path to the approved binary executable. | ''      |
 
 **`$CommandName`**
 
-| Name        | Type          | Description                                               | Default |
-|-------------|---------------|-----------------------------------------------------------|---------|
-| CommandName | System.String | Display file name of the binary for status messages.      | ''      |
+| Name        | Type          | Description                                          | Default |
+|-------------|---------------|------------------------------------------------------|---------|
+| CommandName | System.String | Display file name of the binary for status messages. | ''      |
 
 **`$BinaryArguments`**
 
-| Name            | Type            | Description                                           | Default |
-|-----------------|-----------------|-------------------------------------------------------|---------|
-| BinaryArguments | System.String[] | Ordered CLI argument tokens to pass to the process.   | @()     |
+| Name            | Type            | Description                                         | Default |
+|-----------------|-----------------|-----------------------------------------------------|---------|
+| BinaryArguments | System.String[] | Ordered CLI argument tokens to pass to the process. | @()     |
 
 **`$TimeoutMs`**
 
@@ -653,7 +653,7 @@ Executes check_load.exe with a 60s timeout and splits its Nagios output.
 
 Always disposes the root Process handle in finally.
 
-*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolBinaryProcess.ps1](../../src/IcingaProtocol/Private/Invoke-IcingaProtocolBinaryProcess.ps1)*
+*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolBinaryProcess.ps1](../src/IcingaProtocol/Private/Invoke-IcingaProtocolBinaryProcess.ps1)*
 
 ---
 
@@ -687,9 +687,9 @@ instance ever crosses runspace boundaries.
 
 **`$Params`**
 
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
-| Params | System.Object | Deserialized params dictionary or object from event::ExecuteCommand.  | $null   |
+| Name   | Type          | Description                                                          | Default |
+|--------|---------------|----------------------------------------------------------------------|---------|
+| Params | System.Object | Deserialized params dictionary or object from event::ExecuteCommand. | $null   |
 
 #### Outputs
 
@@ -710,7 +710,7 @@ and rendered command line.
 Runs inside protocol worker threads; accesses runtime state exclusively via
 Get-GlobalRuntimeVariable.
 
-*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolCheckCommand.ps1](../../src/IcingaProtocol/Private/Invoke-IcingaProtocolCheckCommand.ps1)*
+*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolCheckCommand.ps1](../src/IcingaProtocol/Private/Invoke-IcingaProtocolCheckCommand.ps1)*
 
 ---
 
@@ -734,27 +734,27 @@ in-process via Invoke-ModulePowerShellCommand -UseLastExitCode.
 
 **`$ScriptPath`**
 
-| Name       | Type          | Description                                             | Default |
-|------------|---------------|---------------------------------------------------------|---------|
-| ScriptPath | System.String | Full canonical path to the approved .ps1 check script.  | ''      |
+| Name       | Type          | Description                                            | Default |
+|------------|---------------|--------------------------------------------------------|---------|
+| ScriptPath | System.String | Full canonical path to the approved .ps1 check script. | ''      |
 
 **`$CommandName`**
 
-| Name        | Type          | Description                                             | Default |
-|-------------|---------------|---------------------------------------------------------|---------|
-| CommandName | System.String | Display file name of the script for error messages.     | ''      |
+| Name        | Type          | Description                                         | Default |
+|-------------|---------------|-----------------------------------------------------|---------|
+| CommandName | System.String | Display file name of the script for error messages. | ''      |
 
 **`$BinaryArguments`**
 
-| Name            | Type            | Description                                         | Default |
-|-----------------|-----------------|-----------------------------------------------------|---------|
-| BinaryArguments | System.String[] | Ordered CLI tokens produced by macro resolution.    | @()     |
+| Name            | Type            | Description                                      | Default |
+|-----------------|-----------------|--------------------------------------------------|---------|
+| BinaryArguments | System.String[] | Ordered CLI tokens produced by macro resolution. | @()     |
 
 **`$DefaultCommandLine`**
 
-| Name               | Type          | Description                                             | Default |
-|--------------------|---------------|---------------------------------------------------------|---------|
-| DefaultCommandLine | System.String | Pre-rendered command line when no secret masking occurs.| ''      |
+| Name               | Type          | Description                                              | Default |
+|--------------------|---------------|----------------------------------------------------------|---------|
+| DefaultCommandLine | System.String | Pre-rendered command line when no secret masking occurs. | ''      |
 
 #### Outputs
 
@@ -774,7 +774,7 @@ Binds the parameters of check_custom.ps1 and executes it in-process.
 Delegates execution and deterministic SecureString disposal to
 Invoke-ModulePowerShellCommand.
 
-*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolExternalScript.ps1](../../src/IcingaProtocol/Private/Invoke-IcingaProtocolExternalScript.ps1)*
+*Source: [src/IcingaProtocol/Private/Invoke-IcingaProtocolExternalScript.ps1](../src/IcingaProtocol/Private/Invoke-IcingaProtocolExternalScript.ps1)*
 
 ---
 
@@ -803,7 +803,7 @@ process initialization and must not be called again while threads are running.
 
 #### Outputs
 
-None — Performs initialization and starts background threads. Returns early via
+None -- Performs initialization and starts background threads. Returns early via
 Write-FunctionReturnValue when the certificate file is missing.
 
 #### Examples
@@ -823,7 +823,7 @@ Global state modified: $Global:IcingaForWindows.Public.IcingaProtocol.Config,
 Certificate, Connections and WorkerQueue. Config.WorkerCount must be a positive integer
 before this function is called.
 
-*Source: [src/IcingaProtocol/Private/New-IcingaAgentEnvironment.ps1](../../src/IcingaProtocol/Private/New-IcingaAgentEnvironment.ps1)*
+*Source: [src/IcingaProtocol/Private/New-IcingaAgentEnvironment.ps1](../src/IcingaProtocol/Private/New-IcingaAgentEnvironment.ps1)*
 
 ---
 
@@ -845,19 +845,19 @@ passed to Send-TCPMessage or Add-IcingaRPCMessageToWriterQueue.
 
 **`$Method`**
 
-| Name   | Type          | Description                                         | Default |
-|--------|---------------|-----------------------------------------------------|---------|
-| Method | System.String | JSON-RPC method name (for example icinga::Hello).   |         |
+| Name   | Type          | Description                                       | Default |
+|--------|---------------|---------------------------------------------------|---------|
+| Method | System.String | JSON-RPC method name (for example icinga::Hello). |         |
 
 **`$Parameters`**
 
-| Name       | Type                          | Description                                    | Default |
-|------------|-------------------------------|------------------------------------------------|---------|
-| Parameters | System.Collections.Hashtable  | Parameters to include in the RPC params field. | @{}     |
+| Name       | Type                         | Description                                    | Default |
+|------------|------------------------------|------------------------------------------------|---------|
+| Parameters | System.Collections.Hashtable | Parameters to include in the RPC params field. | @{}     |
 
 #### Outputs
 
-System.Collections.Hashtable — Hashtable with keys message (System.Byte[]) and length (System.Int32).
+System.Collections.Hashtable -- Hashtable with keys message (System.Byte[]) and length (System.Int32).
 
 #### Examples
 
@@ -872,7 +872,7 @@ Returns a length-prefixed encoded message hashtable for the Hello handshake.
 The method call is logged at Debug level via Write-LoggingEntry before the byte
 encoding step.
 
-*Source: [src/IcingaProtocol/Private/New-IcingaRPCMessage.ps1](../../src/IcingaProtocol/Private/New-IcingaRPCMessage.ps1)*
+*Source: [src/IcingaProtocol/Private/New-IcingaRPCMessage.ps1](../src/IcingaProtocol/Private/New-IcingaRPCMessage.ps1)*
 
 ---
 
@@ -892,7 +892,7 @@ Write-FunctionReturnValue with return value IcingaClientConfigNotFound.
 
 #### Outputs
 
-PSCustomObject — Parsed JSON connection configuration.
+PSCustomObject -- Parsed JSON connection configuration.
 Returns a Write-FunctionReturnValue result object when the file is missing.
 
 #### Examples
@@ -906,7 +906,7 @@ PS> $cfg = Read-IcingaProtocolConnection
 Placeholder substitution uses [System.Net.Dns]::GetHostEntry and GetHostName.
 The configuration file is read through Read-SecureFile to enforce path approval.
 
-*Source: [src/IcingaProtocol/Private/Read-IcingaProtocolConnections.ps1](../../src/IcingaProtocol/Private/Read-IcingaProtocolConnections.ps1)*
+*Source: [src/IcingaProtocol/Private/Read-IcingaProtocolConnections.ps1](../src/IcingaProtocol/Private/Read-IcingaProtocolConnections.ps1)*
 
 ---
 
@@ -930,13 +930,13 @@ for a complete frame.
 
 **`$Buffer`**
 
-| Name   | Type                      | Description                                                                 | Default |
-|--------|---------------------------|-----------------------------------------------------------------------------|---------|
+| Name   | Type                      | Description                                                                         | Default |
+|--------|---------------------------|-------------------------------------------------------------------------------------|---------|
 | Buffer | System.Text.StringBuilder | Accumulated StringBuilder buffer containing one or more length-prefixed RPC frames. | $null   |
 
 #### Outputs
 
-None — The buffer is modified in place.
+None -- The buffer is modified in place.
 
 #### Examples
 
@@ -950,7 +950,7 @@ Each call may process multiple complete frames in a single pass. Partial frames 
 the end of the buffer are preserved for the next read cycle.
 Complete messages are dispatched via Add-IcingaRPCMessageToWorker.
 
-*Source: [src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1](../../src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1)*
+*Source: [src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1](../src/IcingaProtocol/Private/Read-IcingaRPCMessage.ps1)*
 
 ---
 
@@ -984,15 +984,15 @@ are expanded to 'Invoke-IcingaCheck*' and resolved as PowerShell check commands.
 
 **`$Macros`**
 
-| Name   | Type          | Description                                                           | Default |
-|--------|---------------|-----------------------------------------------------------------------|---------|
-| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand.  | $null   |
+| Name   | Type          | Description                                                          | Default |
+|--------|---------------|----------------------------------------------------------------------|---------|
+| Macros | System.Object | Deserialized macros dictionary or object from event::ExecuteCommand. | $null   |
 
 **`$CheckCommand`**
 
-| Name         | Type          | Description                                                                   | Default |
-|--------------|---------------|-------------------------------------------------------------------------------|---------|
-| CheckCommand | System.String | Optional Icinga CheckCommand object name (params.command) for error context.  | ''      |
+| Name         | Type          | Description                                                                  | Default |
+|--------------|---------------|------------------------------------------------------------------------------|---------|
+| CheckCommand | System.String | Optional Icinga CheckCommand object name (params.command) for error context. | ''      |
 
 #### Outputs
 
@@ -1019,7 +1019,7 @@ in Get-ModuleBinaryDirectory.
 Never searches $env:PATH for binaries or scripts. External executables must
 reside inside Get-ModuleBinaryDirectory.
 
-*Source: [src/IcingaProtocol/Private/Resolve-IcingaProtocolCommand.ps1](../../src/IcingaProtocol/Private/Resolve-IcingaProtocolCommand.ps1)*
+*Source: [src/IcingaProtocol/Private/Resolve-IcingaProtocolCommand.ps1](../src/IcingaProtocol/Private/Resolve-IcingaProtocolCommand.ps1)*
 
 ---
 
@@ -1040,13 +1040,13 @@ provided it is included in the RPC parameters for auto-signing.
 
 **`$Ticket`**
 
-| Name   | Type          | Description                                | Default |
-|--------|---------------|--------------------------------------------|---------|
-| Ticket | System.String | The ticket to use for auto-signing.        | $null   |
+| Name   | Type          | Description                         | Default |
+|--------|---------------|-------------------------------------|---------|
+| Ticket | System.String | The ticket to use for auto-signing. | $null   |
 
 #### Outputs
 
-None — Does not return any value.
+None -- Does not return any value.
 
 #### Examples
 
@@ -1060,7 +1060,7 @@ Sends a certificate request to the connected Icinga endpoint.
 
 Requires an active TCP connection to the Icinga endpoint.
 
-*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolCertificateRequest.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolCertificateRequest.ps1)*
+*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolCertificateRequest.ps1](../src/IcingaProtocol/Private/Send-IcingaProtocolCertificateRequest.ps1)*
 
 ---
 
@@ -1082,13 +1082,13 @@ or null.
 
 **`$CheckResult`**
 
-| Name        | Type                          | Description                                             | Default |
-|-------------|-------------------------------|---------------------------------------------------------|---------|
-| CheckResult | System.Collections.Hashtable  | Check result fields expected by Icinga (host, service, cr). | @{}  |
+| Name        | Type                         | Description                                                 | Default |
+|-------------|------------------------------|-------------------------------------------------------------|---------|
+| CheckResult | System.Collections.Hashtable | Check result fields expected by Icinga (host, service, cr). | @{}     |
 
 #### Outputs
 
-None — Logs errors via Write-LoggingEntry and enqueues the message through the writer queue.
+None -- Logs errors via Write-LoggingEntry and enqueues the message through the writer queue.
 
 #### Examples
 
@@ -1101,7 +1101,7 @@ PS> Send-IcingaProtocolCheckResult -CheckResult @{ host = 'myhost'; service = 'p
 Requires New-IcingaRPCMessage and Add-IcingaRPCMessageToWriterQueue to be available.
 The check result is sent asynchronously via the per-endpoint writer queue.
 
-*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolCheckResult.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolCheckResult.ps1)*
+*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolCheckResult.ps1](../src/IcingaProtocol/Private/Send-IcingaProtocolCheckResult.ps1)*
 
 ---
 
@@ -1121,7 +1121,7 @@ updates the global heartbeat timestamp.
 
 #### Outputs
 
-None — Performs side effects: sends a TCP heartbeat message, writes log entries and updates the global heartbeat timestamp.
+None -- Performs side effects: sends a TCP heartbeat message, writes log entries and updates the global heartbeat timestamp.
 
 #### Examples
 
@@ -1138,7 +1138,7 @@ being present and correctly configured. Requires Write-LoggingEntry, New-IcingaR
 and Send-TCPMessage. The heartbeat message includes a parameter timeout set to 120 seconds.
 Time comparisons use Get-Date and TotalSeconds to determine interval expiry.
 
-*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolHeartbeat.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolHeartbeat.ps1)*
+*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolHeartbeat.ps1](../src/IcingaProtocol/Private/Send-IcingaProtocolHeartbeat.ps1)*
 
 ---
 
@@ -1157,7 +1157,7 @@ by the remote endpoint, typically before the writer queue is active.
 
 #### Outputs
 
-None — Sends the Hello frame directly via Send-TCPMessage; no pipeline output.
+None -- Sends the Hello frame directly via Send-TCPMessage; no pipeline output.
 
 #### Examples
 
@@ -1172,7 +1172,7 @@ Sends the Hello message over the current TCP/SSL stream.
 This function bypasses the writer queue and calls Send-TCPMessage directly,
 making it suitable for early handshake messages before the queue is initialized.
 
-*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolHello.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolHello.ps1)*
+*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolHello.ps1](../src/IcingaProtocol/Private/Send-IcingaProtocolHello.ps1)*
 
 ---
 
@@ -1191,7 +1191,7 @@ using Get-IcingaUnixTime.
 
 #### Outputs
 
-None — Does not return any value.
+None -- Does not return any value.
 
 #### Examples
 
@@ -1205,7 +1205,7 @@ Sends the log position update to the connected Icinga endpoint.
 
 Requires an active TCP connection to the Icinga endpoint.
 
-*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1](../../src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1)*
+*Source: [src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1](../src/IcingaProtocol/Private/Send-IcingaProtocolLogPosition.ps1)*
 
 ---
 
@@ -1229,9 +1229,9 @@ individual elements in the returned PerformanceData array.
 
 **`$RawOutput`**
 
-| Name      | Type          | Description                                               | Default |
-|-----------|---------------|-----------------------------------------------------------|---------|
-| RawOutput | System.String | Raw stdout captured from an external binary or script.    | ''      |
+| Name      | Type          | Description                                            | Default |
+|-----------|---------------|--------------------------------------------------------|---------|
+| RawOutput | System.String | Raw stdout captured from an external binary or script. | ''      |
 
 #### Outputs
 
@@ -1251,7 +1251,7 @@ individual performance-data metric strings.
 
 Pure string parser with no external dependencies or side effects.
 
-*Source: [src/IcingaProtocol/Private/Split-IcingaBinaryPluginOutput.ps1](../../src/IcingaProtocol/Private/Split-IcingaBinaryPluginOutput.ps1)*
+*Source: [src/IcingaProtocol/Private/Split-IcingaBinaryPluginOutput.ps1](../src/IcingaProtocol/Private/Split-IcingaBinaryPluginOutput.ps1)*
 
 ---
 
@@ -1275,7 +1275,7 @@ scans. Because the function runs indefinitely, it must always be started in a ba
 
 #### Outputs
 
-None — Manages connections, global state and log entries; no pipeline output.
+None -- Manages connections, global state and log entries; no pipeline output.
 
 #### Examples
 
@@ -1294,7 +1294,7 @@ thread. Exceptions during individual connection attempts are logged and do not s
 overall loop. The loop pauses for 5 seconds between full endpoint scans to avoid tight
 reconnect cycles.
 
-*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolConnector.ps1](../../src/IcingaProtocol/Private/Start-IcingaProtocolConnector.ps1)*
+*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolConnector.ps1](../src/IcingaProtocol/Private/Start-IcingaProtocolConnector.ps1)*
 
 ---
 
@@ -1308,25 +1308,25 @@ reconnect cycles.
 
 Start-IcingaProtocolHeartbeat validates and registers a provided System.Net.Sockets.TcpClient and System.Net.Security.SslStream for use by the Icinga protocol heartbeat subsystem, then enters a loop that periodically sends heartbeat messages until the TCP connection is lost. The function logs connection loss and other exceptions, closes the TCP connection when the client disconnects, and stops the current Icinga thread.
 
-This function relies on helper functions from the IcingaForWindows module (for example: Set-TCPClientAndStream, Test-TCPConnection, Send-IcingaProtocolHeartbeat, Close-TCPConnection, Stop-Thread, Get-ThreadId and Write-LoggingEntry) to perform its work. It is intended to be used after a successful connection handshake and when you have an active SslStream wrapped around a TcpClient.
+This function relies on helper functions from the Icinga for Windows module (for example: Set-TCPClientAndStream, Test-TCPConnection, Send-IcingaProtocolHeartbeat, Close-TCPConnection, Stop-Thread, Get-ThreadId and Write-LoggingEntry) to perform its work. It is intended to be used after a successful connection handshake and when you have an active SslStream wrapped around a TcpClient.
 
 #### Parameters
 
 **`$TcpClient`**
 
-| Name      | Type                         | Description                                                               | Default |
-|-----------|------------------------------|---------------------------------------------------------------------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client representing the remote endpoint. Required.          | $null   |
+| Name      | Type                         | Description                                                      | Default |
+|-----------|------------------------------|------------------------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client representing the remote endpoint. Required. | $null   |
 
 **`$SslStream`**
 
-| Name      | Type                            | Description                                                              | Default |
-|-----------|---------------------------------|--------------------------------------------------------------------------|---------|
-| SslStream | System.Net.Security.SslStream   | SSL/TLS stream wrapping the network stream for secure communication. Required. | $null   |
+| Name      | Type                          | Description                                                                    | Default |
+|-----------|-------------------------------|--------------------------------------------------------------------------------|---------|
+| SslStream | System.Net.Security.SslStream | SSL/TLS stream wrapping the network stream for secure communication. Required. | $null   |
 
 #### Outputs
 
-None — Sends heartbeat messages, writes log entries, closes the connection and stops
+None -- Sends heartbeat messages, writes log entries, closes the connection and stops
 the current thread when the connection terminates.
 
 #### Examples
@@ -1351,7 +1351,7 @@ true. MethodInvocationException during send is logged at Info level as a connect
 event. After the loop exits, the TCP connection is closed and the current thread is stopped
 via Stop-Thread.
 
-*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolHeartbeat.ps1](../../src/IcingaProtocol/Private/Start-IcingaProtocolHeartbeat.ps1)*
+*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolHeartbeat.ps1](../src/IcingaProtocol/Private/Start-IcingaProtocolHeartbeat.ps1)*
 
 ---
 
@@ -1374,7 +1374,7 @@ hosting process is stopped and must always be started in a background thread.
 
 #### Outputs
 
-None — Side-effect driven: opens a network listener, updates global state, writes log entries and spawns threads.
+None -- Side-effect driven: opens a network listener, updates global state, writes log entries and spawns threads.
 
 #### Examples
 
@@ -1392,7 +1392,7 @@ background thread. Requires Open-TCPSocket, Close-TCPConnection, Test-IcingaProt
 Add-IcingaProtocolClient, New-Thread, Start-IcingaProtocolSocketReader and Write-LoggingEntry.
 Exceptions are caught per iteration to keep the listener loop alive.
 
-*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolListener.ps1](../../src/IcingaProtocol/Private/Start-IcingaProtocolListener.ps1)*
+*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolListener.ps1](../src/IcingaProtocol/Private/Start-IcingaProtocolListener.ps1)*
 
 ---
 
@@ -1410,25 +1410,25 @@ Start-IcingaProtocolSocketReader initializes and manages reading from a provided
 
 **`$Client`**
 
-| Name   | Type                         | Description                                                               | Default |
-|--------|------------------------------|---------------------------------------------------------------------------|---------|
+| Name   | Type                         | Description                                                                | Default |
+|--------|------------------------------|----------------------------------------------------------------------------|---------|
 | Client | System.Net.Sockets.TcpClient | Established TCP connection to read from. Required; null causes early exit. | $null   |
 
 **`$Endpoint`**
 
-| Name     | Type          | Description                                                                     | Default |
-|----------|---------------|---------------------------------------------------------------------------------|---------|
-| Endpoint | System.String | Endpoint name used for SSL authentication with the IcingaProtocol certificate.  | $null   |
+| Name     | Type          | Description                                                                    | Default |
+|----------|---------------|--------------------------------------------------------------------------------|---------|
+| Endpoint | System.String | Endpoint name used for SSL authentication with the IcingaProtocol certificate. | $null   |
 
 **`$IsClient`**
 
-| Name     | Type                                             | Description                                                          | Default |
-|----------|--------------------------------------------------|----------------------------------------------------------------------|---------|
-| IsClient | System.Management.Automation.SwitchParameter     | When set, the reader sends an initial Hello after TLS handshake.     | $false  |
+| Name     | Type                                         | Description                                                      | Default |
+|----------|----------------------------------------------|------------------------------------------------------------------|---------|
+| IsClient | System.Management.Automation.SwitchParameter | When set, the reader sends an initial Hello after TLS handshake. | $false  |
 
 #### Outputs
 
-None — Enqueues parsed JSON-RPC payloads for worker processing and updates global connection state.
+None -- Enqueues parsed JSON-RPC payloads for worker processing and updates global connection state.
 
 #### Examples
 
@@ -1451,7 +1451,7 @@ Uses a 4096-byte read buffer per iteration. Partial frames are accumulated and p
 to Read-IcingaRPCMessage on subsequent reads. Heartbeat and writer threads are started via
 New-Thread before the read loop begins.
 
-*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolSocketReader.ps1](../../src/IcingaProtocol/Private/Start-IcingaProtocolSocketReader.ps1)*
+*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolSocketReader.ps1](../src/IcingaProtocol/Private/Start-IcingaProtocolSocketReader.ps1)*
 
 ---
 
@@ -1478,19 +1478,19 @@ by Start-IcingaProtocolSocketReader.
 
 **`$TcpClient`**
 
-| Name      | Type                         | Description                                                              | Default |
-|-----------|------------------------------|--------------------------------------------------------------------------|---------|
-| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client whose remote endpoint identifies the writer queue.  | $null   |
+| Name      | Type                         | Description                                                             | Default |
+|-----------|------------------------------|-------------------------------------------------------------------------|---------|
+| TcpClient | System.Net.Sockets.TcpClient | Connected TCP client whose remote endpoint identifies the writer queue. | $null   |
 
 **`$SslStream`**
 
-| Name      | Type                          | Description                                                             | Default |
-|-----------|-------------------------------|-------------------------------------------------------------------------|---------|
-| SslStream | System.Net.Security.SslStream | Authenticated SSL stream used by Send-TCPMessage to write bytes.        | $null   |
+| Name      | Type                          | Description                                                      | Default |
+|-----------|-------------------------------|------------------------------------------------------------------|---------|
+| SslStream | System.Net.Security.SslStream | Authenticated SSL stream used by Send-TCPMessage to write bytes. | $null   |
 
 #### Outputs
 
-None — Dequeues and sends messages; no pipeline output.
+None -- Dequeues and sends messages; no pipeline output.
 
 #### Examples
 
@@ -1506,7 +1506,7 @@ The writer queue entry for the endpoint is created inside this function using a
 ConcurrentQueue-backed BlockingCollection. The WaitForJobs flag on New-Thread ensures the
 queue slot exists before the first message is enqueued by other threads.
 
-*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolSocketWriter.ps1](../../src/IcingaProtocol/Private/Start-IcingaProtocolSocketWriter.ps1)*
+*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolSocketWriter.ps1](../src/IcingaProtocol/Private/Start-IcingaProtocolSocketWriter.ps1)*
 
 ---
 
@@ -1553,7 +1553,7 @@ New-IcingaAgentEnvironment. Accesses shared state via Get-GlobalRuntimeVariable
 and nulls all per-iteration reference variables in finally to prevent daemon
 memory retention.
 
-*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolWorker.ps1](../../src/IcingaProtocol/Private/Start-IcingaProtocolWorker.ps1)*
+*Source: [src/IcingaProtocol/Private/Start-IcingaProtocolWorker.ps1](../src/IcingaProtocol/Private/Start-IcingaProtocolWorker.ps1)*
 
 ---
 
@@ -1581,9 +1581,9 @@ consuming host resources:
 
 **`$Process`**
 
-| Name    | Type                       | Description                                         | Default |
-|---------|----------------------------|-----------------------------------------------------|---------|
-| Process | System.Diagnostics.Process | Live root Process object whose handle stays open.   | $null   |
+| Name    | Type                       | Description                                       | Default |
+|---------|----------------------------|---------------------------------------------------|---------|
+| Process | System.Diagnostics.Process | Live root Process object whose handle stays open. | $null   |
 
 **`$RootProcessId`**
 
@@ -1608,7 +1608,7 @@ Kills the root process and all descendant processes spawned by it.
 Caller remains responsible for disposing the root Process instance after stream
 drain completes.
 
-*Source: [src/IcingaProtocol/Private/Stop-IcingaProtocolProcessTree.ps1](../../src/IcingaProtocol/Private/Stop-IcingaProtocolProcessTree.ps1)*
+*Source: [src/IcingaProtocol/Private/Stop-IcingaProtocolProcessTree.ps1](../src/IcingaProtocol/Private/Stop-IcingaProtocolProcessTree.ps1)*
 
 ---
 
@@ -1620,19 +1620,19 @@ drain completes.
 
 #### Description
 
-Test-IcingaProtocolClientStatus examines the global IcingaForWindows protocol connection table to determine whether a TCP client for the provided Address is present and connected. If Address is null or empty, the function returns an invalid-address result. If a connection entry exists, the function checks the client object and its Connected property and returns a corresponding status. If no entry exists, the function attempts to add a new entry to the global connection table using the $TcpClient variable from the current scope and returns a created status.
+Test-IcingaProtocolClientStatus examines the global Icinga for Windows protocol connection table to determine whether a TCP client for the provided Address is present and connected. If Address is null or empty, the function returns an invalid-address result. If a connection entry exists, the function checks the client object and its Connected property and returns a corresponding status. If no entry exists, the function attempts to add a new entry to the global connection table using the $TcpClient variable from the current scope and returns a created status.
 
 #### Parameters
 
 **`$Address`**
 
-| Name    | Type          | Description                                                                              | Default |
-|---------|---------------|------------------------------------------------------------------------------------------|---------|
-| Address | System.String | IP address string used to look up the client in the global connections table.            | $null   |
+| Name    | Type          | Description                                                                   | Default |
+|---------|---------------|-------------------------------------------------------------------------------|---------|
+| Address | System.String | IP address string used to look up the client in the global connections table. | $null   |
 
 #### Outputs
 
-PSCustomObject — Standardized result object from Write-FunctionReturnValue.
+PSCustomObject -- Standardized result object from Write-FunctionReturnValue.
 Possible tokens: IcingaAddressInvalid, IcingaClientReplaced, IcingaClientConnected, IcingaClientCreated.
 
 #### Examples
@@ -1656,5 +1656,5 @@ Returns IcingaAddressInvalid when no Address is provided.
 - Precondition: $Global:IcingaForWindows.Public.IcingaProtocol.Connections must be an initialized hashtable or dictionary-like object that supports ContainsKey(), indexing, and Add().
 - The function relies on client objects exposing a Connected property to determine connectivity.
 
-*Source: [src/IcingaProtocol/Private/Test-IcingaProtocolClientStatus.ps1](../../src/IcingaProtocol/Private/Test-IcingaProtocolClientStatus.ps1)*
+*Source: [src/IcingaProtocol/Private/Test-IcingaProtocolClientStatus.ps1](../src/IcingaProtocol/Private/Test-IcingaProtocolClientStatus.ps1)*
 

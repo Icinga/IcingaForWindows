@@ -12,14 +12,14 @@ SkipEmptyKeys is enabled, null, empty and whitespace-only keys (such as Icinga
 placeholder macros) are omitted.
 
 .PARAMETER InputObject
-| Name        | Type          | Description                                     | Default |
-|-------------|---------------|-------------------------------------------------|---------|
-| InputObject | System.Object | Dictionary or object to copy entries from.      | $null   |
+| Name        | Type          | Description                                | Default |
+|-------------|---------------|--------------------------------------------|---------|
+| InputObject | System.Object | Dictionary or object to copy entries from. | $null   |
 
 .PARAMETER SkipEmptyKeys
-| Name          | Type                                         | Description                                           | Default |
-|---------------|----------------------------------------------|-------------------------------------------------------|---------|
-| SkipEmptyKeys | System.Management.Automation.SwitchParameter | Omit null, empty or whitespace-only keys when set.    | $false  |
+| Name          | Type                                         | Description                                        | Default |
+|---------------|----------------------------------------------|----------------------------------------------------|---------|
+| SkipEmptyKeys | System.Management.Automation.SwitchParameter | Omit null, empty or whitespace-only keys when set. | $false  |
 
 .OUTPUTS
 System.Collections.Specialized.OrderedDictionary -- Case-sensitive ordered
@@ -32,6 +32,9 @@ Creates an ordinal OrderedDictionary preserving exact key casing.
 
 .NOTES
 Compatible with Windows PowerShell 5.1 and PowerShell 7+.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function ConvertTo-ModuleOrderedDictionary()
 {

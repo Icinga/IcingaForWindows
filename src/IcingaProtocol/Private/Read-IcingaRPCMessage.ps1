@@ -12,12 +12,12 @@ until the buffer is empty, the size prefix is invalid or insufficient data remai
 for a complete frame.
 
 .PARAMETER Buffer
-| Name   | Type                      | Description                                                                 | Default |
-|--------|---------------------------|-----------------------------------------------------------------------------|---------|
+| Name   | Type                      | Description                                                                         | Default |
+|--------|---------------------------|-------------------------------------------------------------------------------------|---------|
 | Buffer | System.Text.StringBuilder | Accumulated StringBuilder buffer containing one or more length-prefixed RPC frames. | $null   |
 
 .OUTPUTS
-None — The buffer is modified in place.
+None -- The buffer is modified in place.
 
 .EXAMPLE
 PS> Read-IcingaRPCMessage -Buffer $buffer
@@ -26,6 +26,9 @@ PS> Read-IcingaRPCMessage -Buffer $buffer
 Each call may process multiple complete frames in a single pass. Partial frames at
 the end of the buffer are preserved for the next read cycle.
 Complete messages are dispatched via Add-IcingaRPCMessageToWorker.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Read-IcingaRPCMessage()
 {
@@ -73,7 +76,7 @@ function Read-IcingaRPCMessage()
 
         # Parse the RPC message size prefix without array allocations or Split()
         [string]$SizeString = $Buffer.ToString(0, $ColonIndex);
-        [int]$RPCSize = 0;
+        [int]$RPCSize       = 0;
         if (-not [int]::TryParse($SizeString, [ref]$RPCSize) -or $RPCSize -le 0) {
             break;
         }

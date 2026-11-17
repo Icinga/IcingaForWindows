@@ -10,12 +10,12 @@ The function validates the provided hashtable and logs an error if it is empty
 or null.
 
 .PARAMETER CheckResult
-| Name        | Type                          | Description                                             | Default |
-|-------------|-------------------------------|---------------------------------------------------------|---------|
-| CheckResult | System.Collections.Hashtable  | Check result fields expected by Icinga (host, service, cr). | @{}  |
+| Name        | Type                         | Description                                                 | Default |
+|-------------|------------------------------|-------------------------------------------------------------|---------|
+| CheckResult | System.Collections.Hashtable | Check result fields expected by Icinga (host, service, cr). | @{}     |
 
 .OUTPUTS
-None — Logs errors via Write-LoggingEntry and enqueues the message through the writer queue.
+None -- Logs errors via Write-LoggingEntry and enqueues the message through the writer queue.
 
 .EXAMPLE
 PS> Send-IcingaProtocolCheckResult -CheckResult @{ host = 'myhost'; service = 'ping'; cr = @{ exit_status = 0; output = 'OK' } }
@@ -23,6 +23,9 @@ PS> Send-IcingaProtocolCheckResult -CheckResult @{ host = 'myhost'; service = 'p
 .NOTES
 Requires New-IcingaRPCMessage and Add-IcingaRPCMessageToWriterQueue to be available.
 The check result is sent asynchronously via the per-endpoint writer queue.
+
+SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
+SPDX-License-Identifier: GPL-3.0-or-later
 #>
 function Send-IcingaProtocolCheckResult()
 {

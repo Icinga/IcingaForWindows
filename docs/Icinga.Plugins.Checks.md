@@ -65,15 +65,15 @@ This plugin is Windows-only because it relies on the Windows performance counter
 
 **`$Warning`**
 
-| Name    | Type          | Description                                                        | Default |
-|---------|---------------|--------------------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold in percent, using the Icinga threshold grammar.  |         |
+| Name    | Type          | Description                                                       | Default |
+|---------|---------------|-------------------------------------------------------------------|---------|
+| Warning | System.String | Warning threshold in percent, using the Icinga threshold grammar. |         |
 
 **`$Critical`**
 
-| Name     | Type          | Description                                                         | Default |
-|----------|---------------|---------------------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold in percent, using the Icinga threshold grammar.  |         |
+| Name     | Type          | Description                                                        | Default |
+|----------|---------------|--------------------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold in percent, using the Icinga threshold grammar. |         |
 
 **`$Core`**
 
@@ -83,9 +83,9 @@ This plugin is Windows-only because it relies on the Windows performance counter
 
 **`$NodeFilter`**
 
-| Name       | Type         | Description                                                               | Default |
-|------------|--------------|---------------------------------------------------------------------------|---------|
-| NodeFilter | System.Array | NUMA node IDs to include (wildcards allowed; aliased to SocketFilter).    | @()     |
+| Name       | Type         | Description                                                            | Default |
+|------------|--------------|------------------------------------------------------------------------|---------|
+| NodeFilter | System.Array | NUMA node IDs to include (wildcards allowed; aliased to SocketFilter). | @()     |
 
 **`$OverallOnly`**
 
@@ -95,9 +95,9 @@ This plugin is Windows-only because it relies on the Windows performance counter
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -139,7 +139,7 @@ numbered across all nodes, '<node>_total::ifw_cpu::load' and
 'totalload::ifw_cpu::load'. The integer exit code is the return value; an Icinga
 command wrapper is expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckCPU.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckCPU.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckCPU.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckCPU.ps1)*
 
 ---
 
@@ -336,9 +336,9 @@ reported as UNKNOWN with its reason.
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -376,7 +376,7 @@ Windows-only. Reads the file system through Get-IcingaDirectoryInformation; the
 user needs list permission on every checked directory. The integer exit code is
 the return value; an Icinga command wrapper is expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckDirectory.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckDirectory.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckDirectory.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckDirectory.ps1)*
 
 ---
 
@@ -415,15 +415,15 @@ as UNKNOWN with its reason.
 
 **`$Warning`**
 
-| Name    | Type          | Description                                                         | Default |
-|---------|---------------|---------------------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold for the used memory, e.g. '80%' or '12GiB'.       |         |
+| Name    | Type          | Description                                                   | Default |
+|---------|---------------|---------------------------------------------------------------|---------|
+| Warning | System.String | Warning threshold for the used memory, e.g. '80%' or '12GiB'. |         |
 
 **`$Critical`**
 
-| Name     | Type          | Description                                                         | Default |
-|----------|---------------|---------------------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold for the used memory, e.g. '90%' or '14GiB'.      |         |
+| Name     | Type          | Description                                                    | Default |
+|----------|---------------|----------------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold for the used memory, e.g. '90%' or '14GiB'. |         |
 
 **`$PageFileWarning`**
 
@@ -439,33 +439,33 @@ as UNKNOWN with its reason.
 
 **`$MemoryPagesSecWarning`**
 
-| Name                  | Type          | Description                                   | Default |
-|-----------------------|---------------|-----------------------------------------------|---------|
-| MemoryPagesSecWarning | System.String | Warning threshold for the memory pages/sec.   |         |
+| Name                  | Type          | Description                                 | Default |
+|-----------------------|---------------|---------------------------------------------|---------|
+| MemoryPagesSecWarning | System.String | Warning threshold for the memory pages/sec. |         |
 
 **`$MemoryPagesSecCritical`**
 
-| Name                   | Type          | Description                                   | Default |
-|------------------------|---------------|-----------------------------------------------|---------|
-| MemoryPagesSecCritical | System.String | Critical threshold for the memory pages/sec.  |         |
+| Name                   | Type          | Description                                  | Default |
+|------------------------|---------------|----------------------------------------------|---------|
+| MemoryPagesSecCritical | System.String | Critical threshold for the memory pages/sec. |         |
 
 **`$IncludePageFile`**
 
-| Name            | Type         | Description                                              | Default |
-|-----------------|--------------|----------------------------------------------------------|---------|
-| IncludePageFile | System.Array | Only check page files matching these names (wildcards).  | @()     |
+| Name            | Type         | Description                                             | Default |
+|-----------------|--------------|---------------------------------------------------------|---------|
+| IncludePageFile | System.Array | Only check page files matching these names (wildcards). | @()     |
 
 **`$ExcludePageFile`**
 
-| Name            | Type         | Description                                          | Default |
-|-----------------|--------------|------------------------------------------------------|---------|
-| ExcludePageFile | System.Array | Skip page files matching these names (wildcards).    | @()     |
+| Name            | Type         | Description                                       | Default |
+|-----------------|--------------|---------------------------------------------------|---------|
+| ExcludePageFile | System.Array | Skip page files matching these names (wildcards). | @()     |
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -498,7 +498,7 @@ performance counters ('Performance Monitor Users') and the Win32_ComputerSystem,
 Win32_PageFileUsage and Win32_PageFileSetting CIM classes. The integer exit code
 is the return value; an Icinga command wrapper is expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckMemory.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckMemory.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckMemory.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckMemory.ps1)*
 
 ---
 
@@ -584,9 +584,9 @@ Windows-only because it relies on the Win32_Volume CIM class.
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -624,7 +624,7 @@ Windows-only. Reads Win32_Volume and MSFT_Partition through
 Get-IcingaDiskInformation. The integer exit code is the
 return value; an Icinga command wrapper is expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckPartitionSpace.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckPartitionSpace.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckPartitionSpace.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckPartitionSpace.ps1)*
 
 ---
 
@@ -672,9 +672,9 @@ with '%' spelled out as 'percent', for example
 
 **`$PerfCounter`**
 
-| Name        | Type         | Description                                                   | Default |
-|-------------|--------------|---------------------------------------------------------------|---------|
-| PerfCounter | System.Array | Counter paths to check, e.g. '\Processor(*)\% Processor Time'.| @()     |
+| Name        | Type         | Description                                                    | Default |
+|-------------|--------------|----------------------------------------------------------------|---------|
+| PerfCounter | System.Array | Counter paths to check, e.g. '\Processor(*)\% Processor Time'. | @()     |
 
 **`$Warning`**
 
@@ -708,9 +708,9 @@ with '%' spelled out as 'percent', for example
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -742,7 +742,7 @@ Windows-only. Reads the Windows performance counters; the user needs read access
 to them ('Performance Monitor Users'). The integer exit code is the return value;
 an Icinga command wrapper is expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckPerfCounter.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckPerfCounter.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckPerfCounter.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckPerfCounter.ps1)*
 
 ---
 
@@ -783,51 +783,51 @@ Performance data is written for the summary only, with the labels
 
 **`$PageFileWarning`**
 
-| Name            | Type          | Description                                                     | Default |
-|-----------------|---------------|-----------------------------------------------------------------|---------|
-| PageFileWarning | System.String | Warning threshold for the page file usage of each process.      |         |
+| Name            | Type          | Description                                                | Default |
+|-----------------|---------------|------------------------------------------------------------|---------|
+| PageFileWarning | System.String | Warning threshold for the page file usage of each process. |         |
 
 **`$PageFileCritical`**
 
-| Name             | Type          | Description                                                     | Default |
-|------------------|---------------|-----------------------------------------------------------------|---------|
-| PageFileCritical | System.String | Critical threshold for the page file usage of each process.     |         |
+| Name             | Type          | Description                                                 | Default |
+|------------------|---------------|-------------------------------------------------------------|---------|
+| PageFileCritical | System.String | Critical threshold for the page file usage of each process. |         |
 
 **`$MemoryWarning`**
 
-| Name          | Type          | Description                                                 | Default |
-|---------------|---------------|-------------------------------------------------------------|---------|
-| MemoryWarning | System.String | Warning threshold for the memory usage of each process.     |         |
+| Name          | Type          | Description                                             | Default |
+|---------------|---------------|---------------------------------------------------------|---------|
+| MemoryWarning | System.String | Warning threshold for the memory usage of each process. |         |
 
 **`$MemoryCritical`**
 
-| Name           | Type          | Description                                                 | Default |
-|----------------|---------------|-------------------------------------------------------------|---------|
-| MemoryCritical | System.String | Critical threshold for the memory usage of each process.    |         |
+| Name           | Type          | Description                                              | Default |
+|----------------|---------------|----------------------------------------------------------|---------|
+| MemoryCritical | System.String | Critical threshold for the memory usage of each process. |         |
 
 **`$CPUWarning`**
 
-| Name       | Type          | Description                                              | Default |
-|------------|---------------|----------------------------------------------------------|---------|
-| CPUWarning | System.String | Warning threshold for the CPU usage of each process.     |         |
+| Name       | Type          | Description                                          | Default |
+|------------|---------------|------------------------------------------------------|---------|
+| CPUWarning | System.String | Warning threshold for the CPU usage of each process. |         |
 
 **`$CPUCritical`**
 
-| Name        | Type          | Description                                              | Default |
-|-------------|---------------|----------------------------------------------------------|---------|
-| CPUCritical | System.String | Critical threshold for the CPU usage of each process.    |         |
+| Name        | Type          | Description                                           | Default |
+|-------------|---------------|-------------------------------------------------------|---------|
+| CPUCritical | System.String | Critical threshold for the CPU usage of each process. |         |
 
 **`$ThreadCountWarning`**
 
-| Name               | Type          | Description                                                | Default |
-|--------------------|---------------|------------------------------------------------------------|---------|
-| ThreadCountWarning | System.String | Warning threshold for the thread count of each process.    |         |
+| Name               | Type          | Description                                             | Default |
+|--------------------|---------------|---------------------------------------------------------|---------|
+| ThreadCountWarning | System.String | Warning threshold for the thread count of each process. |         |
 
 **`$ThreadCountCritical`**
 
-| Name                | Type          | Description                                                | Default |
-|---------------------|---------------|------------------------------------------------------------|---------|
-| ThreadCountCritical | System.String | Critical threshold for the thread count of each process.   |         |
+| Name                | Type          | Description                                              | Default |
+|---------------------|---------------|----------------------------------------------------------|---------|
+| ThreadCountCritical | System.String | Critical threshold for the thread count of each process. |         |
 
 **`$TotalPageFileWarning`**
 
@@ -867,15 +867,15 @@ Performance data is written for the summary only, with the labels
 
 **`$TotalThreadCountWarning`**
 
-| Name                    | Type          | Description                                                       | Default |
-|-------------------------|---------------|-------------------------------------------------------------------|---------|
-| TotalThreadCountWarning | System.String | Warning threshold for the thread count of all processes of a name.|         |
+| Name                    | Type          | Description                                                        | Default |
+|-------------------------|---------------|--------------------------------------------------------------------|---------|
+| TotalThreadCountWarning | System.String | Warning threshold for the thread count of all processes of a name. |         |
 
 **`$TotalThreadCountCritical`**
 
-| Name                     | Type          | Description                                                        | Default |
-|--------------------------|---------------|--------------------------------------------------------------------|---------|
-| TotalThreadCountCritical | System.String | Critical threshold for the thread count of all processes of a name.|         |
+| Name                     | Type          | Description                                                         | Default |
+|--------------------------|---------------|---------------------------------------------------------------------|---------|
+| TotalThreadCountCritical | System.String | Critical threshold for the thread count of all processes of a name. |         |
 
 **`$TotalProcessCountWarning`**
 
@@ -903,15 +903,15 @@ Performance data is written for the summary only, with the labels
 
 **`$OverrideNotFound`**
 
-| Name             | Type          | Description                                                                   | Default |
-|------------------|---------------|-------------------------------------------------------------------------------|---------|
-| OverrideNotFound | System.String | State for a Process entry without a match: Ok, Warning, Critical or Unknown.  | Unknown |
+| Name             | Type          | Description                                                                  | Default |
+|------------------|---------------|------------------------------------------------------------------------------|---------|
+| OverrideNotFound | System.String | State for a Process entry without a match: Ok, Warning, Critical or Unknown. | Unknown |
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -945,7 +945,7 @@ Users'), '\Memory\Commit Limit' and the Win32_ComputerSystem CIM class through
 Get-IcingaProcessInformation. The integer exit code is the return value; an Icinga
 command wrapper is expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckProcess.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckProcess.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckProcess.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckProcess.ps1)*
 
 ---
 
@@ -988,27 +988,27 @@ Performance data uses the labels '<path_taskname>::ifw_scheduledtask::state',
 
 **`$TaskName`**
 
-| Name     | Type         | Description                                                                   | Default |
-|----------|--------------|-------------------------------------------------------------------------------|---------|
-| TaskName | System.Array | Task names to check (wildcards allowed; plain names must exist).              | @()     |
+| Name     | Type         | Description                                                      | Default |
+|----------|--------------|------------------------------------------------------------------|---------|
+| TaskName | System.Array | Task names to check (wildcards allowed; plain names must exist). | @()     |
 
 **`$ExcludeTaskName`**
 
-| Name            | Type         | Description                                                            | Default |
-|-----------------|--------------|------------------------------------------------------------------------|---------|
-| ExcludeTaskName | System.Array | Task names to exclude from the check (wildcards allowed).              | @()     |
+| Name            | Type         | Description                                               | Default |
+|-----------------|--------------|-----------------------------------------------------------|---------|
+| ExcludeTaskName | System.Array | Task names to exclude from the check (wildcards allowed). | @()     |
 
 **`$TaskPath`**
 
-| Name     | Type         | Description                                                                   | Default |
-|----------|--------------|-------------------------------------------------------------------------------|---------|
-| TaskPath | System.Array | Task folder paths to include (wildcards allowed, e.g. '\Icinga\*').           | @()     |
+| Name     | Type         | Description                                                         | Default |
+|----------|--------------|---------------------------------------------------------------------|---------|
+| TaskPath | System.Array | Task folder paths to include (wildcards allowed, e.g. '\Icinga\*'). | @()     |
 
 **`$ExcludeTaskPath`**
 
-| Name            | Type         | Description                                                            | Default |
-|-----------------|--------------|------------------------------------------------------------------------|---------|
-| ExcludeTaskPath | System.Array | Task folder paths to exclude (wildcards allowed).                      | @()     |
+| Name            | Type         | Description                                       | Default |
+|-----------------|--------------|---------------------------------------------------|---------|
+| ExcludeTaskPath | System.Array | Task folder paths to exclude (wildcards allowed). | @()     |
 
 **`$State`**
 
@@ -1024,57 +1024,57 @@ Performance data uses the labels '<path_taskname>::ifw_scheduledtask::state',
 
 **`$WarningMissedRuns`**
 
-| Name              | Type          | Description                                                         | Default |
-|-------------------|---------------|---------------------------------------------------------------------|---------|
-| WarningMissedRuns | System.String | Warning threshold for the number of missed runs.                    |         |
+| Name              | Type          | Description                                      | Default |
+|-------------------|---------------|--------------------------------------------------|---------|
+| WarningMissedRuns | System.String | Warning threshold for the number of missed runs. |         |
 
 **`$CriticalMissedRuns`**
 
-| Name               | Type          | Description                                                        | Default |
-|--------------------|---------------|--------------------------------------------------------------------|---------|
-| CriticalMissedRuns | System.String | Critical threshold for the number of missed runs.                  |         |
+| Name               | Type          | Description                                       | Default |
+|--------------------|---------------|---------------------------------------------------|---------|
+| CriticalMissedRuns | System.String | Critical threshold for the number of missed runs. |         |
 
 **`$WarningLastRunTime`**
 
-| Name               | Type          | Description                                                        | Default |
-|--------------------|---------------|--------------------------------------------------------------------|---------|
-| WarningLastRunTime | System.String | Warning threshold for the age of the last run (e.g. '1d', '12h').  |         |
+| Name               | Type          | Description                                                       | Default |
+|--------------------|---------------|-------------------------------------------------------------------|---------|
+| WarningLastRunTime | System.String | Warning threshold for the age of the last run (e.g. '1d', '12h'). |         |
 
 **`$CriticalLastRunTime`**
 
-| Name                | Type          | Description                                                       | Default |
-|---------------------|---------------|-------------------------------------------------------------------|---------|
-| CriticalLastRunTime | System.String | Critical threshold for the age of the last run (e.g. '2d', '24h').|         |
+| Name                | Type          | Description                                                        | Default |
+|---------------------|---------------|--------------------------------------------------------------------|---------|
+| CriticalLastRunTime | System.String | Critical threshold for the age of the last run (e.g. '2d', '24h'). |         |
 
 **`$WarningNextRunTime`**
 
-| Name               | Type          | Description                                                        | Default |
-|--------------------|---------------|--------------------------------------------------------------------|---------|
-| WarningNextRunTime | System.String | Warning threshold for the next run offset (e.g. '10m', '-1h:').    |         |
+| Name               | Type          | Description                                                     | Default |
+|--------------------|---------------|-----------------------------------------------------------------|---------|
+| WarningNextRunTime | System.String | Warning threshold for the next run offset (e.g. '10m', '-1h:'). |         |
 
 **`$CriticalNextRunTime`**
 
-| Name                | Type          | Description                                                       | Default |
-|---------------------|---------------|-------------------------------------------------------------------|---------|
-| CriticalNextRunTime | System.String | Critical threshold for the next run offset (e.g. '30m', '-2h:').  |         |
+| Name                | Type          | Description                                                      | Default |
+|---------------------|---------------|------------------------------------------------------------------|---------|
+| CriticalNextRunTime | System.String | Critical threshold for the next run offset (e.g. '30m', '-2h:'). |         |
 
 **`$IgnoreLastRunTime`**
 
-| Name              | Type                                         | Description                                        | Default |
-|-------------------|----------------------------------------------|----------------------------------------------------|---------|
-| IgnoreLastRunTime | System.Management.Automation.SwitchParameter | Do not alert on non-zero Last Task Result codes.   | False   |
+| Name              | Type                                         | Description                                      | Default |
+|-------------------|----------------------------------------------|--------------------------------------------------|---------|
+| IgnoreLastRunTime | System.Management.Automation.SwitchParameter | Do not alert on non-zero Last Task Result codes. | False   |
 
 **`$MitigateUnknown`**
 
-| Name            | Type                                         | Description                                                  | Default |
-|-----------------|----------------------------------------------|--------------------------------------------------------------|---------|
-| MitigateUnknown | System.Management.Automation.SwitchParameter | Return OK instead of UNKNOWN when no task matches the filter.| False   |
+| Name            | Type                                         | Description                                                   | Default |
+|-----------------|----------------------------------------------|---------------------------------------------------------------|---------|
+| MitigateUnknown | System.Management.Automation.SwitchParameter | Return OK instead of UNKNOWN when no task matches the filter. | False   |
 
 **`$OverrideNotFound`**
 
-| Name             | Type          | Description                                                               | Default |
-|------------------|---------------|---------------------------------------------------------------------------|---------|
-| OverrideNotFound | System.String | State for missing required tasks ('Ok', 'Warning', 'Critical', 'Unknown').| Unknown |
+| Name             | Type          | Description                                                                | Default |
+|------------------|---------------|----------------------------------------------------------------------------|---------|
+| OverrideNotFound | System.String | State for missing required tasks ('Ok', 'Warning', 'Critical', 'Unknown'). | Unknown |
 
 **`$Verbosity`**
 
@@ -1111,7 +1111,7 @@ Checks all tasks under \Icinga\ for Ready or Running state and warns if a task h
 Windows-only. Queries tasks through Get-IcingaScheduledTask. The integer exit code
 is the return value; an Icinga command wrapper is expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckScheduledTask.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckScheduledTask.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckScheduledTask.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckScheduledTask.ps1)*
 
 ---
 
@@ -1161,9 +1161,9 @@ This plugin is Windows-only because it relies on the Win32_Service CIM class.
 
 **`$Status`**
 
-| Name   | Type                  | Description                                                                                                                            | Default    |
-|--------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------|------------|
-| Status | IcingaServiceStatus[] | Expected status(es) of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused, Unknown.| @(Running) |
+| Name   | Type                  | Description                                                                                                                             | Default    |
+|--------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------|------------|
+| Status | IcingaServiceStatus[] | Expected status(es) of the given services: Stopped, StartPending, StopPending, Running, ContinuePending, PausePending, Paused, Unknown. | @(Running) |
 
 **`$FilterStartupType`**
 
@@ -1191,9 +1191,9 @@ This plugin is Windows-only because it relies on the Win32_Service CIM class.
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -1233,7 +1233,7 @@ Get-IcingaWindowsInformation; a failed query is reported as UNKNOWN with its
 reason. The integer exit code is the return value; an Icinga command wrapper is
 expected to exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckService.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckService.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckService.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckService.ps1)*
 
 ---
 
@@ -1264,21 +1264,21 @@ Performance data uses the label 'windows::ifw_uptime::uptime' in seconds.
 
 **`$Warning`**
 
-| Name    | Type          | Description                                              | Default |
-|---------|---------------|----------------------------------------------------------|---------|
-| Warning | System.String | Warning threshold as duration or range, e.g. '1d:'.      |         |
+| Name    | Type          | Description                                         | Default |
+|---------|---------------|-----------------------------------------------------|---------|
+| Warning | System.String | Warning threshold as duration or range, e.g. '1d:'. |         |
 
 **`$Critical`**
 
-| Name     | Type          | Description                                              | Default |
-|----------|---------------|----------------------------------------------------------|---------|
-| Critical | System.String | Critical threshold as duration or range, e.g. '30m:'.    |         |
+| Name     | Type          | Description                                           | Default |
+|----------|---------------|-------------------------------------------------------|---------|
+| Critical | System.String | Critical threshold as duration or range, e.g. '30m:'. |         |
 
 **`$Verbosity`**
 
-| Name      | Type         | Description                                                                        | Default |
-|-----------|--------------|------------------------------------------------------------------------------------|---------|
-| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config.| 0       |
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
 
 **`$NoPerfData`**
 
@@ -1311,5 +1311,5 @@ needs read access to the performance counters ('Performance Monitor Users'). The
 integer exit code is the return value; an Icinga command wrapper is expected to
 exit with it.
 
-*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckUptime.ps1](../../src/Plugins/Checks/Public/Invoke-IcingaCheckUptime.ps1)*
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckUptime.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckUptime.ps1)*
 
