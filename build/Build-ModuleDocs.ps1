@@ -336,10 +336,10 @@ function Test-IcingaHelpCompleteness()
     if ([string]::IsNullOrWhiteSpace($Help.Notes)) {
         $Violations += 'missing .NOTES';
     } else {
-        if ($Help.Notes -notmatch '(?m)^[ \t]*SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga\.com>[ \t]*$') {
+        if ($Help.Notes -notmatch '(?m)^[ \t]*SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga\.com>[ \t]*\r?$') {
             $Violations += 'missing "SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>" in .NOTES';
         }
-        if ($Help.Notes -notmatch '(?m)^[ \t]*SPDX-License-Identifier: GPL-3\.0-or-later[ \t]*$') {
+        if ($Help.Notes -notmatch '(?m)^[ \t]*SPDX-License-Identifier: GPL-3\.0-or-later[ \t]*\r?$') {
             $Violations += 'missing "SPDX-License-Identifier: GPL-3.0-or-later" in .NOTES';
         }
     }
@@ -611,7 +611,7 @@ foreach ($group in ($Grouped | Sort-Object Name)) {
         }
 
         if (-not [string]::IsNullOrWhiteSpace($fn.Help.Notes)) {
-            [string]$CleanNotes = ([regex]::Replace($fn.Help.Notes, '(?m)^[ \t]*SPDX-(?:FileCopyrightText|License-Identifier):.*(?:\r?\n)?', '')).Trim();
+            [string]$CleanNotes = ([regex]::Replace($fn.Help.Notes, '(?m)^[ \t]*SPDX-(?:FileCopyrightText|License-Identifier):[^\r\n]*(?:\r?\n)?', '')).Trim();
             if (-not [string]::IsNullOrWhiteSpace($CleanNotes)) {
                 [void]$md.AppendLine('#### Notes');
                 [void]$md.AppendLine();
