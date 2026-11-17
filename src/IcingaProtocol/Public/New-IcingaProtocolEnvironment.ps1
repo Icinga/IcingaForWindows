@@ -83,24 +83,29 @@ function New-IcingaProtocolEnvironment()
         };
     }
 
-    $IcingaProtocolConfig = [PSCustomObject]@{
+    $IcingaProtocolConfig       = [PSCustomObject]@{
         'Endpoints'     = $EndpointConfig;
         'Zone'          = $Zone;
         'Hostname'      = $Hostname;
         'TlsCertConfig' = $TlsCertConfig;
     };
 
+    [string]$ProtocolConfigDir  = Join-Path -Path (Get-ModuleConfigDirectory) -ChildPath 'IcingaProtocol';
+    [string]$ProtocolConfigFile = Join-Path -Path $ProtocolConfigDir -ChildPath 'Connection.json';
+
     if ($DryRun) {
         return (
             Compare-IcingaTextContent `
                 -NewConfig (ConvertTo-Json -InputObject $IcingaProtocolConfig -Depth 5) `
-                -OldFile (Join-Path -Path (Get-ModuleConfigDirectory) -ChildPath 'IcingaProtocol\Connection.json') `
+                -OldFile $ProtocolConfigFile `
                 -Colorized:(-not $Global:IcingaForWindows.Protected.NoColorizedOutput)
         );
     }
 
+    New-SecureItem -ItemType 'Directory' -Path $ProtocolConfigDir -Force | Out-Null;
+
     Write-SecureFile `
-        -File (Join-Path -Path (Get-ModuleConfigDirectory) -ChildPath 'IcingaProtocol\Connection.json') `
+        -File $ProtocolConfigFile `
         -Value ($IcingaProtocolConfig) | Out-Null;
 
     # All endpoints validated; persist or return success

@@ -12,7 +12,7 @@ Released closed milestones can be found on [GitHub](https://github.com/Icinga/Ic
 
 ### Enhancements
 
-* Enforces zero-exemption PowerShell code-styling compliance, mandatory `.NOTES` sections with Icinga GmbH `GPL-3.0-or-later` SPDX license headers across all source, build, bootstrap, manifest, test, and compiled `lib/` files, automated PR changelog validation (`build/Test-ModuleChangelog.ps1`), `docs/General/Changelog.md` and `docs/General/Roadmap.md` governance, and an updated English `README.md` with Mermaid architecture diagrams (`feature/update-code-styling`)
+* Enforces zero-exemption PowerShell code-styling compliance, mandatory `.NOTES` sections with Icinga GmbH `GPL-3.0-or-later` SPDX license headers across all source, build, bootstrap, manifest, test, and compiled `lib/` files, automated PR changelog validation (`build/Test-ModuleChangelog.ps1`), `docs/General/Changelog.md` and `docs/General/Roadmap.md` governance, and an updated English `README.md` with Mermaid architecture diagrams (`e6ffb1b`)
 * Adds nine core monitoring plugins (`Invoke-IcingaCheckCPU`, `Invoke-IcingaCheckDirectory`, `Invoke-IcingaCheckMemory`, `Invoke-IcingaCheckPartitionSpace`, `Invoke-IcingaCheckPerfCounter`, `Invoke-IcingaCheckProcess`, `Invoke-IcingaCheckScheduledTask`, `Invoke-IcingaCheckService`, `Invoke-IcingaCheckUptime`), promotes `New-IcingaPlugin` to a public Plugin SDK cmdlet, and introduces the modular Icinga 2 `event::ExecuteCommand` PowerShell and external binary execution pipeline (`3f7fa6e`)
 * Adds the unified `IcingaPlugin` fluent check and package evaluation framework along with `IcingaCheckResult`, `IcingaError`, and `Test-IcingaError` (`be19ae1`)
 * Adds the background `IcingaPerformanceCounter` daemon, category snapshot reader, static AST counter discovery, and persistent counter cache (`7e576b1`)
@@ -26,7 +26,8 @@ Released closed milestones can be found on [GitHub](https://github.com/Icinga/Ic
 
 ### Bugfixes
 
-* Fixes Windows PowerShell 5.1 `lib/IcingaForWindows.Kernel.ps1` parser errors and Mojibake when dot-sourcing BOM-less UTF-8 artifacts by enforcing strict 7-bit ASCII across all PowerShell source, build, test, and compiled `lib/` files, deterministic file sorting and SMB-safe reading in `build/Build-ModuleProject.ps1`, and UNC `ProviderPath` normalization across build and test scripts (`feature/update-code-styling`)
+* Fixes `New-IcingaProtocolEnvironment` not creating the `IcingaProtocol` configuration directory before writing `Connection.json`
+* Fixes Windows PowerShell 5.1 `lib/IcingaForWindows.Kernel.ps1` parser errors and Mojibake when dot-sourcing BOM-less UTF-8 artifacts by enforcing strict 7-bit ASCII across all PowerShell source, build, test, and compiled `lib/` files, deterministic file sorting and SMB-safe reading in `build/Build-ModuleProject.ps1`, and UNC `ProviderPath` normalization across build and test scripts (`e6ffb1b`)
 * Fixes infinite exception loop in `Start-IcingaProtocolSocketWriter` when `WriterQueue` is disposed while the writer thread is still active (`c678e4f`)
 * [#15](https://github.com/Icinga/IcingaForWindows/pull/15) [#13](https://github.com/Icinga/IcingaForWindows/pull/13) [#10](https://github.com/Icinga/IcingaForWindows/pull/10) [#7](https://github.com/Icinga/IcingaForWindows/pull/7) [#6](https://github.com/Icinga/IcingaForWindows/pull/6) Fixes memory leaks, file locks, and garbage-collection pressure across logging, worker queues, and compiled module loading
 * [#12](https://github.com/Icinga/IcingaForWindows/pull/12) [#9](https://github.com/Icinga/IcingaForWindows/pull/9) Fixes `Start-ThreadHouseKeeper` lifecycle handling so completed and unresponsive threads are cleanly recycled
