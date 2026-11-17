@@ -265,10 +265,7 @@ Write-Host "`n[3/4] Building consolidated classes and kernel modules..." -Foregr
 [string]$ClassesOutput                     = Join-Path -Path $OutputPath -ChildPath $ClassesModuleName;
 [System.Text.StringBuilder]$ClassesContent = New-Object System.Text.StringBuilder;
 
-# Add classes header with top-level Icinga GmbH SPDX license comments
-$ClassesContent.AppendLine('# SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>') | Out-Null;
-$ClassesContent.AppendLine('# SPDX-License-Identifier: GPL-3.0-or-later') | Out-Null;
-$ClassesContent.AppendLine() | Out-Null;
+# Add classes header with Icinga GmbH SPDX license lines inside .NOTES
 $ClassesContent.AppendLine('<#') | Out-Null;
 $ClassesContent.AppendLine('.SYNOPSIS') | Out-Null;
 $ClassesContent.AppendLine('    Icinga for Windows - Classes Module') | Out-Null;
@@ -277,6 +274,9 @@ $ClassesContent.AppendLine('    Single compiled file containing all Icinga for W
 $ClassesContent.AppendLine("    Auto-generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')") | Out-Null;
 $ClassesContent.AppendLine('.NOTES') | Out-Null;
 $ClassesContent.AppendLine("    Source: $(Join-Path -Path $ModuleBasePath -ChildPath (Join-Path -Path 'src' -ChildPath 'Classes'))") | Out-Null;
+$ClassesContent.AppendLine() | Out-Null;
+$ClassesContent.AppendLine('    SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>') | Out-Null;
+$ClassesContent.AppendLine('    SPDX-License-Identifier: GPL-3.0-or-later') | Out-Null;
 $ClassesContent.AppendLine('#>') | Out-Null;
 $ClassesContent.AppendLine() | Out-Null;
 
@@ -300,10 +300,7 @@ Write-Host "  * Classes file built successfully: $ClassesModuleName" -Foreground
 [hashtable]$FncCache                      = @{ };
 [System.Text.StringBuilder]$ModuleContent = New-Object System.Text.StringBuilder;
 
-# Add module header with top-level Icinga GmbH SPDX license comments
-$ModuleContent.AppendLine('# SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>') | Out-Null;
-$ModuleContent.AppendLine('# SPDX-License-Identifier: GPL-3.0-or-later') | Out-Null;
-$ModuleContent.AppendLine() | Out-Null;
+# Add module header with Icinga GmbH SPDX license lines inside .NOTES
 $ModuleContent.AppendLine('<#') | Out-Null;
 $ModuleContent.AppendLine('.SYNOPSIS') | Out-Null;
 $ModuleContent.AppendLine('    Icinga for Windows - Kernel Module') | Out-Null;
@@ -312,6 +309,9 @@ $ModuleContent.AppendLine('    Single compiled kernel file containing all Icinga
 $ModuleContent.AppendLine("    Auto-generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')") | Out-Null;
 $ModuleContent.AppendLine('.NOTES') | Out-Null;
 $ModuleContent.AppendLine("    Source: $(Join-Path -Path $ModuleBasePath -ChildPath 'src')") | Out-Null;
+$ModuleContent.AppendLine() | Out-Null;
+$ModuleContent.AppendLine('    SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>') | Out-Null;
+$ModuleContent.AppendLine('    SPDX-License-Identifier: GPL-3.0-or-later') | Out-Null;
 $ModuleContent.AppendLine('#>') | Out-Null;
 $ModuleContent.AppendLine() | Out-Null;
 

@@ -318,18 +318,6 @@ function Test-CompiledLibSpdxFile()
     [byte[]]$RawBytes     = [System.IO.File]::ReadAllBytes($FullPath);
     $LibViolations       += Test-EncodingWithoutBom -RelativePath $RelativePath -RawBytes $RawBytes;
 
-    [string]$Content      = [System.IO.File]::ReadAllText($FullPath, [System.Text.Encoding]::UTF8);
-    [array]$Lines         = $Content -split "`r?`n";
-    [bool]$ValidTopHeader = (
-        $Lines.Count -ge 2 -and
-        $Lines[0] -eq '# SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>' -and
-        $Lines[1] -eq '# SPDX-License-Identifier: GPL-3.0-or-later'
-    );
-
-    if (-not $ValidTopHeader) {
-        $LibViolations += ('{0}:1 -- Compiled lib artifact must start at top of file with "# SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>" followed by "# SPDX-License-Identifier: GPL-3.0-or-later"' -f $RelativePath);
-    }
-
     for ($bIdx = 0; $bIdx -lt $RawBytes.Length; $bIdx++) {
         if ($RawBytes[$bIdx] -gt 0x7F) {
             $LibViolations += ('{0}:1 -- Compiled lib artifact contains non-ASCII byte 0x{1:X2} at offset {2} (breaks BOM-less Windows-1252 loading in Windows PowerShell 5.1)' -f $RelativePath, $RawBytes[$bIdx], $bIdx);
@@ -337,13 +325,33 @@ function Test-CompiledLibSpdxFile()
         }
     }
 
-    $LibTokens = $null;
-    $LibErrors = $null;
+    [string]$Content = [System.IO.File]::ReadAllText($FullPath, [System.Text.Encoding]::UTF8);
+    $LibTokens       = $null;
+    $LibErrors       = $null;
     [void][System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$LibTokens, [ref]$LibErrors);
 
     if ($null -ne $LibErrors -and $LibErrors.Count -gt 0) {
         $FirstErr       = $LibErrors[0];
         $LibViolations += ('{0}:{1} -- Compiled lib artifact failed PowerShell AST parsing: {2}' -f $RelativePath, $FirstErr.Extent.StartLineNumber, $FirstErr.Message);
+    }
+
+    $TopHeaderToken = $null;
+    if ($null -ne $LibTokens) {
+        foreach ($LibTok in $LibTokens) {
+            if ([string]$LibTok.Kind -eq 'Comment' -and $LibTok.Text.StartsWith('<#') -and $LibTok.Extent.StartLineNumber -eq 1) {
+                $TopHeaderToken = $LibTok;
+                break;
+            }
+        }
+    }
+
+    if ($null -eq $TopHeaderToken) {
+        $LibViolations += ('{0}:1 -- Compiled lib artifact must start with a top-level <# ... #> header block containing .NOTES and Icinga GmbH SPDX license lines' -f $RelativePath);
+    } else {
+        [string]$LibSpdxIssue = Test-BlockCommentNotesAndSpdx -CommentText $TopHeaderToken.Text;
+        if (-not [string]::IsNullOrEmpty($LibSpdxIssue)) {
+            $LibViolations += ('{0}:1 -- Compiled lib artifact header block: {1}' -f $RelativePath, $LibSpdxIssue);
+        }
     }
 
     return $LibViolations;

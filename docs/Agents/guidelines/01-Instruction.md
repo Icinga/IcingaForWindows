@@ -267,19 +267,17 @@ function Verb-IcingaNoun()
 2. **Private functions** must have `.SYNOPSIS`, `.DESCRIPTION`, a `.PARAMETER` Markdown table for **every** declared parameter in `param ()`, and **`.NOTES`** (including `.OUTPUTS` and `.EXAMPLE` is strongly recommended).
 3. **Classes and enums (`src/Classes/`)** must carry a top-level comment-based help block above each top-level `class` / `enum` declaration including `.SYNOPSIS`, `.DESCRIPTION`, and **`.NOTES`**.
 4. **Mandatory Icinga GmbH SPDX Footer & Header Comments (Every File):**
-   - Inside `<# ... #>` comment blocks (specifically concluding every `.NOTES` section across `src/` (`Public/`, `Private/`, `Classes/`), `IcingaForWindows.psm1`, `build/*.ps1`, and `Tests/*.Tests.ps1`), write these exact two lines without any comment prefix:
+   - Inside `<# ... #>` comment blocks (specifically concluding every `.NOTES` section across `src/` (`Public/`, `Private/`, `Classes/`), `IcingaForWindows.psm1`, `build/*.ps1`, `Tests/*.Tests.ps1`, and the top-of-file header block of compiled `lib/IcingaForWindows.Classes.ps1` and `lib/IcingaForWindows.Kernel.ps1`), write these exact two lines without any comment prefix:
      ```text
      SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
      SPDX-License-Identifier: GPL-3.0-or-later
      ```
-   - Outside `<# ... #>` block comments (standalone PowerShell `#` comments), prefix both lines with `# `:
+   - Outside `<# ... #>` block comments (such as `.psd1` data files), prefix both lines with `# `:
      ```powershell
      # SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
      # SPDX-License-Identifier: GPL-3.0-or-later
      ```
-     Specifically:
-     - Compiled artifacts `lib/IcingaForWindows.Classes.ps1` and `lib/IcingaForWindows.Kernel.ps1` emit these two `# SPDX-...` lines at lines 1-2 at the very top of the file via `build/Build-ModuleProject.ps1`.
-     - `IcingaForWindows.psd1` declares `Copyright = '(c) 2026 Icinga GmbH | GPL-3.0-or-later';`, points `LicenseUri` to `blob/main/LICENSE`, and defines `SPDX = '';` followed by the two `# SPDX-...` lines beneath `Endpoint` inside `PrivateData` (`PSScriptAnalyzerSettings.psd1` likewise carries the two `# SPDX-...` lines at the top of the file).
+     Specifically, `IcingaForWindows.psd1` declares `Copyright = '(c) 2026 Icinga GmbH | GPL-3.0-or-later';`, points `LicenseUri` to `blob/main/LICENSE`, and defines `SPDX = '';` followed by the two `# SPDX-...` lines beneath `Endpoint` inside `PrivateData` (`PSScriptAnalyzerSettings.psd1` likewise carries the two `# SPDX-...` lines at the top of the file).
 5. **Every `.PARAMETER` block uses the four-column Markdown table** (`Name | Type | Description | Default`) with vertically aligned `|` pipes.
 6. `.SYNOPSIS` is **one line, no trailing period** unless it contains multiple sentences.
 7. `.DESCRIPTION` uses plain prose wrapped around ~80 columns.

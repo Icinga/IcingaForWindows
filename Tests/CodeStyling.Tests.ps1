@@ -141,12 +141,14 @@ Describe 'Test-ModuleCodeStyling Validator Rules' {
 
             [string]$GoodLibFile = Join-Path -Path $LibDir -ChildPath 'IcingaForWindows.Kernel.ps1';
             [string]$GoodLibBody = @(
-                '# SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>',
-                '# SPDX-License-Identifier: GPL-3.0-or-later',
-                '',
                 '<#',
                 '.SYNOPSIS',
                 '    Icinga for Windows - Kernel Module',
+                '.NOTES',
+                '    Source: src',
+                '',
+                '    SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>',
+                '    SPDX-License-Identifier: GPL-3.0-or-later',
                 '#>',
                 ''
             ) -join "`n";
@@ -304,7 +306,7 @@ Describe 'Test-ModuleCodeStyling Validator Rules' {
             $Joined | Should -Match 'Get-SlashSpdx\.ps1.*SPDX-FileCopyrightText';
             $Joined | Should -Match 'Copyright must specify GPL-3\.0-or-later';
             $Joined | Should -Match 'PrivateData must include "SPDX = '''';"';
-            $Joined | Should -Match 'Compiled lib artifact must start at top of file with "# SPDX-FileCopyrightText';
+            $Joined | Should -Match 'Compiled lib artifact header block: missing mandatory \.NOTES';
         }
 
         It 'rejects stray classes or missing functions outside src/Classes/, non-manifest .psd1 without SPDX, and indented build help missing SPDX' {
