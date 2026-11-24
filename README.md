@@ -60,7 +60,8 @@ flowchart LR
     Src --> Gates["CI Static & Governance Gates"]
     Gates --> PSSA["Invoke-ScriptAnalysis.ps1<br/>(PSScriptAnalyzer)"]
     Gates --> Style["Test-ModuleCodeStyling.ps1<br/>(Style, Scope & SPDX)"]
-    Gates --> Changelog["Test-ModuleChangelog.ps1<br/>(PR Changelog & Roadmap)"]
+    Gates --> ChangelogLink["Update-ModuleChangelog.ps1<br/>(Zero-Credential PR Linker)"]
+    ChangelogLink --> Changelog["Test-ModuleChangelog.ps1<br/>(PR Link & Roadmap Gate)"]
     Gates --> Leak["Test-ModuleDaemonMemoryLeak.ps1<br/>(AST Loop & IDisposable)"]
 
     Lib --> Pester["build/Invoke-ModuleTests.ps1<br/>(Pester 5+ Unit Tests)"]
@@ -130,13 +131,16 @@ Compiled files under `lib/` and API reference pages (`docs/Icinga.*.md`, `docs/i
 # 3. Validate repository-wide PowerShell code styling, function scope, and SPDX headers
 .\build\Test-ModuleCodeStyling.ps1;
 
-# 4. Validate Changelog.md and Roadmap.md (enforces changelog entries on non-main branches)
+# 4. Validate Changelog.md and Roadmap.md (enforces changelog entries & PR links before merge)
 .\build\Test-ModuleChangelog.ps1;
 
-# 5. Run PSScriptAnalyzer static analysis
+# 5. Stamp [#<PR>](.../pull/<PR>) onto newly added Changelog.md bullets (zero credentials required)
+.\build\Update-ModuleChangelog.ps1;
+
+# 6. Run PSScriptAnalyzer static analysis
 .\build\Invoke-ScriptAnalysis.ps1 -FailOn 'Warning';
 
-# 6. Execute the Pester unit test suite
+# 7. Execute the Pester unit test suite
 .\build\Invoke-ModuleTests.ps1;
 ```
 
@@ -170,7 +174,7 @@ Compiled files under `lib/` and API reference pages (`docs/Icinga.*.md`, `docs/i
 
 1. Check the [Issue Tracker](https://github.com/Icinga/IcingaForWindows/issues) and [Roadmap](docs/General/Roadmap.md) before starting work.
 2. Follow all code-styling, runspace-isolation, `.NOTES`, and SPDX licensing rules in [`docs/Agents/guidelines/01-Instruction.md`](docs/Agents/guidelines/01-Instruction.md).
-3. Add a changelog bullet entry under the current unreleased version in [`docs/General/Changelog.md`](docs/General/Changelog.md) on every pull request / feature branch (`build/Test-ModuleChangelog.ps1`).
+3. Add a changelog bullet entry under the current unreleased version in [`docs/General/Changelog.md`](docs/General/Changelog.md) on every pull request / feature branch (`build/Test-ModuleChangelog.ps1`). Once your Pull Request is open on GitHub, internal repository branches are linked automatically by CI (`changelog-link`), or fork contributors can run `.\build\Update-ModuleChangelog.ps1` locally with zero credentials to stamp `[#<PR>](https://github.com/Icinga/IcingaForWindows/pull/<PR>)` before merging into `main`.
 4. Verify all build, documentation, styling, memory-leak, and Pester checks pass before opening a [Pull Request](https://github.com/Icinga/IcingaForWindows/pulls).
 
 ---

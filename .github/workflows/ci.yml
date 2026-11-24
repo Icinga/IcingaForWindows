@@ -96,13 +96,57 @@ jobs:
           path: TestResults.xml
           if-no-files-found: ignore
 
+  changelog-link:
+    name: Auto-link Pull Request in Changelog
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref != 'main'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Pull Request head branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Stamp PR link in Changelog.md and push if updated
+        shell: pwsh
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          $ErrorActionPreference = 'Stop';
+          [int]$PrNumber = [int]$env:PR_NUMBER;
+          [string]$BaseRef = ('origin/{0}' -f $env:PR_BASE_REF);
+          $null = & ./build/Update-ModuleChangelog.ps1 -PullRequestNumber $PrNumber -BaseBranch $BaseRef;
+          [string]$Changed = ((& git status --porcelain -- docs/General/Changelog.md) -join '').Trim();
+          if (-not [string]::IsNullOrEmpty($Changed)) {
+            & git config user.name 'github-actions[bot]';
+            & git config user.email '41898282+github-actions[bot]@users.noreply.github.com';
+            & git add -- docs/General/Changelog.md;
+            & git commit -m ("Update Changelog.md with PR #{0} link" -f $PrNumber);
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Failed to commit updated docs/General/Changelog.md.';
+            }
+            & git push origin ("HEAD:refs/heads/{0}" -f $env:PR_HEAD_REF);
+            if ($LASTEXITCODE -ne 0) {
+              throw ('Failed to push updated docs/General/Changelog.md to {0}.' -f $env:PR_HEAD_REF);
+            }
+            Write-Host ('::notice::Automatically linked PR #{0} in docs/General/Changelog.md and pushed to {1}.' -f $PrNumber, $env:PR_HEAD_REF);
+          }
+
   analyze:
     name: Code Style, License, Changelog & PSScriptAnalyzer
     runs-on: windows-latest
+    needs:
+      - changelog-link
+    if: always() && (needs.changelog-link.result == 'success' || needs.changelog-link.result == 'skipped')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref != 'main') && github.event.pull_request.head.ref || '' }}
           fetch-depth: 0
 
       - name: Install PSScriptAnalyzer
