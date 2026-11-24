@@ -1,16 +1,18 @@
 <#
 .SYNOPSIS
-Queue a structured log entry for asynchronous processing.
+Queue a structured log entry for asynchronous processing
 
 .DESCRIPTION
 `Write-LoggingEntry` constructs a logging object (message, level, event id, area,
 and additional data) and enqueues it into the global logging queue for processing
-by the logging daemon. It also assigns a per-message logging id for correlation.
+by the logging daemon. When `-Area` is omitted or empty, it falls back to the
+generic `'Logging'` area defined by `EventLogGenericLog` in `Set-InternalExitCodes`.
+It also assigns a per-message logging id for correlation.
 
 .PARAMETER Message
 | Name    | Type          | Description          | Default |
 |---------|---------------|----------------------|---------|
-| Message | System.String | The log message text |         |
+| Message | System.String | The log message text | $null   |
 
 .PARAMETER Level
 | Name  | Type          | Description                                                    | Default |
@@ -22,16 +24,23 @@ by the logging daemon. It also assigns a per-message logging id for correlation.
 |---------|--------------|--------------------------------------------|---------|
 | EventId | System.Int32 | Numeric event identifier for the log entry | 15      |
 
+.PARAMETER Area
+| Name | Type          | Description                                                           | Default |
+|------|---------------|-----------------------------------------------------------------------|---------|
+| Area | System.String | Event Log source area; falls back to 'Logging' when omitted or empty. | $null   |
+
 .PARAMETER Data
-| Name | Type             | Description                                              | Default |
-|------|------------------|----------------------------------------------------------|---------|
-| Data | System.Hashtable | Additional structured data to include with the log entry | @{}     |
+| Name | Type                         | Description                                              | Default |
+|------|------------------------------|----------------------------------------------------------|---------|
+| Data | System.Collections.Hashtable | Additional structured data to include with the log entry | @{}     |
 
 .OUTPUTS
 System.Management.Automation.PSCustomObject -- The enqueued log object when called from a background daemon with Level 'Output'; None otherwise.
 
 .EXAMPLE
-PS> Write-LoggingEntry -Message 'Started processing' -Level 'Info' -EventId 100
+PS> Write-LoggingEntry -Message 'Started processing' -Level 'Info' -EventId 100 -Area 'Installer'
+
+Queues an informational log entry under the 'Installer' Event Log area.
 
 .NOTES
 This function is intentionally non-blocking: it enqueues messages for a background
@@ -47,8 +56,12 @@ function Write-LoggingEntry()
         [ValidateSet('Debug', 'Output', 'Audit', 'Info', 'Success', 'Warning', 'Error', 'Fatal')]
         [string]$Level   = 'Info',
         [int]$EventId    = 15,
+        [string]$Area    = $null,
         [hashtable]$Data = @{ }
     );
+
+    # Ensure return codes are loaded once
+    Set-InternalExitCodes;
 
     # TODO: Fix Audit log to make it configurable for printing only access violations or try some different handling
     if ($Level -eq 'Audit') {
@@ -67,8 +80,25 @@ function Write-LoggingEntry()
         return;
     }
 
+    if ($null -eq $Data) {
+        $Data = @{ };
+    }
+
+    $GlobalVariable           = Get-GlobalRuntimeVariable;
+
     # Assign a unique message ID for tracking
-    $Data['LoggingMessageId']   = (Get-GlobalRuntimeVariable).Private.Logging.CurrentLoggingId.ToString();
+    $Data['LoggingMessageId'] = $GlobalVariable.Private.Logging.CurrentLoggingId.ToString();
+
+    # TODO: Assign explicit Area metadata to all remaining Set-InternalExitCodes entries and direct callers; fall back to generic 'Logging' (EventLogGenericLog) for now
+    if ([string]::IsNullOrWhiteSpace($Area)) {
+        $Area = $GlobalVariable.Public.ReturnCodes['EventLogGenericLog']['Area'];
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Area)) {
+        $Area = 'Logging';
+    } else {
+        $Area = $Area.Trim();
+    }
 
     # If we reached this point, we should log the message
     # Move everything to the logging queue for processing, to not block the current thread
@@ -79,16 +109,16 @@ function Write-LoggingEntry()
         'Message'   = $Message;
         'Level'     = $Level;
         'EventId'   = $EventId;
-        'Area'      = $codeEntry.Area;
+        'Area'      = $Area;
         'Data'      = $Data;
         'TimeStamp' = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss:ffff');
     };
 
-    (Get-GlobalRuntimeVariable).Public.Logging.Queue.Add($LogMessage) | Out-Null;
+    $GlobalVariable.Public.Logging.Queue.Add($LogMessage) | Out-Null;
 
     # In case we are logging an Output level message, return the formatted object
     # in case we are set as internal daemon in our protected space
-    if ($Level -eq 'Output' -and (Get-GlobalRuntimeVariable).Protected.IsBackgroundDaemon) {
+    if ($Level -eq 'Output' -and $GlobalVariable.Protected.IsBackgroundDaemon) {
         return $LogMessage;
     }
 }

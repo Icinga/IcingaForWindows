@@ -1,13 +1,14 @@
 <#
 .SYNOPSIS
-Import the Icinga CA certificate into the Windows CertificateAuthority store or local directory.
+Import the Icinga 2 CA certificate into the Windows LocalMachine Root store or local directory
 
 .DESCRIPTION
-Import-IcingaCertAuthority accepts an Icinga CA certificate either as a direct
-PEM string (-Certificate) or via a local/web path (-Path). Depending on the
-operating system, it imports the certificate directly into the CurrentUser
-CertificateAuthority store (on Windows) or saves it to the module's certificate
-directory as 'ca.crt' (on Linux/macOS).
+Import-IcingaCertAuthority accepts an Icinga 2 CA certificate either as a
+direct PEM string (-Certificate) or via a local file or HTTP/HTTPS URL (-Path).
+On Windows, it imports the certificate into Cert:\LocalMachine\Root
+(StoreName::Root, StoreLocation::LocalMachine), skipping import if a
+certificate with the same thumbprint already exists. On Linux and macOS, it
+writes the PEM certificate to ca.crt inside Get-ModuleCertificateDirectory.
 
 .PARAMETER Certificate
 | Name        | Type          | Description                               | Default |
@@ -20,21 +21,26 @@ directory as 'ca.crt' (on Linux/macOS).
 | Path | System.String | Local file path or HTTP/HTTPS URL to the CA cert. |         |
 
 .OUTPUTS
-None -- Performs the import or file write without returning a value.
+System.Object -- Returns nothing ($null) when the CA certificate is imported or
+written to disk, or a standardized System.Int32 error code from
+Write-FunctionReturnValue (50013 IcingaCAImportPathNotfound when a local -Path
+does not exist, or 50014 IcingaCAContentIsEmpty when the certificate payload is
+empty or whitespace).
 
 .EXAMPLE
-PS> Import-IcingaCertAuthority -Certificate '-----BEGIN CERTIFICATE-----...'
+PS> Import-IcingaCertAuthority -Path 'C:\Temp\ca.crt'
 
-Imports the CA certificate from a direct string payload.
+Imports the Icinga 2 CA certificate from a local file into Cert:\LocalMachine\Root
+on Windows (or saves ca.crt locally on Linux/macOS).
 
 .EXAMPLE
-PS> Import-IcingaCertAuthority -Path 'https://icinga.example.com/ca.crt'
+PS> Import-IcingaCertAuthority -Path 'https://icinga-master01.example.com/ca.crt'
 
-Downloads and imports the CA certificate from a web server.
+Downloads and imports the Icinga 2 CA certificate from an HTTPS endpoint.
 
 .NOTES
-Operates on the CurrentUser CertificateAuthority store to avoid Windows security prompts.
-Does not require administrative elevation.
+Requires administrative privileges on Windows to open Cert:\LocalMachine\Root
+for read/write access.
 
 SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
 SPDX-License-Identifier: GPL-3.0-or-later

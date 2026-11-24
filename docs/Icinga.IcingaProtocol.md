@@ -46,15 +46,16 @@
 
 *Public function*
 
-**Synopsis:** Import the Icinga CA certificate into the Windows CertificateAuthority store or local directory.
+**Synopsis:** Import the Icinga 2 CA certificate into the Windows LocalMachine Root store or local directory
 
 #### Description
 
-Import-IcingaCertAuthority accepts an Icinga CA certificate either as a direct
-PEM string (-Certificate) or via a local/web path (-Path). Depending on the
-operating system, it imports the certificate directly into the CurrentUser
-CertificateAuthority store (on Windows) or saves it to the module's certificate
-directory as 'ca.crt' (on Linux/macOS).
+Import-IcingaCertAuthority accepts an Icinga 2 CA certificate either as a
+direct PEM string (-Certificate) or via a local file or HTTP/HTTPS URL (-Path).
+On Windows, it imports the certificate into Cert:\LocalMachine\Root
+(StoreName::Root, StoreLocation::LocalMachine), skipping import if a
+certificate with the same thumbprint already exists. On Linux and macOS, it
+writes the PEM certificate to ca.crt inside Get-ModuleCertificateDirectory.
 
 #### Parameters
 
@@ -72,26 +73,31 @@ directory as 'ca.crt' (on Linux/macOS).
 
 #### Outputs
 
-None -- Performs the import or file write without returning a value.
+System.Object -- Returns nothing ($null) when the CA certificate is imported or
+written to disk, or a standardized System.Int32 error code from
+Write-FunctionReturnValue (50013 IcingaCAImportPathNotfound when a local -Path
+does not exist, or 50014 IcingaCAContentIsEmpty when the certificate payload is
+empty or whitespace).
 
 #### Examples
 
 ```powershell
-PS> Import-IcingaCertAuthority -Certificate '-----BEGIN CERTIFICATE-----...'
+PS> Import-IcingaCertAuthority -Path 'C:\Temp\ca.crt'
 
-Imports the CA certificate from a direct string payload.
+Imports the Icinga 2 CA certificate from a local file into Cert:\LocalMachine\Root
+on Windows (or saves ca.crt locally on Linux/macOS).
 ```
 
 ```powershell
-PS> Import-IcingaCertAuthority -Path 'https://icinga.example.com/ca.crt'
+PS> Import-IcingaCertAuthority -Path 'https://icinga-master01.example.com/ca.crt'
 
-Downloads and imports the CA certificate from a web server.
+Downloads and imports the Icinga 2 CA certificate from an HTTPS endpoint.
 ```
 
 #### Notes
 
-Operates on the CurrentUser CertificateAuthority store to avoid Windows security prompts.
-Does not require administrative elevation.
+Requires administrative privileges on Windows to open Cert:\LocalMachine\Root
+for read/write access.
 
 *Source: [src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1](../src/IcingaProtocol/Public/Import-IcingaCertAuthority.ps1)*
 
@@ -101,17 +107,20 @@ Does not require administrative elevation.
 
 *Public function*
 
-**Synopsis:** Generate a self-signed certificate or merge an existing private key with a signed certificate.
+**Synopsis:** Generate a self-signed certificate or merge an existing private key with a signed certificate
 
 #### Description
 
-New-IcingaProtocolCertificate generates a new self-signed RSA certificate
-for the specified Common Name (CN). If the SignedCert parameter is provided,
-it instead merges the signed PEM certificate with the existing private key.
-Depending on the operating system, the certificate is either saved exclusively
-to the Windows certificate store (on Windows) or written to the filesystem as
-a passwordless PFX file (on Linux/macOS). When merging on Windows, the old
-certificate is removed from the store automatically.
+New-IcingaProtocolCertificate generates a 4096-bit RSA self-signed TLS
+certificate valid for 3 months for the specified Common Name (CN). If the
+SignedCert parameter is provided, it instead extracts the existing RSA private
+key and merges it with the signed PEM certificate.
+
+Depending on the operating system, the certificate is either stored exclusively
+in Cert:\CurrentUser\My on Windows (automatically replacing any previous
+self-signed or Icinga-issued certificate for the same CN) or written to disk as
+a passwordless PKCS#12 (.pfx) file under Get-ModuleCertificateDirectory on
+Linux and macOS.
 
 #### Parameters
 
@@ -129,26 +138,34 @@ certificate is removed from the store automatically.
 
 #### Outputs
 
-System.Object -- Returns a structured result via Write-FunctionReturnValue containing the storage path.
+System.Int32 -- Standardized return code from Write-FunctionReturnValue (50011
+when stored in Cert:\CurrentUser\My on Windows, 50010 when stored locally as a
+.pfx file on Linux/macOS, 50009 when -CommonName is missing or whitespace, or
+50012 when the existing certificate cannot be found during a -SignedCert merge).
 
 #### Examples
 
 ```powershell
-PS> New-IcingaProtocolCertificate -CommonName 'IcingaNode'
+PS> New-IcingaProtocolCertificate -CommonName 'win-srv01.example.com'
 
-Generates a new self-signed certificate for 'IcingaNode' and saves it to the local store or filesystem.
+Generates a new self-signed certificate for 'win-srv01.example.com' and stores
+it in Cert:\CurrentUser\My on Windows or as a local .pfx file on Linux/macOS.
 ```
 
 ```powershell
-PS> New-IcingaProtocolCertificate -CommonName 'IcingaNode' -SignedCert '-----BEGIN CERTIFICATE-----...'
+PS> New-IcingaProtocolCertificate -CommonName 'win-srv01.example.com' -SignedCert '-----BEGIN CERTIFICATE-----...'
 
-Merges the signed certificate with the existing private key for 'IcingaNode'.
+Merges the signed PEM certificate with the existing private key for
+'win-srv01.example.com' and replaces the stored certificate.
 ```
 
 #### Notes
 
-Requires administrative privileges on Windows to access the LocalMachine certificate store.
-Cross-platform compatible; relies on .NET cryptography classes.
+Stores Windows certificates in Cert:\CurrentUser\My of the executing user
+account (does not require LocalMachine store elevation; ensure certificate
+provisioning and the Icinga for Windows runtime execute under the same Windows
+user account). On non-Windows platforms, Get-ModuleCertificateDirectory is
+created automatically before writing <CommonName>.pfx.
 
 *Source: [src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1](../src/IcingaProtocol/Public/New-IcingaProtocolCertificate.ps1)*
 
@@ -209,13 +226,22 @@ This object is required for configuring the Icinga environment structure.
 
 *Public function*
 
-**Synopsis:** Generates and saves the Icinga Protocol environment configuration.
+**Synopsis:** Generate and save the Icinga Protocol environment configuration
 
 #### Description
 
-This function configures the Icinga Protocol connection settings, including endpoints, zone name, hostname,
-and TLS certificate configuration. It either saves the configuration to 'IcingaProtocol\Connection.json'
-or returns a diff against the current configuration if -DryRun is used.
+New-IcingaProtocolEnvironment validates and writes the Icinga 2 cluster
+connection settings (Endpoints, Zone, Hostname, and TlsCertConfig) to
+Config\IcingaProtocol\Connection.json. Single-quoted '$fqdn' and '$hostname'
+placeholders in -Hostname, -CertCN, and -CertIssuer are preserved verbatim in
+Connection.json and resolved dynamically when Read-IcingaProtocolConnection
+loads the file.
+
+When -DryRun is specified, the function computes a unified diff against any
+existing Connection.json via Compare-IcingaTextContent and returns @{ ExitCode;
+Output } without creating directories or saving changes to disk. Call
+New-IcingaProtocolEnvironment again without -DryRun and without .Output to
+persist the configuration.
 
 #### Parameters
 
@@ -233,38 +259,48 @@ or returns a diff against the current configuration if -DryRun is used.
 
 **`$Hostname`**
 
-| Name     | Type          | Description                       | Default     |
-|----------|---------------|-----------------------------------|-------------|
-| Hostname | System.String | The local hostname for this node. | '$hostname' |
+| Name     | Type          | Description                                                        | Default     |
+|----------|---------------|--------------------------------------------------------------------|-------------|
+| Hostname | System.String | Icinga 2 Endpoint/Host Object Name (supports '$fqdn'/'$hostname'). | '$hostname' |
 
 **`$TlsCertConfig`**
 
-| Name          | Type           | Description                               | Default |
-|---------------|----------------|-------------------------------------------|---------|
-| TlsCertConfig | PSCustomObject | The TLS certificate configuration object. | $null   |
+| Name          | Type                                          | Description                               | Default |
+|---------------|-----------------------------------------------|-------------------------------------------|---------|
+| TlsCertConfig | System.Management.Automation.PSCustomObject   | The TLS certificate configuration object. | $null   |
 
 **`$DryRun`**
 
-| Name   | Type   | Description                             | Default |
-|--------|--------|-----------------------------------------|---------|
-| DryRun | switch | Outputs a diff without saving the file. | $false  |
+| Name   | Type                                         | Description                                                 | Default |
+|--------|----------------------------------------------|-------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | Return a unified diff hashtable without saving to disk.     | $false  |
 
 #### Outputs
 
-System.Object -- Returns a status object from Write-FunctionReturnValue or a diff string.
+System.Object -- Returns System.Int32 from Write-FunctionReturnValue when
+persisting configuration or failing validation (50019 IcingaProtoclConfigWritten
+on write, or 50015-50018 on missing required inputs), or
+System.Collections.Hashtable (@{ ExitCode = System.Int32; Output = System.String })
+from Compare-IcingaTextContent when -DryRun is specified.
 
 #### Examples
 
 ```powershell
-PS> $Endpoints = @(New-IcingaProtocolEndpoint -Name 'master' -Address '10.0.0.1' -Port 5665)
-PS> New-IcingaProtocolEnvironment -Endpoints $Endpoints -Zone 'master' -Hostname 'agent01' -TlsCertConfig $CertConfig
+PS> $Endpoints = @(New-IcingaProtocolEndpoint -Name 'icinga-master01.example.com' -Address 'icinga-master01.example.com' -Port 5665)
+PS> $CertConfig = New-IcingaTlsCertConfig -CertCN '$fqdn' -CertStore 'My' -CertStoreLocation 'CurrentUser' -CertIssuer @( 'Icinga CA', '$fqdn' )
+PS> (New-IcingaProtocolEnvironment -Endpoints $Endpoints -Zone 'master' -Hostname '$fqdn' -TlsCertConfig $CertConfig -DryRun).Output
+PS> New-IcingaProtocolEnvironment -Endpoints $Endpoints -Zone 'master' -Hostname '$fqdn' -TlsCertConfig $CertConfig
 
-Generates the protocol configuration and writes it to disk.
+Previews the unified diff via -DryRun without modifying disk state, then writes
+Config\IcingaProtocol\Connection.json (returning 50019).
 ```
 
 #### Notes
 
-Writes configuration data to the internal Icinga Protocol connection JSON file.
+Writes configuration data to Config\IcingaProtocol\Connection.json via
+Write-SecureFile. The -Hostname and certificate CN must match the exact
+Endpoint and Host Object Name configured in Icinga 2. Always single-quote
+'$fqdn' and '$hostname' so PowerShell does not expand them before invocation.
 
 *Source: [src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1](../src/IcingaProtocol/Public/New-IcingaProtocolEnvironment.ps1)*
 

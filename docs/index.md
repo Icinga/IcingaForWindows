@@ -1,6 +1,6 @@
 # Icinga for Windows API Reference
 
-*Auto-generated on 2026-11-17 09:32:42.*
+*Auto-generated on 2026-11-24 15:35:56.*
 
 | Component | Public functions | Private helpers |
 |-----------|------------------|-----------------|
@@ -9,7 +9,7 @@
 | [Icinga.Core.ErrorHandling](Icinga.Core.ErrorHandling.md) | 1 | 2 |
 | [Icinga.Core.Logging](Icinga.Core.Logging.md) | 1 | 21 |
 | [Icinga.Core.RestApi](Icinga.Core.RestApi.md) | 3 | 22 |
-| [Icinga.Core.Runtime](Icinga.Core.Runtime.md) | 1 | 1 |
+| [Icinga.Core.Runtime](Icinga.Core.Runtime.md) | 2 | 1 |
 | [Icinga.Core.TCPStack](Icinga.Core.TCPStack.md) | 1 | 10 |
 | [Icinga.Core.Threading](Icinga.Core.Threading.md) | 2 | 14 |
 | [Icinga.Core.WebSocket](Icinga.Core.WebSocket.md) | 3 | 16 |
@@ -27,6 +27,6 @@
 ## Totals
 
 - Components: 19
-- Documented functions: 198
-- Public: 42
+- Documented functions: 199
+- Public: 43
 - Private: 156

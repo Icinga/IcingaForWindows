@@ -70,7 +70,7 @@ function Write-FunctionReturnValue()
         # TODO: Fix Audit log to make it configurable for printing only access violations or try some different handling
         if ($codeEntry.Severity -ne 'Audit') {
             # Enqueue log entry via the central function
-            Write-LoggingEntry -Message $codeEntry.Message -Level $codeEntry.Severity -EventId $codeEntry.Code -Area $codeEntry.Area -Data $Data;
+            Write-LoggingEntry -Message $codeEntry.Message -Level $codeEntry.Severity -EventId $codeEntry.Code -Area $codeEntry['Area'] -Data $Data;
         }
 
         # Fixes OverrideReturn on bool states, as PowerShell would compare "string" to "bool" and therefore the result would be fales
