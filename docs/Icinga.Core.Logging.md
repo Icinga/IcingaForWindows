@@ -680,12 +680,15 @@ Unknown severities default to 'Information'.
 
 *Private function*
 
-**Synopsis:** Create and configure Windows Event Log sources for this module.
+**Synopsis:** Create and configure Windows Event Log sources for Icinga for Windows
 
 #### Description
 
-`Register-LoggingWindowsEventLog` registers event sources under the provided
-namespace and ensures the log maximum size is configured.
+Register-LoggingWindowsEventLog registers every unique IcingaForWindows::<Area>
+Windows Event Log source from (Get-GlobalRuntimeVariable).Public.ReturnCodes
+(always seeding IcingaForWindows::Logging) and configures the maximum log size
+to 100 MiB (104857600 bytes). On non-Windows platforms the function returns
+immediately without side effects.
 
 #### Outputs
 
@@ -694,14 +697,24 @@ None -- Registers event sources under the module name and configures the maximum
 #### Examples
 
 ```powershell
+PS> Set-InternalExitCodes
 PS> Register-LoggingWindowsEventLog
+
+Populates the internal return-code registry, registers all Icinga for Windows
+Event Log sources, and configures the 100 MiB maximum log size.
 ```
 
 #### Notes
 
-Requires administrative privileges to create Windows EventLog sources and modify log settings.
-The module name is resolved via `Get-ModuleProjectName`. Return codes are read from
-`(Get-GlobalRuntimeVariable).Public.ReturnCodes` to derive the full list of source names.
+Requires administrative privileges on Windows to create Windows Event Log
+sources and modify log settings. Callers (such as Install-IcingaForWindows)
+must invoke Set-InternalExitCodes beforehand so
+(Get-GlobalRuntimeVariable).Public.ReturnCodes is populated with all subsystem
+Area definitions prior to source enumeration. The module name is resolved via
+Get-ModuleProjectName, and sources are checked and registered in-process via
+[System.Diagnostics.EventLog]::SourceExists and
+[System.Diagnostics.EventLog]::CreateEventSource on both Windows PowerShell 5.1
+and PowerShell 7+.
 
 *Source: [src/Core/Logging/Private/Register-LoggingWindowsEventLog.ps1](../src/Core/Logging/Private/Register-LoggingWindowsEventLog.ps1)*
 
@@ -748,13 +761,14 @@ Use `Test-LoggingWriteLog` to determine whether a message at a given level will 
 
 *Private function*
 
-**Synopsis:** Background logging daemon that consumes the logging queue.
+**Synopsis:** Background logging daemon that consumes the logging queue
 
 #### Description
 
 `Start-LoggingDaemon` runs in a loop while `Test-ThreadRunning` is true
 and processes objects from the global logging queue. It formats messages,
-writes Windows EventLog entries and prints colorized output to the console.
+writes Windows Event Log entries on Windows hosts, and prints colorized output
+to the console.
 
 #### Outputs
 
@@ -764,16 +778,18 @@ None -- Operates for side effects (writes logs and event entries).
 
 ```powershell
 PS> Start-LoggingDaemon
+
+Starts the blocking logging queue consumer loop inside a background runspace.
 ```
 
 #### Notes
 
 This function must be executed inside a dedicated background runspace. It blocks
-indefinitely by calling `BlockingCollection.Take()` on the logging queue, so it
-must never run on the main thread. All access to shared state goes through
+while polling `BlockingCollection.TryTake()` on the logging queue, so it must
+never run on the main thread. All access to shared state goes through
 `Get-GlobalRuntimeVariable` because the runspace receives only a snapshot of
-`$Global:Icinga` at startup. The daemon exits cleanly when `Test-ThreadRunning`
-returns `$false`.
+`$Global:IcingaForWindows` at startup. The daemon exits cleanly when
+`Test-ThreadRunning` returns `$false`.
 
 *Source: [src/Core/Logging/Private/Start-LoggingDaemon.ps1](../src/Core/Logging/Private/Start-LoggingDaemon.ps1)*
 
@@ -896,13 +912,15 @@ This id helps correlate logs produced during the lifetime of a thread.
 
 *Private function*
 
-**Synopsis:** Queue a structured log entry for asynchronous processing.
+**Synopsis:** Queue a structured log entry for asynchronous processing
 
 #### Description
 
 `Write-LoggingEntry` constructs a logging object (message, level, event id, area,
 and additional data) and enqueues it into the global logging queue for processing
-by the logging daemon. It also assigns a per-message logging id for correlation.
+by the logging daemon. When `-Area` is omitted or empty, it falls back to the
+generic `'Logging'` area defined by `EventLogGenericLog` in `Set-InternalExitCodes`.
+It also assigns a per-message logging id for correlation.
 
 #### Parameters
 
@@ -910,7 +928,7 @@ by the logging daemon. It also assigns a per-message logging id for correlation.
 
 | Name    | Type          | Description          | Default |
 |---------|---------------|----------------------|---------|
-| Message | System.String | The log message text |         |
+| Message | System.String | The log message text | $null   |
 
 **`$Level`**
 
@@ -924,11 +942,17 @@ by the logging daemon. It also assigns a per-message logging id for correlation.
 |---------|--------------|--------------------------------------------|---------|
 | EventId | System.Int32 | Numeric event identifier for the log entry | 15      |
 
+**`$Area`**
+
+| Name | Type          | Description                                                           | Default |
+|------|---------------|-----------------------------------------------------------------------|---------|
+| Area | System.String | Event Log source area; falls back to 'Logging' when omitted or empty. | $null   |
+
 **`$Data`**
 
-| Name | Type             | Description                                              | Default |
-|------|------------------|----------------------------------------------------------|---------|
-| Data | System.Hashtable | Additional structured data to include with the log entry | @{}     |
+| Name | Type                         | Description                                              | Default |
+|------|------------------------------|----------------------------------------------------------|---------|
+| Data | System.Collections.Hashtable | Additional structured data to include with the log entry | @{}     |
 
 #### Outputs
 
@@ -937,7 +961,9 @@ System.Management.Automation.PSCustomObject -- The enqueued log object when call
 #### Examples
 
 ```powershell
-PS> Write-LoggingEntry -Message 'Started processing' -Level 'Info' -EventId 100
+PS> Write-LoggingEntry -Message 'Started processing' -Level 'Info' -EventId 100 -Area 'Installer'
+
+Queues an informational log entry under the 'Installer' Event Log area.
 ```
 
 #### Notes

@@ -1,11 +1,20 @@
 <#
 .SYNOPSIS
-Generates and saves the Icinga Protocol environment configuration.
+Generate and save the Icinga Protocol environment configuration
 
 .DESCRIPTION
-This function configures the Icinga Protocol connection settings, including endpoints, zone name, hostname,
-and TLS certificate configuration. It either saves the configuration to 'IcingaProtocol\Connection.json'
-or returns a diff against the current configuration if -DryRun is used.
+New-IcingaProtocolEnvironment validates and writes the Icinga 2 cluster
+connection settings (Endpoints, Zone, Hostname, and TlsCertConfig) to
+Config\IcingaProtocol\Connection.json. Single-quoted '$fqdn' and '$hostname'
+placeholders in -Hostname, -CertCN, and -CertIssuer are preserved verbatim in
+Connection.json and resolved dynamically when Read-IcingaProtocolConnection
+loads the file.
+
+When -DryRun is specified, the function computes a unified diff against any
+existing Connection.json via Compare-IcingaTextContent and returns @{ ExitCode;
+Output } without creating directories or saving changes to disk. Call
+New-IcingaProtocolEnvironment again without -DryRun and without .Output to
+persist the configuration.
 
 .PARAMETER Endpoints
 | Name      | Type         | Description                      | Default |
@@ -18,31 +27,41 @@ or returns a diff against the current configuration if -DryRun is used.
 | Zone | System.String | The name of the Icinga zone. | 'master' |
 
 .PARAMETER Hostname
-| Name     | Type          | Description                       | Default     |
-|----------|---------------|-----------------------------------|-------------|
-| Hostname | System.String | The local hostname for this node. | '$hostname' |
+| Name     | Type          | Description                                                        | Default     |
+|----------|---------------|--------------------------------------------------------------------|-------------|
+| Hostname | System.String | Icinga 2 Endpoint/Host Object Name (supports '$fqdn'/'$hostname'). | '$hostname' |
 
 .PARAMETER TlsCertConfig
-| Name          | Type           | Description                               | Default |
-|---------------|----------------|-------------------------------------------|---------|
-| TlsCertConfig | PSCustomObject | The TLS certificate configuration object. | $null   |
+| Name          | Type                                          | Description                               | Default |
+|---------------|-----------------------------------------------|-------------------------------------------|---------|
+| TlsCertConfig | System.Management.Automation.PSCustomObject   | The TLS certificate configuration object. | $null   |
 
 .PARAMETER DryRun
-| Name   | Type   | Description                             | Default |
-|--------|--------|-----------------------------------------|---------|
-| DryRun | switch | Outputs a diff without saving the file. | $false  |
+| Name   | Type                                         | Description                                                 | Default |
+|--------|----------------------------------------------|-------------------------------------------------------------|---------|
+| DryRun | System.Management.Automation.SwitchParameter | Return a unified diff hashtable without saving to disk.     | $false  |
 
 .OUTPUTS
-System.Object -- Returns a status object from Write-FunctionReturnValue or a diff string.
+System.Object -- Returns System.Int32 from Write-FunctionReturnValue when
+persisting configuration or failing validation (50019 IcingaProtoclConfigWritten
+on write, or 50015-50018 on missing required inputs), or
+System.Collections.Hashtable (@{ ExitCode = System.Int32; Output = System.String })
+from Compare-IcingaTextContent when -DryRun is specified.
 
 .EXAMPLE
-PS> $Endpoints = @(New-IcingaProtocolEndpoint -Name 'master' -Address '10.0.0.1' -Port 5665)
-PS> New-IcingaProtocolEnvironment -Endpoints $Endpoints -Zone 'master' -Hostname 'agent01' -TlsCertConfig $CertConfig
+PS> $Endpoints = @(New-IcingaProtocolEndpoint -Name 'icinga-master01.example.com' -Address 'icinga-master01.example.com' -Port 5665)
+PS> $CertConfig = New-IcingaTlsCertConfig -CertCN '$fqdn' -CertStore 'My' -CertStoreLocation 'CurrentUser' -CertIssuer @( 'Icinga CA', '$fqdn' )
+PS> (New-IcingaProtocolEnvironment -Endpoints $Endpoints -Zone 'master' -Hostname '$fqdn' -TlsCertConfig $CertConfig -DryRun).Output
+PS> New-IcingaProtocolEnvironment -Endpoints $Endpoints -Zone 'master' -Hostname '$fqdn' -TlsCertConfig $CertConfig
 
-Generates the protocol configuration and writes it to disk.
+Previews the unified diff via -DryRun without modifying disk state, then writes
+Config\IcingaProtocol\Connection.json (returning 50019).
 
 .NOTES
-Writes configuration data to the internal Icinga Protocol connection JSON file.
+Writes configuration data to Config\IcingaProtocol\Connection.json via
+Write-SecureFile. The -Hostname and certificate CN must match the exact
+Endpoint and Host Object Name configured in Icinga 2. Always single-quote
+'$fqdn' and '$hostname' so PowerShell does not expand them before invocation.
 
 SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
 SPDX-License-Identifier: GPL-3.0-or-later

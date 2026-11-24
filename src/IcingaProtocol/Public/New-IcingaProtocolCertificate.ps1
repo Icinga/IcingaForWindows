@@ -1,15 +1,18 @@
 <#
 .SYNOPSIS
-Generate a self-signed certificate or merge an existing private key with a signed certificate.
+Generate a self-signed certificate or merge an existing private key with a signed certificate
 
 .DESCRIPTION
-New-IcingaProtocolCertificate generates a new self-signed RSA certificate
-for the specified Common Name (CN). If the SignedCert parameter is provided,
-it instead merges the signed PEM certificate with the existing private key.
-Depending on the operating system, the certificate is either saved exclusively
-to the Windows certificate store (on Windows) or written to the filesystem as
-a passwordless PFX file (on Linux/macOS). When merging on Windows, the old
-certificate is removed from the store automatically.
+New-IcingaProtocolCertificate generates a 4096-bit RSA self-signed TLS
+certificate valid for 3 months for the specified Common Name (CN). If the
+SignedCert parameter is provided, it instead extracts the existing RSA private
+key and merges it with the signed PEM certificate.
+
+Depending on the operating system, the certificate is either stored exclusively
+in Cert:\CurrentUser\My on Windows (automatically replacing any previous
+self-signed or Icinga-issued certificate for the same CN) or written to disk as
+a passwordless PKCS#12 (.pfx) file under Get-ModuleCertificateDirectory on
+Linux and macOS.
 
 .PARAMETER CommonName
 | Name       | Type          | Description                               | Default |
@@ -22,21 +25,29 @@ certificate is removed from the store automatically.
 | SignedCert | System.String | The PEM-formatted signed certificate. | $null   |
 
 .OUTPUTS
-System.Object -- Returns a structured result via Write-FunctionReturnValue containing the storage path.
+System.Int32 -- Standardized return code from Write-FunctionReturnValue (50011
+when stored in Cert:\CurrentUser\My on Windows, 50010 when stored locally as a
+.pfx file on Linux/macOS, 50009 when -CommonName is missing or whitespace, or
+50012 when the existing certificate cannot be found during a -SignedCert merge).
 
 .EXAMPLE
-PS> New-IcingaProtocolCertificate -CommonName 'IcingaNode'
+PS> New-IcingaProtocolCertificate -CommonName 'win-srv01.example.com'
 
-Generates a new self-signed certificate for 'IcingaNode' and saves it to the local store or filesystem.
+Generates a new self-signed certificate for 'win-srv01.example.com' and stores
+it in Cert:\CurrentUser\My on Windows or as a local .pfx file on Linux/macOS.
 
 .EXAMPLE
-PS> New-IcingaProtocolCertificate -CommonName 'IcingaNode' -SignedCert '-----BEGIN CERTIFICATE-----...'
+PS> New-IcingaProtocolCertificate -CommonName 'win-srv01.example.com' -SignedCert '-----BEGIN CERTIFICATE-----...'
 
-Merges the signed certificate with the existing private key for 'IcingaNode'.
+Merges the signed PEM certificate with the existing private key for
+'win-srv01.example.com' and replaces the stored certificate.
 
 .NOTES
-Requires administrative privileges on Windows to access the LocalMachine certificate store.
-Cross-platform compatible; relies on .NET cryptography classes.
+Stores Windows certificates in Cert:\CurrentUser\My of the executing user
+account (does not require LocalMachine store elevation; ensure certificate
+provisioning and the Icinga for Windows runtime execute under the same Windows
+user account). On non-Windows platforms, Get-ModuleCertificateDirectory is
+created automatically before writing <CommonName>.pfx.
 
 SPDX-FileCopyrightText: 2026 Icinga GmbH <https://icinga.com>
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -48,12 +59,14 @@ function New-IcingaProtocolCertificate()
         [string]$SignedCert = $null
     );
 
-    if ([string]::IsNullOrEmpty($CommonName)) {
+    if ([string]::IsNullOrWhiteSpace($CommonName)) {
         return (Write-FunctionReturnValue -ReturnValue 'IcingaCertCommonNameMissing' -Data @{ 'CommonName' = $CommonName; });
     }
 
-    [string]$PfxPath  = Join-Path -Path (Get-ModuleCertificateDirectory) -ChildPath ([string]::Format('{0}.pfx', $CommonName));
-    [byte[]]$pfxBytes = $null;
+    $CommonName            = $CommonName.Trim();
+    [string]$CertDirectory = Get-ModuleCertificateDirectory;
+    [string]$PfxPath       = Join-Path -Path $CertDirectory -ChildPath ([string]::Format('{0}.pfx', $CommonName));
+    [byte[]]$pfxBytes      = $null;
 
     if ([string]::IsNullOrEmpty($SignedCert)) {
         # Generate a new 4096-bit RSA private key
@@ -73,10 +86,13 @@ function New-IcingaProtocolCertificate()
         # Export the certificate as a PFX/PKCS#12 payload.
         # By not providing a password string, the PFX is generated without password encryption.
         $pfxBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx);
+
+        $cert.Dispose();
+        $rsa.Dispose();
     } else {
         $oldCert = $null;
 
-        if ($Global:IcingaForWindows.Protected.OSType -eq 'Windows') {
+        if ((Get-GlobalRuntimeVariable).Protected.OSType -eq 'Windows') {
             # On Windows, the old certificate is never written to disk, so we load it from the store
             $tempStore = [System.Security.Cryptography.X509Certificates.X509Store]::new(
                 [System.Security.Cryptography.X509Certificates.StoreName]::My,
@@ -94,7 +110,7 @@ function New-IcingaProtocolCertificate()
             $tempStore.Dispose();
 
             if ($null -eq $oldCert) {
-                return (Write-FunctionReturnValue -ReturnValue 'IcingaCertMissingForMerge' -Data @{ 'Path' = 'Cert:/CurrentUser/My' });
+                return (Write-FunctionReturnValue -ReturnValue 'IcingaCertMissingForMerge' -Data @{ 'Path' = 'Cert:/CurrentUser/My'; });
             }
         } else {
             # On Linux/macOS, we load the old certificate from the locally stored PFX file
@@ -129,7 +145,11 @@ function New-IcingaProtocolCertificate()
     }
 
     # Handle storage based on OS
-    if ($Global:IcingaForWindows.Protected.OSType -ne 'Windows') {
+    if ((Get-GlobalRuntimeVariable).Protected.OSType -ne 'Windows') {
+        if (-not (Test-Path -Path $CertDirectory)) {
+            New-Item -Path $CertDirectory -ItemType Directory -Force | Out-Null;
+        }
+
         # Store the certificate on the filesystem for non-Windows OS
         [System.IO.File]::WriteAllBytes($PfxPath, $pfxBytes);
 

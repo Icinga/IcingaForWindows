@@ -1418,5 +1418,19 @@ function Set-InternalExitCodes()
             'Area'        = 'IcingaProtocol';
             'Description' = 'Telemetry event recorded after executing a PowerShell or binary check command via the Icinga protocol worker.';
         };
+        'InstallerHostnameMissing' = @{
+            'Code'        = 7000;
+            'Message'     = 'Cannot install Icinga for Windows because -Hostname was not provided';
+            'Severity'    = 'Error';
+            'Area'        = 'Installer';
+            'Description' = 'Install-IcingaForWindows requires a non-empty -Hostname value to generate the node TLS certificate via New-IcingaProtocolCertificate.';
+        };
+        'InstallerCompleted' = @{
+            'Code'        = 7001;
+            'Message'     = 'Icinga for Windows base installation completed successfully';
+            'Severity'    = 'Info';
+            'Area'        = 'Installer';
+            'Description' = 'Base directories, Windows Event Log sources, and the initial node certificate have been provisioned.';
+        };
     };
 }

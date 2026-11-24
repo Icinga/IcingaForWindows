@@ -17,9 +17,9 @@ All subsystems -- background daemons, the native Icinga 2 JSON-RPC protocol stac
 
 **Icinga for Windows** is organized into focused, single-function source files under `src/` that compile into two BOM-less UTF-8 runtime artifacts (`lib/IcingaForWindows.Classes.ps1` and `lib/IcingaForWindows.Kernel.ps1`):
 
-* **Core (`Runtime`, `Threading`, `Logging`, `ErrorHandling`)** -- Runspace pool thread management (`New-Thread`, `Start-ThreadHouseKeeper`), structured logging queue (`Write-LoggingEntry`), garbage collection, and semantic internal return codes (`Set-InternalExitCodes`).
-* **Core Network (`TCPStack`, `RestApi`, `WebSocket`, `AccessControl`)** -- TLS 1.2+ socket management, multi-worker HTTPS REST API (`Start-RestApiDaemon`), persistent WebSocket client workers (`Start-ModuleWebSocketDaemon`), and role-based access control.
-* **Icinga Protocol (`IcingaProtocol`)** -- Native Icinga 2 JSON-RPC netstring listener/connector (`Start-IcingaAgent`) and secure `event::ExecuteCommand` check dispatch for `Invoke-IcingaCheck*` cmdlets and approved external binaries/scripts inside `$env:ProgramData\IcingaForWindows\Binaries`.
+* **Core (`Runtime`, `Threading`, `Logging`, `ErrorHandling`)** -- Host installation and runtime bootstrap (`Install-IcingaForWindows`, `Use-IcingaForWindows`), runspace pool thread management (`New-Thread`, `Start-ThreadHouseKeeper`), Windows Event Log registration and structured logging queue (`Register-LoggingWindowsEventLog`, `Write-LoggingEntry`), garbage collection, and semantic internal return codes (`Set-InternalExitCodes`).
+* **Core Network (`TCPStack`, `RestApi`, `WebSocket`, `AccessControl`)** -- TLS 1.2+ socket and certificate configuration (`New-IcingaTlsCertConfig`), multi-worker HTTPS REST API (`Start-RestApiDaemon`), persistent WebSocket client workers (`Start-ModuleWebSocketDaemon`), and role-based access control.
+* **Icinga Protocol (`IcingaProtocol`)** -- Certificate and cluster configuration (`New-IcingaProtocolCertificate`, `Import-IcingaCertAuthority`, `New-IcingaProtocolEnvironment`), native Icinga 2 JSON-RPC netstring listener/connector (`Start-IcingaAgent`), and secure `event::ExecuteCommand` check dispatch for `Invoke-IcingaCheck*` cmdlets and approved external binaries/scripts inside `$env:ProgramData\IcingaForWindows\Binaries`.
 * **Performance Counter Engine (`PerformanceCounter`)** -- Dedicated background daemon (`Start-IcingaPerformanceCounterDaemon`), category-level bulk snapshots, static AST counter pre-warming at startup, and automatic inline session fallback.
 * **Monitoring Plugins & Public SDK (`Plugins`, `Classes`)** -- Fluent `IcingaPlugin` check/package framework, public `New-IcingaPlugin` SDK cmdlet, `IcingaThresholds` and `IcingaUnit` engines, OS data providers (`Disk`, `FileSystem`, `Process`, `ScheduledTask`), and nine built-in monitoring checks (`CPU`, `Directory`, `Memory`, `PartitionSpace`, `PerfCounter`, `Process`, `ScheduledTask`, `Service`, `Uptime`).
 * **Configuration, Security & Tools (`Config`, `Security`, `Tools`)** -- Approved-path filesystem wrappers, Windows PowerShell 5.1 memory-safe JSON serialization (`ConvertFrom-ModuleJson` / `ConvertTo-ModuleJson`), unit conversion, natural sorting, and `SecureString` helpers.
@@ -69,22 +69,73 @@ flowchart LR
 
 ---
 
-## Quick Start
+## Quick Start & Base Setup
 
-**Requirements:** Windows PowerShell 5.1 or PowerShell 7.5+ on Windows Server / Windows 11. For local development and unit testing, the module also imports cleanly on Linux and macOS via the `$env:ProgramData` home-directory fallback.
+**Requirements:** Windows PowerShell 5.1 or PowerShell 7.5+ on Windows Server / Windows 11 (run initial host setup in an **elevated Administrator** session). For local development and unit testing, the module also imports cleanly on Linux and macOS via the `$env:ProgramData` home-directory fallback.
+
+For a complete walkthrough covering CA import, certificate signing, connection modes, and verification, see the **[Step-by-Step Installation Guide](docs/General/Installation.md)**.
 
 ```powershell
-# Import the Icinga for Windows module
+# Import the Icinga for Windows module once per PowerShell session
 Import-Module IcingaForWindows -Force -Global;
 
-# Initialize the runtime in the current session and start background daemons (alias: ifw)
+# 1. Base host installation (run as Administrator on Windows):
+#    Creates ProgramData\IcingaForWindows\{Config,Binaries}, registers Windows Event Log
+#    sources (100 MiB), and generates the initial self-signed TLS certificate (returns 7001)
+Install-IcingaForWindows -Hostname 'win-srv01.example.com';
+
+# 2. Import the Icinga 2 CA certificate into Cert:\LocalMachine\Root on Windows
+#    (required for outbound TLS peer verification unless already trusted via Group Policy)
+Import-IcingaCertAuthority -Path 'C:\Temp\ca.crt';
+
+# 3a. Optional preview: inspect unified diff against existing Connection.json (-DryRun does NOT save changes)
+(
+    New-IcingaProtocolEnvironment `
+        -Endpoints @(
+            (New-IcingaProtocolEndpoint -Name 'icinga-master01.example.com' -Address 'icinga-master01.example.com' -Port 5665),
+            (New-IcingaProtocolEndpoint -Name 'icinga-master02.example.com' -Address 'icinga-master02.example.com' -Port 5665)
+        ) `
+        -Zone 'master' `
+        -Hostname '$fqdn' `
+        -TlsCertConfig (
+            New-IcingaTlsCertConfig `
+                -CertCN '$fqdn' `
+                -CertStore 'My' `
+                -CertStoreLocation 'CurrentUser' `
+                -CertIssuer @( 'Icinga CA', '$fqdn' )
+        ) `
+        -DryRun
+).Output;
+
+# 3b. Save configuration: run again WITHOUT -DryRun and WITHOUT .Output to write Connection.json (returns 50019)
+New-IcingaProtocolEnvironment `
+    -Endpoints @(
+        (New-IcingaProtocolEndpoint -Name 'icinga-master01.example.com' -Address 'icinga-master01.example.com' -Port 5665),
+        (New-IcingaProtocolEndpoint -Name 'icinga-master02.example.com' -Address 'icinga-master02.example.com' -Port 5665)
+    ) `
+    -Zone 'master' `
+    -Hostname '$fqdn' `
+    -TlsCertConfig (
+        New-IcingaTlsCertConfig `
+            -CertCN '$fqdn' `
+            -CertStore 'My' `
+            -CertStoreLocation 'CurrentUser' `
+            -CertIssuer @( 'Icinga CA', '$fqdn' )
+    );
+
+# 4. Start the runtime and background daemons in the current session (or use Exit-Icinga to terminate later)
 Use-IcingaForWindows -NoNewShell -LogLevel 'Info' -RunBackgroundDaemons;
 
-# Run built-in monitoring plugins interactively
 Invoke-IcingaCheckCPU -Warning '80' -Critical '95';
 Invoke-IcingaCheckMemory -Warning '85%' -Critical '95%';
 Invoke-IcingaCheckPartitionSpace -Warning '80%' -Critical '90%';
 ```
+
+**Node Identity, `-DryRun` Preview & Placeholders:**
+* **`-DryRun` Preview vs. Saving Configuration:** Passing `-DryRun` returns a diff hashtable (`@{ ExitCode; Output }`) via `Compare-IcingaTextContent` and **does not save the configuration**. After inspecting `(... -DryRun).Output`, run `New-IcingaProtocolEnvironment` **without `-DryRun` and without `.Output`** to write `Config\IcingaProtocol\Connection.json` to disk (`50019`).
+* **Icinga 2 Object Name:** The node `-Hostname` and certificate Common Name (`CN`) **must match the exact `Endpoint` and `Host` Object Name** configured in Icinga 2 / Icinga Director. Pass the concrete node name to `Install-IcingaForWindows -Hostname` (for example `'win-srv01.example.com'` / `([System.Net.Dns]::GetHostEntry('').HostName)` for FQDN Object Names, or `([System.Net.Dns]::GetHostName())` for short-hostname Object Names).
+* **Runtime Placeholders (`'$fqdn'` & `'$hostname'`):** Inside `New-IcingaProtocolEnvironment` and `New-IcingaTlsCertConfig`, single-quoted, lowercase `'$fqdn'` and `'$hostname'` are stored verbatim in `Config\IcingaProtocol\Connection.json` and dynamically resolved whenever the configuration is loaded (`$fqdn` -> `[System.Net.Dns]::GetHostEntry('').HostName`, `$hostname` -> `[System.Net.Dns]::GetHostName()`). Always wrap them in **single quotes** (`'$fqdn'`, `'$hostname'`) so PowerShell does not expand them as empty shell variables, and choose whichever matches your Icinga 2 Object Name.
+* **Bootstrap & Signed Certificate Matching:** `Install-IcingaForWindows` stores the node certificate in `Cert:\CurrentUser\My` (`-CertStore 'My' -CertStoreLocation 'CurrentUser'`). Passing `-CertIssuer @( 'Icinga CA', '$fqdn' )` (or `'$hostname'`) allows the TLS loader to match both the initial self-signed certificate created by `Install-IcingaForWindows` and the final certificate signed by `'Icinga CA'` without rewriting `Connection.json`.
 
 ---
 
@@ -149,6 +200,7 @@ Compiled files under `lib/` and API reference pages (`docs/Icinga.*.md`, `docs/i
 ## Documentation Map
 
 ### General & Governance
+* [Step-by-Step Installation Guide](docs/General/Installation.md)
 * [Changelog](docs/General/Changelog.md) · [Roadmap](docs/General/Roadmap.md)
 * [Code, Architecture & Documentation Ruleset (`01-Instruction.md`)](docs/Agents/guidelines/01-Instruction.md)
 * [Knowledgebase (`IWKB001xxx`)](docs/Knowledgebase/index.md)
