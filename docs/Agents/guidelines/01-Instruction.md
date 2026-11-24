@@ -23,7 +23,8 @@ IcingaForWindows/
 │   ├── Invoke-ScriptAnalysis.ps1    <- PSScriptAnalyzer runner
 │   ├── Test-ModuleChangelog.ps1     <- Non-main PR Changelog.md & Roadmap.md governance gate
 │   ├── Test-ModuleCodeStyling.ps1   <- Code-styling, function-scope & SPDX license validator
-│   └── Test-ModuleDaemonMemoryLeak.ps1 <- AST daemon loop & IDisposable leak checker
+│   ├── Test-ModuleDaemonMemoryLeak.ps1 <- AST daemon loop & IDisposable leak checker
+│   └── Update-ModuleChangelog.ps1   <- Zero-credential PR link stamper for Changelog.md
 ├── src/                             <- Source code (strictly one function or class/enum file)
 │   ├── Classes/                     <- PowerShell classes & enums (compiled per runspace)
 │   ├── Config/                      <- Environment & configuration directory helpers
@@ -318,11 +319,12 @@ The entire repository (`src/`, `build/`, `IcingaForWindows.psm1`, `IcingaForWind
 ```powershell
 .\build\Test-ModuleCodeStyling.ps1;
 .\build\Test-ModuleChangelog.ps1;
+.\build\Update-ModuleChangelog.ps1; # Stamps [#<PR>](.../pull/<PR>) once a GitHub PR is open
 .\build\Test-ModuleDaemonMemoryLeak.ps1;
 .\build\Invoke-ScriptAnalysis.ps1 -FailOn 'Warning';
 ```
 
-In CI (`.github/workflows/ci.yml`), `Invoke-ScriptAnalysis.ps1`, `Test-ModuleCodeStyling.ps1`, and `Test-ModuleChangelog.ps1` execute once inside the `analyze` job. `Tests/CodeStyling.Tests.ps1` and `Tests/Changelog.Tests.ps1` are strictly fast `$TestDrive` unit test suites validating parser/gate behavior so the repository tree is never scanned twice during `Invoke-ModuleTests.ps1`.
+In CI (`.github/workflows/ci.yml`), internal repository Pull Requests first run the `changelog-link` job (using GitHub's ephemeral per-job `GITHUB_TOKEN` with zero stored secrets) to automatically stamp `[#<PR>](https://github.com/Icinga/IcingaForWindows/pull/<PR>)` onto newly added bullets in `docs/General/Changelog.md`. Afterwards, `Invoke-ScriptAnalysis.ps1`, `Test-ModuleCodeStyling.ps1`, and `Test-ModuleChangelog.ps1` execute once inside the `analyze` job, blocking any Pull Request whose added changelog bullets lack `[#<PR>](...)` links. `Tests/CodeStyling.Tests.ps1` and `Tests/Changelog.Tests.ps1` are strictly fast `$TestDrive` unit test suites validating parser/gate behavior so the repository tree is never scanned twice during `Invoke-ModuleTests.ps1`.
 
 ---
 
@@ -341,8 +343,11 @@ In CI (`.github/workflows/ci.yml`), `Invoke-ScriptAnalysis.ps1`, `Test-ModuleCod
 - Commit subjects in present-tense imperative (`Add ...`, `Fix ...`, `Update ...`), concise single line, in English.
 - Commit body explains **why**, not **what**.
 - Never amend pushed commits, never force-push shared branches, and never bypass Git hooks (`--no-verify`, `--no-gpg-sign`).
-- **Mandatory `docs/General/Changelog.md` Entry (Non-`main` Branches & PRs):**
-  Every branch not on `main` (`feature/*`, `fix/*`, `bugfix/*`, `chore/*`, ...) and every GitHub Pull Request **MUST** add at least one bullet entry (`* ...`) under the current unreleased version section (`### Enhancements`, `### Bugfixes`, `### Security`, or `### Documentation`) in [docs/General/Changelog.md](../../General/Changelog.md). Missing changelog entries fail `build/Test-ModuleChangelog.ps1` in CI.
+- **Mandatory `docs/General/Changelog.md` Entry & PR Linking (Non-`main` Branches & PRs):**
+  Every branch not on `main` (`feature/*`, `fix/*`, `bugfix/*`, `chore/*`, ...) and every GitHub Pull Request **MUST** add at least one bullet entry (`* ...`) under the current unreleased version section (`### Enhancements`, `### Bugfixes`, `### Security`, or `### Documentation`) in [docs/General/Changelog.md](../../General/Changelog.md):
+  - **Required PR Link Format Before Merge:** `* [#<PR>](https://github.com/Icinga/IcingaForWindows/pull/<PR>) <Summary>`
+  - **Local Pre-PR Development:** Add an unlinked `* <Summary>` bullet first (`.\build\Test-ModuleChangelog.ps1` passes locally before a PR number exists).
+  - **Automated & Zero-Credential PR Linking:** Once the Pull Request is opened on GitHub, the `changelog-link` GitHub Actions job automatically stamps `[#<PR>](...)` on internal repository branches, or any contributor (including external forks) can run `.\build\Update-ModuleChangelog.ps1` locally with zero credentials/tokens to query GitHub's public API and stamp `[#<PR>](...)`. In CI `pull_request` runs, `build/Test-ModuleChangelog.ps1` requires every added bullet to carry a valid `[#<PR>](...)` link and include the active Pull Request before merging into `main`.
 - **Mandatory `docs/General/Roadmap.md` Synchronization:**
   Whenever an implementation plan (`docs/Agents/tasks/<BranchSlug>/implementation_plan.md`) is created or a branch milestone is completed, [docs/General/Roadmap.md](../../General/Roadmap.md) **MUST** be updated in the same branch so completed subsystems and prioritized upcoming work remain accurate.
 
@@ -431,4 +436,4 @@ Completed **after implementation and verification**:
 
 ---
 
-*Last updated: 2026-11-17*
+*Last updated: 2026-11-24*
