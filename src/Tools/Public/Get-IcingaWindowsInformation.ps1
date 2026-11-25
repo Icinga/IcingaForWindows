@@ -22,6 +22,12 @@ query (WindowsInformationQueried), a missing class name
 (WindowsInformationQueryFailed). The return code of a failure is also stored in
 the ReturnCode of the IcingaError.
 
+OperationOption passes provider-specific custom options with the query, such as
+@{ 'PolicyStore' = 'ActiveStore' } for the NetSecurity classes in
+root/StandardCimv2. Get-CimInstance cannot carry them, so such a query runs as
+WQL ('SELECT <Property> FROM <ClassName> WHERE <Filter>') through a local
+CimSession, which is disposed afterwards. Errors map to the same return codes.
+
 .PARAMETER ClassName
 | Name      | Type          | Description                     | Default |
 |-----------|---------------|---------------------------------|---------|
@@ -42,6 +48,11 @@ the ReturnCode of the IcingaError.
 |----------|--------------|-------------------------------------------------|---------|
 | Property | System.Array | Properties to fetch; empty fetches all of them. | @()     |
 
+.PARAMETER OperationOption
+| Name            | Type                         | Description                                                           | Default |
+|-----------------|------------------------------|-----------------------------------------------------------------------|---------|
+| OperationOption | System.Collections.Hashtable | CIM custom options for the provider, e.g. @{ PolicyStore = 'RSOP' }.  | @{ }    |
+
 .OUTPUTS
 System.Object[] -- The CIM instances on success (an empty array when nothing
 matches), or an IcingaError when the query failed.
@@ -52,7 +63,13 @@ PS> Get-IcingaWindowsInformation -ClassName 'Win32_Volume' -Filter 'DriveType = 
 Returns the local disk volumes with the three requested properties.
 
 .EXAMPLE
-PS> $Mpio = Get-IcingaWindowsInformation -ClassName 'MPIO_DISK_INFO' -Namespace 'root/wmi'
+PS> Get-IcingaWindowsInformation -ClassName 'MSFT_NetFirewallProfile' -Namespace 'root/StandardCimv2' -OperationOption @{ 'PolicyStore' = 'ActiveStore'; }
+
+Returns the effective firewall profiles, merged from local settings and Group
+Policy.
+
+.EXAMPLE
+PS> $Mpio =Get-IcingaWindowsInformation -ClassName 'MPIO_DISK_INFO' -Namespace 'root/wmi'
 
 Returns an IcingaError with the return code WindowsInformationClassUnknown on
 hosts without the MPIO feature.
@@ -69,10 +86,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 function Get-IcingaWindowsInformation()
 {
     param (
-        [string]$ClassName = '',
-        [string]$Namespace = 'root/cimv2',
-        [string]$Filter    = '',
-        [array]$Property   = @()
+        [string]$ClassName          = '',
+        [string]$Namespace          = 'root/cimv2',
+        [string]$Filter             = '',
+        [array]$Property            = @(),
+        [hashtable]$OperationOption = @{ }
     );
 
     if ([string]::IsNullOrEmpty($ClassName)) {
@@ -93,9 +111,47 @@ function Get-IcingaWindowsInformation()
         $QueryArguments.Add('Property', [string[]]$Property);
     }
 
+    [bool]$UseCimSession = ($null -ne $OperationOption -and $OperationOption.Count -ne 0);
+    $CimSession          = $null;
+    $CimOptions          = $null;
+
     try {
-        [array]$Instances = @(Get-CimInstance @QueryArguments);
+        if ($UseCimSession) {
+            # Get-CimInstance cannot pass provider-specific custom options such as the
+            # NetSecurity 'PolicyStore', so the query runs as WQL through a local
+            # CimSession with CimOperationOptions instead.
+            [string]$SelectList = '*';
+
+            if ($Property.Count -ne 0) {
+                $SelectList = [string]::Join(', ', [string[]]$Property);
+            }
+
+            [string]$Query = [string]::Format('SELECT {0} FROM {1}', $SelectList, $ClassName);
+
+            if ([string]::IsNullOrEmpty($Filter) -eq $false) {
+                $Query = [string]::Format('{0} WHERE {1}', $Query, $Filter);
+            }
+
+            $CimOptions = New-Object -TypeName 'Microsoft.Management.Infrastructure.Options.CimOperationOptions';
+
+            foreach ($OptionName in $OperationOption.Keys) {
+                $CimOptions.SetCustomOption([string]$OptionName, $OperationOption[$OptionName], $false);
+            }
+
+            $CimSession       = New-CimSession -ErrorAction Stop;
+            [array]$Instances = @($CimSession.QueryInstances($Namespace, 'WQL', $Query, $CimOptions));
+        } else {
+            [array]$Instances = @(Get-CimInstance @QueryArguments);
+        }
     } catch {
+        # A CimSession method call wraps the CimException into a RuntimeException;
+        # unwrap it so the native error code maps the same way as for Get-CimInstance.
+        $CimError = $_.Exception;
+
+        while ($null -ne $CimError.InnerException -and $null -eq $CimError.PSObject.Properties['NativeErrorCode']) {
+            $CimError = $CimError.InnerException;
+        }
+
         [hashtable]$NativeErrorCodes = @{
             'InvalidClass'     = 'WindowsInformationClassUnknown';
             'InvalidNamespace' = 'WindowsInformationNamespaceInvalid';
@@ -105,7 +161,7 @@ function Get-IcingaWindowsInformation()
             'InvalidParameter' = 'WindowsInformationInvalidQuery';
         };
 
-        [string]$NativeErrorCode     = [string]$_.Exception.NativeErrorCode;
+        [string]$NativeErrorCode     = [string]$CimError.NativeErrorCode;
         [string]$ReturnCode          = 'WindowsInformationQueryFailed';
 
         if ($NativeErrorCodes.ContainsKey($NativeErrorCode)) {
@@ -113,18 +169,27 @@ function Get-IcingaWindowsInformation()
         }
 
         [hashtable]$ErrorData = @{
-            'ClassName' = $ClassName;
-            'Namespace' = $Namespace;
-            'Filter'    = $Filter;
-            'Error'     = $_.Exception.Message;
+            'ClassName'       = $ClassName;
+            'Namespace'       = $Namespace;
+            'Filter'          = $Filter;
+            'OperationOption' = $OperationOption;
+            'Error'           = $CimError.Message;
         };
 
         Set-InternalExitCodes;
 
         [string]$CodeMessage  = (Get-GlobalRuntimeVariable).Public.ReturnCodes[$ReturnCode].Message;
-        [string]$ErrorMessage = [string]::Format('{0}: Class "{1}", Namespace "{2}": {3}', $CodeMessage, $ClassName, $Namespace, ([string]$_.Exception.Message).Trim());
+        [string]$ErrorMessage = [string]::Format('{0}: Class "{1}", Namespace "{2}": {3}', $CodeMessage, $ClassName, $Namespace, ([string]$CimError.Message).Trim());
 
         return (Write-FunctionReturnValue -ReturnValue $ReturnCode -Data $ErrorData -OverrideReturn (('IcingaError' -as [type])::new($ReturnCode, $ErrorMessage, $ErrorData)));
+    } finally {
+        if ($null -ne $CimSession) {
+            $CimSession.Dispose();
+        }
+
+        if ($null -ne $CimOptions) {
+            $CimOptions.Dispose();
+        }
     }
 
     # The leading comma keeps the instances an array, even for one or no instance.

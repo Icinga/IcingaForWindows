@@ -1,6 +1,6 @@
 # Icinga for Windows API Reference
 
-*Auto-generated on 2026-11-17 09:32:42.*
+*Auto-generated on 2026-11-25 13:35:07.*
 
 | Component | Public functions | Private helpers |
 |-----------|------------------|-----------------|
@@ -15,7 +15,7 @@
 | [Icinga.Core.WebSocket](Icinga.Core.WebSocket.md) | 3 | 16 |
 | [Icinga.IcingaProtocol](Icinga.IcingaProtocol.md) | 5 | 27 |
 | [Icinga.PerformanceCounter](Icinga.PerformanceCounter.md) | 4 | 12 |
-| [Icinga.Plugins.Checks](Icinga.Plugins.Checks.md) | 9 | 0 |
+| [Icinga.Plugins.Checks](Icinga.Plugins.Checks.md) | 10 | 0 |
 | [Icinga.Plugins.Lib](Icinga.Plugins.Lib.md) | 1 | 0 |
 | [Icinga.Plugins.Provider.Disk](Icinga.Plugins.Provider.Disk.md) | 0 | 1 |
 | [Icinga.Plugins.Provider.FileSystem](Icinga.Plugins.Provider.FileSystem.md) | 0 | 1 |
@@ -27,6 +27,6 @@
 ## Totals
 
 - Components: 19
-- Documented functions: 198
-- Public: 42
+- Documented functions: 199
+- Public: 43
 - Private: 156
