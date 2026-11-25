@@ -359,6 +359,12 @@ query (WindowsInformationQueried), a missing class name
 (WindowsInformationQueryFailed). The return code of a failure is also stored in
 the ReturnCode of the IcingaError.
 
+OperationOption passes provider-specific custom options with the query, such as
+@{ 'PolicyStore' = 'ActiveStore' } for the NetSecurity classes in
+root/StandardCimv2. Get-CimInstance cannot carry them, so such a query runs as
+WQL ('SELECT <Property> FROM <ClassName> WHERE <Filter>') through a local
+CimSession, which is disposed afterwards. Errors map to the same return codes.
+
 #### Parameters
 
 **`$ClassName`**
@@ -385,6 +391,12 @@ the ReturnCode of the IcingaError.
 |----------|--------------|-------------------------------------------------|---------|
 | Property | System.Array | Properties to fetch; empty fetches all of them. | @()     |
 
+**`$OperationOption`**
+
+| Name            | Type                         | Description                                                           | Default |
+|-----------------|------------------------------|-----------------------------------------------------------------------|---------|
+| OperationOption | System.Collections.Hashtable | CIM custom options for the provider, e.g. @{ PolicyStore = 'RSOP' }.  | @{ }    |
+
 #### Outputs
 
 System.Object[] -- The CIM instances on success (an empty array when nothing
@@ -399,7 +411,14 @@ Returns the local disk volumes with the three requested properties.
 ```
 
 ```powershell
-PS> $Mpio = Get-IcingaWindowsInformation -ClassName 'MPIO_DISK_INFO' -Namespace 'root/wmi'
+PS> Get-IcingaWindowsInformation -ClassName 'MSFT_NetFirewallProfile' -Namespace 'root/StandardCimv2' -OperationOption @{ 'PolicyStore' = 'ActiveStore'; }
+
+Returns the effective firewall profiles, merged from local settings and Group
+Policy.
+```
+
+```powershell
+PS> $Mpio =Get-IcingaWindowsInformation -ClassName 'MPIO_DISK_INFO' -Namespace 'root/wmi'
 
 Returns an IcingaError with the return code WindowsInformationClassUnknown on
 hosts without the MPIO feature.

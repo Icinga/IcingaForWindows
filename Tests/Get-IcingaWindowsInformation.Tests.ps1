@@ -84,6 +84,77 @@ Describe 'Get-IcingaWindowsInformation' {
                 };
             } $Arguments $StubData $FailCode $EchoArguments);
         }
+
+        # Runs an OperationOption query inside the module scope with New-CimSession
+        # shadowed by a fake session. The fake records every QueryInstances call and
+        # its disposal; Get-CimInstance throws, so the session path is proven.
+        function Invoke-TestWindowsInformationSession()
+        {
+            param (
+                [hashtable]$Arguments = @{ },
+                [array]$StubData      = @(),
+                [string]$FailCode     = ''
+            );
+
+            return (& $script:IcingaModule {
+                param ($Arguments, $StubData, $FailCode);
+
+                class FakeCimException : System.Exception
+                {
+                    [string]$NativeErrorCode = '';
+
+                    FakeCimException([string]$Message, [string]$Code) : base($Message)
+                    {
+                        $this.NativeErrorCode = $Code;
+                    }
+                }
+
+                $FakeSession = [PSCustomObject]@{
+                    'Calls'    = [System.Collections.ArrayList]::new();
+                    'Disposed' = $false;
+                    'StubData' = $StubData;
+                    'FailCode' = $FailCode;
+                };
+
+                $FakeSession | Add-Member -MemberType ScriptMethod -Name 'QueryInstances' -Value {
+                    param ($Namespace, $Dialect, $Query, $Options);
+
+                    [void]$this.Calls.Add(@{ 'Namespace' = $Namespace; 'Dialect' = $Dialect; 'Query' = $Query; 'Options' = $Options; });
+
+                    if (-not [string]::IsNullOrEmpty($this.FailCode)) {
+                        throw [FakeCimException]::new('Simulated session failure', $this.FailCode);
+                    }
+
+                    return $this.StubData;
+                };
+
+                $FakeSession | Add-Member -MemberType ScriptMethod -Name 'Dispose' -Value {
+                    $this.Disposed = $true;
+                };
+
+                function New-CimSession()
+                {
+                    [CmdletBinding()]
+                    param ();
+
+                    return $FakeSession;
+                }
+
+                function Get-CimInstance()
+                {
+                    throw 'Get-CimInstance must not be used when OperationOption is given';
+                }
+
+                $Value = Get-IcingaWindowsInformation @Arguments;
+
+                return @{
+                    'Value'   = $Value;
+                    'IsArray' = ($Value -is [array]);
+                    'IsError' = ($Value -is [IcingaError]);
+                    'Session' = $FakeSession;
+                };
+            } $Arguments $StubData $FailCode);
+        }
     }
 
     Context 'Successful queries' {
@@ -139,6 +210,45 @@ Describe 'Get-IcingaWindowsInformation' {
             $Result.IsError          | Should -BeTrue;
             $Result.Value.ReturnCode | Should -Be 'WindowsInformationClassNameMissing';
             $Result.Value.Message    | Should -Be 'No CIM class name was provided for the query';
+        }
+    }
+
+    Context 'Queries with OperationOption' {
+        It 'runs a WQL query through a CimSession with the custom options and disposes the session' {
+            $Result = Invoke-TestWindowsInformationSession -Arguments @{ 'ClassName' = 'MSFT_NetFirewallProfile'; 'Namespace' = 'root/StandardCimv2'; 'OperationOption' = @{ 'PolicyStore' = 'ActiveStore'; }; } -StubData @([PSCustomObject]@{ 'Name' = 'Domain'; 'Enabled' = 1; });
+
+            $Result.IsArray       | Should -BeTrue;
+            $Result.Value.Count   | Should -Be 1;
+            $Result.Value[0].Name | Should -Be 'Domain';
+
+            $Result.Session.Calls.Count           | Should -Be 1;
+            $Result.Session.Calls[0]['Namespace'] | Should -Be 'root/StandardCimv2';
+            $Result.Session.Calls[0]['Dialect']   | Should -Be 'WQL';
+            $Result.Session.Calls[0]['Query']     | Should -Be 'SELECT * FROM MSFT_NetFirewallProfile';
+            $Result.Session.Calls[0]['Options']   | Should -BeOfType ([Microsoft.Management.Infrastructure.Options.CimOperationOptions]);
+            $Result.Session.Disposed              | Should -BeTrue;
+        }
+
+        It 'builds the WQL select list and WHERE clause from Property and Filter' {
+            $Result = Invoke-TestWindowsInformationSession -Arguments @{ 'ClassName' = 'MSFT_NetFirewallProfile'; 'Namespace' = 'root/StandardCimv2'; 'Property' = @('Name', 'Enabled'); 'Filter' = "Name = 'Domain'"; 'OperationOption' = @{ 'PolicyStore' = 'RSOP'; }; };
+
+            $Result.Session.Calls[0]['Query'] | Should -Be "SELECT Name, Enabled FROM MSFT_NetFirewallProfile WHERE Name = 'Domain'";
+            $Result.IsArray                   | Should -BeTrue;
+            $Result.Value.Count               | Should -Be 0;
+        }
+
+        It 'unwraps the CIM error of a session call to <ReturnCode> and still disposes the session' -ForEach @(
+            @{ 'Code' = 'InvalidClass'; 'ReturnCode' = 'WindowsInformationClassUnknown'; },
+            @{ 'Code' = 'AccessDenied'; 'ReturnCode' = 'WindowsInformationAccessDenied'; },
+            @{ 'Code' = 'Failed'; 'ReturnCode' = 'WindowsInformationQueryFailed'; }
+        ) {
+            $Result = Invoke-TestWindowsInformationSession -Arguments @{ 'ClassName' = 'MSFT_Foo'; 'Namespace' = 'root/StandardCimv2'; 'OperationOption' = @{ 'PolicyStore' = 'ActiveStore'; }; } -FailCode $Code;
+
+            $Result.IsError                       | Should -BeTrue;
+            $Result.Value.ReturnCode              | Should -Be $ReturnCode;
+            $Result.Value.Message                 | Should -Match 'Class "MSFT_Foo", Namespace "root/StandardCimv2": Simulated session failure$';
+            $Result.Value.Data['OperationOption'] | Should -Not -BeNullOrEmpty;
+            $Result.Session.Disposed              | Should -BeTrue;
         }
     }
 }

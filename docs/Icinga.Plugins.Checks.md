@@ -6,6 +6,7 @@
 
 - [Invoke-IcingaCheckCPU](#invoke-icingacheckcpu)
 - [Invoke-IcingaCheckDirectory](#invoke-icingacheckdirectory)
+- [Invoke-IcingaCheckFirewall](#invoke-icingacheckfirewall)
 - [Invoke-IcingaCheckMemory](#invoke-icingacheckmemory)
 - [Invoke-IcingaCheckPartitionSpace](#invoke-icingacheckpartitionspace)
 - [Invoke-IcingaCheckPerfCounter](#invoke-icingacheckperfcounter)
@@ -377,6 +378,100 @@ user needs list permission on every checked directory. The integer exit code is
 the return value; an Icinga command wrapper is expected to exit with it.
 
 *Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckDirectory.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckDirectory.ps1)*
+
+---
+
+### Invoke-IcingaCheckFirewall
+
+*Public function*
+
+**Synopsis:** Check whether the Windows Firewall profiles are enabled or disabled
+
+#### Description
+
+Queries the MSFT_NetFirewallProfile CIM class (namespace root/StandardCimv2)
+once and builds a single IcingaPlugin container named 'Firewall Profiles'.
+Every selected profile (Domain, Private, Public) becomes a child check named
+'Firewall Profile <name>' that compares the profile state with the expected
+state and turns CRITICAL on a mismatch.
+
+The expected state follows the legacy icinga-powershell-plugins check: with
+Enabled set every profile must be enabled, without it every profile must be
+disabled. FirewallProfile (aliased to Profile) selects the profiles to check,
+wildcards allowed; without it all profiles of the host are checked, while the
+legacy check silently checked none. Every given name without a match on the
+host is reported as UNKNOWN.
+
+The state is read from the ActiveStore policy store, which holds the effective
+state merged from the local settings and every applied Group Policy. The legacy
+check read the local store only and missed profiles enforced by an Active
+Directory policy. A second query against the RSOP store finds the profiles whose
+state a Group Policy sets; their check name ends with ' (Group Policy)', so the
+output shows that the state cannot be changed locally. If the RSOP query fails,
+the check continues without that marker.
+
+The CIM property is a GpoBoolean (0 False, 1 True, 2 NotConfigured): the output
+shows 'Disabled', 'Enabled' or 'NotConfigured', and NotConfigured never matches
+the expected state.
+
+This plugin is Windows-only because it relies on the MSFT_NetFirewallProfile
+CIM class.
+
+#### Parameters
+
+**`$FirewallProfile`**
+
+| Name            | Type         | Description                                                                         | Default |
+|-----------------|--------------|-------------------------------------------------------------------------------------|---------|
+| FirewallProfile | System.Array | Profiles to check (Domain, Private, Public), wildcards allowed. Empty checks all.   | @()     |
+
+**`$Enabled`**
+
+| Name    | Type                                         | Description                                                           | Default |
+|---------|----------------------------------------------|-----------------------------------------------------------------------|---------|
+| Enabled | System.Management.Automation.SwitchParameter | Expect the profiles to be enabled; without it they must be disabled.  | False   |
+
+**`$Verbosity`**
+
+| Name      | Type         | Description                                                                         | Default |
+|-----------|--------------|-------------------------------------------------------------------------------------|---------|
+| Verbosity | System.Int32 | Output detail: 0 problems only, 1 plus affected siblings, 2 all, 3 all plus config. | 0       |
+
+**`$NoPerfData`**
+
+| Name       | Type                                         | Description                           | Default |
+|------------|----------------------------------------------|---------------------------------------|---------|
+| NoPerfData | System.Management.Automation.SwitchParameter | Suppress the performance data output. | False   |
+
+#### Outputs
+
+System.Int32 -- The Icinga plugin exit code (0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN).
+
+#### Examples
+
+```powershell
+PS> Invoke-IcingaCheckFirewall -Enabled
+
+Goes critical when any firewall profile of the host is not enabled.
+```
+
+```powershell
+PS> Invoke-IcingaCheckFirewall -FirewallProfile 'Domain', 'Private' -Enabled -Verbosity 2
+
+Expects the Domain and Private profiles to be enabled and lists both in the
+output.
+```
+
+#### Notes
+
+Windows-only. Reads the MSFT_NetFirewallProfile CIM class through
+Get-IcingaWindowsInformation with the PolicyStore options 'ActiveStore' and
+'RSOP'; standard users can read both. A failed ActiveStore query is reported as
+UNKNOWN with its reason. Perfdata labels are '<profile>::ifw_firewall::enabled' with the raw
+GpoBoolean value (0, 1 or 2). The integer exit code is the return value; an
+Icinga command wrapper is expected to exit with it.
+
+*Source: [src/Plugins/Checks/Public/Invoke-IcingaCheckFirewall.ps1](../src/Plugins/Checks/Public/Invoke-IcingaCheckFirewall.ps1)*
 
 ---
 
